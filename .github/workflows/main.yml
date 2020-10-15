@@ -1,0 +1,33 @@
+name: Test
+on: push
+jobs:
+  test:
+    runs-on: ubuntu-latest
+  steps:
+    - uses: actions/checkout@v2
+      with:
+        submodules: true
+    - name: Init CMake
+      env:
+        CC: gcc-8
+        CXX: g++-8
+      run: ./run_cmake_unix.sh
+    - name: Build
+      env:
+        CC: gcc-8
+        CXX: g++-8
+      run: cd build && make all && cd ..
+    - name: Test
+      run: ./build/tst/RobotSquiggles_tst
+    - name: Collect Coverage
+        run: |
+          lcov --directory . --capture --output-file coverage.info
+          lcov --remove coverage.info '/usr/*' --output-file coverage.info
+          lcov --remove coverage.info '*/gtest/*' --output-file coverage.info
+          lcov --remove coverage.info '*/googletest/*' --output-file coverage.info
+          lcov --remove coverage.info '*-test*' --output-file coverage.info
+          lcov --list coverage.info
+    # - uses: codecov/codecov-action@v1.0.5
+    #   with:
+    #     token: ${{secrets.CODECOV_TOKEN}}
+    #     file: ./coverage.info
