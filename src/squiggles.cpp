@@ -1,5 +1,5 @@
-#include "squiggles.h"
+#include "squiggles.hpp"
 
 int Squiggles::bla(int arg1) {
-    return arg1 * 2;
+  return arg1 * 2;
 }
