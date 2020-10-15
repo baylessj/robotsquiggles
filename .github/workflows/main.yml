@@ -31,7 +31,7 @@ jobs:
           lcov --remove coverage.info '*/googletest/*' --output-file coverage.info
           lcov --remove coverage.info '*-test*' --output-file coverage.info
           lcov --list coverage.info
-  # - uses: codecov/codecov-action@v1.0.5
-  #   with:
-  #     token: ${{secrets.CODECOV_TOKEN}}
-  #     file: ./coverage.info
+      - uses: codecov/codecov-action@v1.0.5
+        with:
+          token: ${{secrets.CODECOV_TOKEN}}
+          file: ./coverage.info
