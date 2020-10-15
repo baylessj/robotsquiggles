@@ -11,7 +11,9 @@ jobs:
         env:
           CC: gcc-8
           CXX: g++-8
-        run: ./run_cmake_unix.sh
+        run: |
+          mkdir -p ./build
+          ./run_cmake_unix.sh
       - name: Build
         env:
           CC: gcc-8
