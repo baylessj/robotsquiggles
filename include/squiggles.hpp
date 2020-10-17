@@ -8,6 +8,8 @@
 #ifndef _ROBOT_SQUIGGLES_H_
 #define _ROBOT_SQUIGGLES_H_
 
+#include "spline.hpp"
+
 class Squiggles {
   public:
   static int bla(int arg1);

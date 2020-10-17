@@ -1,16 +1,14 @@
+#ifndef _SQUIGGLES_POSE_HPP_
+#define _SQUIGGLES_POSE_HPP_
+
 namespace squiggles {
 struct Pose {
-  Pose(double ix, double iy, double itheta) : x(ix), y(iy), theta(itheta) {}
+  Pose(double ix, double iy, double iyaw) : x(ix), y(iy), yaw(iyaw) {}
 
   double x;
   double y;
-  double theta;
-};
-
-struct State {
-  State(Pose ipos, Pose ivel) : pos(ipos), vel(ivel) {}
-
-  Pose pos;
-  Pose vel;
+  double yaw;
 };
 } // namespace squiggles
+
+#endif
