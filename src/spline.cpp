@@ -10,6 +10,7 @@ namespace squiggles {
     double d = t * t * t - t * t;
 
     // TODO: assuming we need to change up theta to give delta x or delta y?
+    // TODO: allow for more than two points by iterating through (0, 1) to (n-1, n)
     double x_t = a * points[0].x + b * points[1].x + c * points[0].theta + d * points[1].theta; 
     double y_t = a * points[0].y + b * points[1].y + c * points[0].theta + d * points[1].theta; 
     // TODO: calculate the theta from the previous point maybe?
