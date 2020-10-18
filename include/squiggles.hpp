@@ -8,9 +8,10 @@
 #ifndef _ROBOT_SQUIGGLES_H_
 #define _ROBOT_SQUIGGLES_H_
 
-class Squiggles {
-  public:
-  static int bla(int arg1);
-};
+#include "pathposition.hpp"
+#include "spline.hpp"
+
+// Debug only
+#include "pythoncompat.hpp"
 
 #endif

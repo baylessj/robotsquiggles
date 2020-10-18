@@ -4,12 +4,12 @@ AllowAllParametersOfDeclarationOnNextLine: false
 AlwaysBreakAfterReturnType: None
 AllowShortBlocksOnASingleLine: false
 AllowShortCaseLabelsOnASingleLine: false
-AllowShortFunctionsOnASingleLine: None
+AllowShortFunctionsOnASingleLine: Empty
 AllowShortIfStatementsOnASingleLine: false
 AllowShortLoopsOnASingleLine: false
 BinPackArguments: false
 BinPackParameters: false
-ColumnLimit: 100
+ColumnLimit: 80
 ContinuationIndentWidth: 2
 ConstructorInitializerAllOnOneLineOrOnePerLine: true
 ConstructorInitializerIndentWidth: 2
