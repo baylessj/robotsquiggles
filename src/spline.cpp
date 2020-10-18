@@ -31,17 +31,6 @@ Spline::Spline(std::initializer_list<Pose> iwaypoints,
     s_a(istart_acceleration),
     g_a(igoal_acceleration) {}
 
-// template <typename T>
-// std::vector<T> linspace(T a, T b, size_t N) {
-//     T h = (b - a) / static_cast<T>(N-1);
-//     std::vector<T> xs(N);
-//     typename std::vector<T>::iterator x;
-//     T val;
-//     for (x = xs.begin(), val = a; x != xs.end(); ++x, val += h)
-//         *x = val;
-//     return xs;
-// }
-
 std::vector<PathPosition> Spline::plan() {
   // break the starting/goal velocities and accelerations into their
   // axis-specific components
@@ -62,12 +51,13 @@ std::vector<PathPosition> Spline::plan() {
     auto x_qp = QuinticPolynomial(s_x, s_vx, s_ax, g_x, g_vx, g_ax, d);
     auto y_qp = QuinticPolynomial(s_y, s_vy, s_ay, g_y, g_vy, g_ay, d);
 
-    // std::vector<PathPosition> out(d + 1);
     std::vector<PathPosition> out;
 
-    std::vector<double> times(d + dt);
+    std::vector<double> times(round(d / dt) + 1);
     std::iota(std::begin(times), std::end(times), 0.0);
-    for (auto t : times) {
+    for (auto time : times) {
+      double t = time * dt;
+
       double x_p = x_qp.calc_point(t);
       double y_p = y_qp.calc_point(t);
       double x_v = x_qp.calc_first_derivative(t);
@@ -113,8 +103,7 @@ std::vector<PathPosition> Spline::plan() {
       return out;
     }
   }
-  throw std::exception();
-  // return std::vector<PathPosition>();
+  throw std::runtime_error("Could not find a valid path within the constraints");
 }
 
 // Pose Spline::step(double t) {

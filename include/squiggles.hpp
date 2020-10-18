@@ -9,6 +9,7 @@
 #define _ROBOT_SQUIGGLES_H_
 
 #include "spline.hpp"
+#include "pathposition.hpp"
 
 class Squiggles {
   public:

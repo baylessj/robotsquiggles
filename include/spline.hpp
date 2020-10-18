@@ -68,8 +68,10 @@ class Spline {
   /**
    * The minimum and maximum times for a path to take.
    */
-  const int T_MIN = 2;
-  const int T_MAX = 15;
+  // const int T_MIN = 2;
+  // const int T_MAX = 15;
+  const int T_MIN = 5;
+  const int T_MAX = 100;
 };
 } // namespace squiggles
 

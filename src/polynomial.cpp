@@ -1,3 +1,6 @@
+#include <string>
+#include <iostream>
+
 #include "polynomial.hpp"
 
 namespace squiggles {
@@ -18,7 +21,7 @@ QuinticPolynomial::QuinticPolynomial(double s_p,
    * Source: https://github.com/AtsushiSakai/PythonRobotics/blob/master/PathPlanning/QuinticPolynomialsPlanner/quintic_polynomials_planner.ipynb
    * 
    * --                     -- --  --   --                        --
-   * | 3*t  , t^4   , t^5    | | a3 |   | g_p - a0 - a1*t - a2*t^2 |
+   * | t^3  , t^4   , t^5    | | a3 |   | g_p - a0 - a1*t - a2*t^2 |
    * | 3*t^2, 4*t^3 , 5*t^4  | | a4 | = | g_v - a1 - 2*a2*t        |
    * | 6*t  , 12*t^2, 20*t^3 | | a5 |   | g_a - 2*a2               |
    * --                     -- --  --   --                        --
@@ -26,29 +29,26 @@ QuinticPolynomial::QuinticPolynomial(double s_p,
    * We then invert A (in separate program) to solve for our coeffs 
    * via X=(A^-1)B
    *
-   *         --                                                                                                                         --
-   *         | 10 / (3*t*(-3*t^2 + 10)), -4        / (3*(-3*t^2 + 10))  , -t       / 6*(sqrt(3)*t + sqrt(10))*(sqrt(3)*t - sqrt(10))     |
-   * A_inv = | -5 / (t^2*(-3*t^2 + 10)), -t^2 + 10 / (3*t*(-3*t^2 + 10)), -t^2 + 5 / 2*t^2*(sqrt(3)*t + sqrt(10))*(sqrt(3)*t - sqrt(10)) |
-   *         | 2  / (t^3*(-3*t^2 + 10)), t^2 - 6   / -3*t^6 + 10*t^4    ,  t^2 - 4 / 2*t^3*(sqrt(3)*t + sqrt(10))*(sqrt(3)*t - sqrt(10)) |
-   *         --                                                                                                                         --
+   *         --                              --                                                                                           --
+   *         | 10 / t^3 , -4 / t^2, 1 / 2*t   |
+   * A_inv = | -15 / t^4, 7 / t^3 , -1 / t^2  |
+   *         | 6 / t^5  , -3 / t^4, 1 / 2*t^3 |
+   *         --                              --                                                                                          --
    */
   // clang-format on
-  // pre-compute these values since they'll be constant
-  const double sqrt_3 = 1.7321;
-  const double sqrt_10 = 3.1623;
+  double A_11 = 10 / (t * t * t);
+  double A_12 = -4 / (t * t);
+  double A_13 = 1 / (2 * t);
+  double A_21 = -15 / (t * t * t * t);
+  double A_22 = 7 / (t * t * t);
+  double A_23 = -1 / (t * t);
+  double A_31 = 6 / (t * t * t * t * t);
+  double A_32 = -3 / (t * t * t * t);
+  double A_33 = 1 / (2 * t * t * t);
 
-  double A_11 = 10 / (3 * t * ((-3) * t * t + 10));
-  double A_12 = -4 / (3 * ((-3) * t * t + 10));
-  double A_13 = -1 * t / 6 * (sqrt_3 * t + sqrt_10) * (sqrt_3 * t - sqrt_10);
-  double A_21 = -5 / (t * t * ((-3) * t * t + 10));
-  double A_22 = (-1 * t * t + 10) / (3 * t * ((-3) * t * t + 10));
-  double A_23 = (-1 * t * t + 5) / 2 * t * t * (sqrt_3 * t + sqrt_10) *
-                (sqrt_3 * t - sqrt_10);
-  double A_31 = 2 / (t * t * t * ((-3) * t * t + 10));
-  double A_32 =
-    (t * t - 6) / ((-3) * t * t * t * t * t * t + 10 * t * t * t * t);
-  double A_33 = (t * t - 4) / 2 * t * t * t * (sqrt_3 * t + sqrt_10) *
-                (sqrt_3 * t - sqrt_10);
+  // std::cout << "[[ " << A_11 << ", " << A_12 << ", " << A_13 << "]\n";
+  // std::cout << " [ " << A_21 << ", " << A_22 << ", " << A_23 << "]\n";
+  // std::cout << " [ " << A_31 << ", " << A_32 << ", " << A_33 << "]]\n";
 
   double B_11 = g_p - a0 - a1 * t - a2 * t * t;
   double B_21 = g_v - a1 - 2 * a2 * t;
@@ -76,4 +76,9 @@ double QuinticPolynomial::calc_second_derivative(double t) {
 double QuinticPolynomial::calc_third_derivative(double t) {
   return 6 * a3 + 24 * a4 * t + 60 * a5 * t * t;
 }
+
+std::string QuinticPolynomial::to_string() {
+  return "QuinticPolynomial: {0: " + std::to_string(a0) + " 1: " + std::to_string(a1) + " 2: " + std::to_string(a2) + " 3: " + std::to_string(a3) + " 4: " + std::to_string(a4) + " 5: " + std::to_string(a5) + "}";
+}
+
 } // namespace squiggles

@@ -1,6 +1,8 @@
 #ifndef _SQUIGGLES_POLYNOMIAL_HPP_
 #define _SQUIGGLES_POLYNOMIAL_HPP_
 
+#include <string>
+
 namespace squiggles {
 class QuinticPolynomial {
   public:
@@ -19,6 +21,8 @@ class QuinticPolynomial {
   double calc_second_derivative(double t);
 
   double calc_third_derivative(double t);
+
+  std::string to_string();
 
   protected:
   /**

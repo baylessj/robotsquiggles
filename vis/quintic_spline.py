@@ -49,6 +49,9 @@ class QuinticPolynomial:
         self.a3 = x[0]
         self.a4 = x[1]
         self.a5 = x[2]
+        print(
+            f"0 {self.a0} 1 {self.a1} 2 {self.a2} 3 {self.a3} 4 {self.a4} 5 {self.a5}"
+        )
 
     def calc_point(self, t):
         xt = (
