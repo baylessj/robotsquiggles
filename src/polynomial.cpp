@@ -1,5 +1,5 @@
-#include <string>
 #include <iostream>
+#include <string>
 
 #include "polynomial.hpp"
 
@@ -78,7 +78,10 @@ double QuinticPolynomial::calc_third_derivative(double t) {
 }
 
 std::string QuinticPolynomial::to_string() {
-  return "QuinticPolynomial: {0: " + std::to_string(a0) + " 1: " + std::to_string(a1) + " 2: " + std::to_string(a2) + " 3: " + std::to_string(a3) + " 4: " + std::to_string(a4) + " 5: " + std::to_string(a5) + "}";
+  return "QuinticPolynomial: {0: " + std::to_string(a0) +
+         " 1: " + std::to_string(a1) + " 2: " + std::to_string(a2) +
+         " 3: " + std::to_string(a3) + " 4: " + std::to_string(a4) +
+         " 5: " + std::to_string(a5) + "}";
 }
 
 } // namespace squiggles

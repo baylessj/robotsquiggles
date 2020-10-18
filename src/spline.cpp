@@ -72,8 +72,7 @@ std::vector<PathPosition> Spline::plan() {
       double linear_jerk = sqrt(x_j * x_j + y_j * y_j);
       double yaw = atan2(y_v, x_v);
 
-      if (out.size() > 2 &&
-          out.rbegin()[0].vel - out.rbegin()[1].vel < 0.0) {
+      if (out.size() > 2 && out.rbegin()[0].vel - out.rbegin()[1].vel < 0.0) {
         linear_accel *= -1;
       }
       if (out.size() > 2 &&
@@ -103,7 +102,8 @@ std::vector<PathPosition> Spline::plan() {
       return out;
     }
   }
-  throw std::runtime_error("Could not find a valid path within the constraints");
+  throw std::runtime_error(
+    "Could not find a valid path within the constraints");
 }
 
 // Pose Spline::step(double t) {

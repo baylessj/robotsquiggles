@@ -19,3 +19,4 @@ build-backend = "poetry.core.masonry.api"
 [tool.poetry.scripts]
 cubic-spline = "vis.cubic_spline:main"
 quintic-spline = "vis.quintic_spline:main"
+cdll = "vis.plot:main"
