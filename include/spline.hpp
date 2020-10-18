@@ -24,39 +24,46 @@ class Spline {
 
   std::vector<PathPosition> plan();
 
-protected:
+  protected:
   std::vector<Pose> points;
 
   /**
    * The starting pose in {x: m, y: m, yaw: rad}.
    */
-  double s_x, s_y, s_yaw;
+  double s_x;
+  double s_y;
+  double s_yaw;
 
   /**
    * The ending (goal) pose {x: m, y: m, yaw: rad}
    */
-  double g_x, g_y, g_yaw;
-
-  /**
-   * The starting and ending velocities in [m/s].
-   */
-  double s_v, g_v;
-
-  /**
-   * The starting and ending accelerations in [m/s*s].
-   */
-  double s_a, g_a;
+  double g_x;
+  double g_y;
+  double g_yaw;
 
   /**
    * The acceleration [m/s*s] and jerk [m/s*s*s] limitations of the
    * robot's movements
    */
-  double max_a, max_j;
+  double max_a;
+  double max_j;
 
   /**
    * The step size in seconds for the path.
    */
   double dt;
+
+  /**
+   * The starting and ending velocities in [m/s].
+   */
+  double s_v;
+  double g_v;
+
+  /**
+   * The starting and ending accelerations in [m/s*s].
+   */
+  double s_a;
+  double g_a;
 
   /**
    * The minimum and maximum times for a path to take.

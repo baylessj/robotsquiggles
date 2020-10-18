@@ -5,12 +5,17 @@
 
 namespace squiggles {
 struct PathPosition {
-  PathPosition(Pose ipose, double ivel, double iaccel, double itime)
-    : pose(ipose), vel(ivel), accel(iaccel), time(itime) {}
+  PathPosition(Pose ipose,
+               double ivel,
+               double iaccel,
+               double ijerk,
+               double itime)
+    : pose(ipose), vel(ivel), accel(iaccel), jerk(ijerk), time(itime) {}
 
   Pose pose;
   double vel;
   double accel;
+  double jerk;
   double time;
 };
 } // namespace squiggles
