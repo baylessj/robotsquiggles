@@ -3,14 +3,14 @@
 #include <cmath>
 #include <iostream>
 #include <numeric>
+#include <tuple>
 
 #include "polynomial.hpp"
 #include "spline.hpp"
 
 namespace squiggles {
 Spline::Spline(std::initializer_list<Pose> iwaypoints,
-               double imax_acceleration,
-               double imax_jerk,
+               Constraints iconstraints,
                double idt,
                double istart_velocity,
                double istart_acceleration,
@@ -23,8 +23,7 @@ Spline::Spline(std::initializer_list<Pose> iwaypoints,
     g_x(points[1].x),
     g_y(points[1].y),
     g_yaw(points[1].yaw),
-    max_a(imax_acceleration),
-    max_j(imax_jerk),
+    constraints(iconstraints),
     dt(idt),
     s_v(istart_velocity),
     g_v(igoal_velocity),
@@ -98,7 +97,7 @@ std::vector<PathPosition> Spline::plan() {
                          return a.jerk < b.jerk;
                        })
         ->jerk;
-    if (a_max <= max_a && j_max <= max_j) {
+    if (a_max <= constraints.max_accel && j_max <= constraints.max_jerk) {
       return out;
     }
   }
@@ -106,18 +105,61 @@ std::vector<PathPosition> Spline::plan() {
     "Could not find a valid path within the constraints");
 }
 
-// Pose Spline::step(double t) {
-//   double a = 2 * t * t * t - 3 * t * t + 1;
-//   double b = -2 * t * t * t + 3 * t * t;
-//   double c = t * t * t - 2 * t * t + t;
-//   double d = t * t * t - t * t;
+/**
+ * Applies the Spline's kinematic constraints on the acceleration and velocity
+ * requested for the given segment of the path.
+ * 
+ * TODO: should we constrain jerk here too?
+ */
+std::tuple<double, double> Spline::impose_limits(PathPosition start, PathPosition end) {
+  double dist = end.pose.dist(start.pose);
+    if (dist < K_EPSILON) {
+      // distance is too small to care about, next
+      return std::make_tuple(end.vel, start.accel);
+    }
 
-//   // TODO: assuming we need to change up theta to give delta x or delta y?
-//   // TODO: allow for more than two points by iterating through (0, 1) to
-//   (n-1, n) double x_t = a * points[0].x + b * points[1].x + c *
-//   points[0].theta + d * points[1].theta; double y_t = a * points[0].y + b *
-//   points[1].y + c * points[0].theta + d * points[1].theta;
-//   // TODO: calculate the theta from the previous point maybe?
-//   return Pose(x_t, y_t, 0);
-// }
+  double v_f_limited, a_0_limited;
+  do {
+    // Start by constraining the acceleration at the start of the segment
+    a_0_limited = std::copysign(std::min(constraints.max_accel, std::abs(start.accel)), start.accel);
+
+    // Extrapolate the velocity at the end of this segment based on the 
+    // acceleration at the start of the segment. If this final velocity
+    // is greater than the velocity constraint then we need to recalculate
+    // the acceleration at the start of the segment
+    double v_f = std::sqrt(start.vel * start.vel + 2 * a_0_limited * dist);
+    
+    // limit the velocity to +- max while respecting its sign
+    v_f_limited = std::copysign(std::min(constraints.max_vel, std::abs(v_f)), v_f);
+
+    // TODO: also constrain the max velocity based on the curvature so we respect
+    // wheel speeds for tank drives and such
+
+    // Re-calculate the limited acceleration to see if reaching the constrained 
+    // final velocity requires a starting acceleration that exceeds the 
+    // acceleration limits.
+    a_0_limited = ((v_f_limited * v_f_limited) - (start.vel * start.vel)) / (2 * dist);
+  } while ((std::abs(a_0_limited) - constraints.max_accel) > K_EPSILON);
+
+  return {v_f_limited, a_0_limited};
+}
+
+/**
+ * TODO: would it be possible to modify the path in-place to conserve memory?
+ */
+std::vector<PathPosition>
+Spline::parameterize(std::vector<PathPosition> &raw_path) {
+  std::vector<PathPosition> parameterized_path(raw_path.size());
+  
+  // forward pass through path
+  for (std::size_t i = 1; i < raw_path.size(); ++i) {
+    PathPosition raw = raw_path[i];
+    PathPosition start = parameterized_path[i - 1];
+    PathPosition end = parameterized_path[i];
+
+    auto [end_vel, start_accel] = impose_limits(start, end);
+    end.vel = end_vel;
+    start.accel = start_accel; 
+  }
+}
 } // namespace squiggles

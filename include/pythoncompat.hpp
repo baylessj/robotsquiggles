@@ -5,7 +5,7 @@ extern "C" {
 // Should be visible in dll without this but this makes sure
 #ifdef __GNUC__
 #define EXPORT __attribute__((visibility("default")))
-#else 
+#else
 #define EXPORT
 #endif
 
@@ -20,18 +20,18 @@ typedef struct {
 } VisData;
 
 EXPORT VisData *compute_path(double sx,
-                                 double sy,
-                                 double syaw,
-                                 double sv,
-                                 double sa,
-                                 double gx,
-                                 double gy,
-                                 double gyaw,
-                                 double gv,
-                                 double ga,
-                                 double max_accel,
-                                 double max_jerk,
-                                 double dt);
+                             double sy,
+                             double syaw,
+                             double sv,
+                             double sa,
+                             double gx,
+                             double gy,
+                             double gyaw,
+                             double gv,
+                             double ga,
+                             double max_accel,
+                             double max_jerk,
+                             double dt);
 }
 
 #endif

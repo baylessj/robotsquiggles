@@ -27,7 +27,7 @@ VisData *compute_path(double sx,
                        gv,
                        ga);
   std::vector<PathPosition> path = spline.plan();
-  VisData* out = new VisData[path.size()];
+  VisData *out = new VisData[path.size()];
   for (std::size_t i = 0; i < path.size(); ++i) {
     out[i].time = path[i].time;
     out[i].rx = path[i].pose.x;

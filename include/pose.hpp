@@ -5,6 +5,10 @@ namespace squiggles {
 struct Pose {
   Pose(double ix, double iy, double iyaw) : x(ix), y(iy), yaw(iyaw) {}
 
+  double dist(const Pose &other) const {
+    return sqrt((x - other.x) * (x - other.x) + (y - other.y) * (y - other.y));
+  }
+
   double x;
   double y;
   double yaw;
