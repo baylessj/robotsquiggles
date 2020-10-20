@@ -24,13 +24,13 @@ class Spline {
 
   std::vector<PathPosition> plan();
 
-  protected:
-  std::tuple<double, double> impose_limits(PathPosition start, PathPosition end);
+  std::tuple<double, double> impose_limits(PathPosition start,
+                                           PathPosition end);
+
   std::vector<PathPosition> parameterize(std::vector<PathPosition> &raw_path);
 
+  protected:
   std::vector<Pose> points;
-
-  Constraints constraints;
 
   /**
    * The starting pose in {x: m, y: m, yaw: rad}.
@@ -45,6 +45,11 @@ class Spline {
   double g_x;
   double g_y;
   double g_yaw;
+
+  /**
+   *
+   */
+  Constraints constraints;
 
   /**
    * The step size in seconds for the path.

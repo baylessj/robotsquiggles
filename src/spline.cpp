@@ -108,37 +108,54 @@ std::vector<PathPosition> Spline::plan() {
 /**
  * Applies the Spline's kinematic constraints on the acceleration and velocity
  * requested for the given segment of the path.
- * 
+ *
  * TODO: should we constrain jerk here too?
  */
-std::tuple<double, double> Spline::impose_limits(PathPosition start, PathPosition end) {
+std::tuple<double, double> Spline::impose_limits(PathPosition start,
+                                                 PathPosition end) {
   double dist = end.pose.dist(start.pose);
-    if (dist < K_EPSILON) {
-      // distance is too small to care about, next
-      return std::make_tuple(end.vel, start.accel);
-    }
+  if (dist < K_EPSILON) {
+    // distance is too small to care about, next
+    return std::make_tuple(end.vel, start.accel);
+  }
 
   double v_f_limited, a_0_limited;
   do {
     // Start by constraining the acceleration at the start of the segment
-    a_0_limited = std::copysign(std::min(constraints.max_accel, std::abs(start.accel)), start.accel);
+    a_0_limited = std::copysign(
+      std::min(constraints.max_accel, std::abs(start.accel)), start.accel);
+    std::cout << "start: " << std::to_string(start.accel) << " lim: " << std::to_string(a_0_limited) << '\n';
 
-    // Extrapolate the velocity at the end of this segment based on the 
+    // Extrapolate the velocity at the end of this segment based on the
     // acceleration at the start of the segment. If this final velocity
     // is greater than the velocity constraint then we need to recalculate
     // the acceleration at the start of the segment
-    double v_f = std::sqrt(start.vel * start.vel + 2 * a_0_limited * dist);
-    
+    double v_sq = start.vel * start.vel + 2 * a_0_limited * dist;
+    // double v_f = std::copysign(std::sqrt(std::abs(v_sq)), v_sq);
+    double v_f = std::sqrt(std::abs(v_sq));
+    std::cout << "start: " << std::to_string(start.vel) << " a: " << std::to_string(a_0_limited) << " dist: " << std::to_string(dist) << '\n';
+
     // limit the velocity to +- max while respecting its sign
-    v_f_limited = std::copysign(std::min(constraints.max_vel, std::abs(v_f)), v_f);
+    v_f_limited =
+      std::copysign(std::min(constraints.max_vel, std::abs(v_f)), v_f);
+    std::cout << "start: " << std::to_string(start.vel) << " theor_vel: " << std::to_string(end.vel) << " calc: " << std::to_string(v_f) << " lim: " << std::to_string(v_f_limited) << '\n';
 
-    // TODO: also constrain the max velocity based on the curvature so we respect
-    // wheel speeds for tank drives and such
+    // TODO: also constrain the max velocity based on the curvature so we
+    // respect wheel speeds for tank drives and such
 
-    // Re-calculate the limited acceleration to see if reaching the constrained 
-    // final velocity requires a starting acceleration that exceeds the 
+    // Re-calculate the limited acceleration to see if reaching the constrained
+    // final velocity requires a starting acceleration that exceeds the
     // acceleration limits.
-    a_0_limited = ((v_f_limited * v_f_limited) - (start.vel * start.vel)) / (2 * dist);
+    a_0_limited =
+      ((v_f_limited * v_f_limited) - (start.vel * start.vel)) / (2 * dist);
+    std::cout << "start_a: " << std::to_string(start.accel) << " lim: " << std::to_string(a_0_limited) << '\n';
+    // if (start.accel < 0) {
+    //   std::cout << "exit cond: " << std::to_string(std::abs(a_0_limited) - constraints.max_accel) << '\n';
+    //   std::cout << "\n\n";
+    //   break;
+    // }
+
+    std::cout << "\n\n";
   } while ((std::abs(a_0_limited) - constraints.max_accel) > K_EPSILON);
 
   return {v_f_limited, a_0_limited};
@@ -150,16 +167,18 @@ std::tuple<double, double> Spline::impose_limits(PathPosition start, PathPositio
 std::vector<PathPosition>
 Spline::parameterize(std::vector<PathPosition> &raw_path) {
   std::vector<PathPosition> parameterized_path(raw_path.size());
-  
-  // forward pass through path
-  for (std::size_t i = 1; i < raw_path.size(); ++i) {
-    PathPosition raw = raw_path[i];
-    PathPosition start = parameterized_path[i - 1];
-    PathPosition end = parameterized_path[i];
 
-    auto [end_vel, start_accel] = impose_limits(start, end);
-    end.vel = end_vel;
-    start.accel = start_accel; 
+  // forward pass through path
+  parameterized_path[0] = raw_path[0];
+  for (std::size_t i = 1; i < raw_path.size(); ++i) {
+    parameterized_path[i] = raw_path[i];
+    PathPosition start = parameterized_path[i - 1];
+    PathPosition raw_end = raw_path[i];
+
+    auto [end_vel, start_accel] = impose_limits(start, raw_end);
+    parameterized_path[i].vel = end_vel;
+    parameterized_path[i-1].accel = start_accel;
   }
+  return parameterized_path;
 }
 } // namespace squiggles

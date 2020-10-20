@@ -1,5 +1,5 @@
 #ifndef _CONSTRAINTS_HPP_
-#define _CONSTANTS_HPP_
+#define _CONSTRAINTS_HPP_
 
 namespace squiggles {
 struct Constraints {
@@ -13,9 +13,9 @@ struct Constraints {
       min_accel(imin_accel) {}
 
   double max_vel;
-  double min_accel;
   double max_accel;
   double max_jerk;
+  double min_accel;
 };
 } // namespace squiggles
 #endif
