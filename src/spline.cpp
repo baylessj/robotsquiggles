@@ -194,7 +194,7 @@ Spline::parameterize(std::vector<PathPosition> &raw_path) {
       // v_f = v_0 + a * dt
       segment_dt = (end.vel - start.vel) / a;
     } else if (std::abs(start.vel) > K_EPSILON) {
-      // dx = v * dt
+      // v = dx / dt
       segment_dt = dist / start.vel;
     } else {
       throw std::runtime_error(
