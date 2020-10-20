@@ -6,7 +6,9 @@
 namespace squiggles {
 class ControlVector {
   public:
-  ControlVector(Pose ipose, double ivelocity = std::nan(""), double iacceleration = 0.0)
+  ControlVector(Pose ipose,
+                double ivelocity = std::nan(""),
+                double iacceleration = 0.0)
     : pose(ipose), velocity(ivelocity), acceleration(iacceleration) {}
 
   ControlVector() = default;

@@ -49,12 +49,21 @@ class Spline {
   double dt;
 
   /**
+   * These are split from the control vectors to allow the starting and/or
+   * ending velocities to be 0 when constraining the motion profiles.
+   */
+  double preferred_start_vel;
+  double preferred_end_vel;
+
+  /**
    * The minimum and maximum times for a path to take.
    */
   // const int T_MIN = 2;
   // const int T_MAX = 15;
   const int T_MIN = 5;
   const int T_MAX = 100;
+
+  const double K_DEFAULT_VEL = 1.2;
 };
 } // namespace squiggles
 

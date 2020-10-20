@@ -13,26 +13,32 @@ Spline::Spline(ControlVector istart,
                ControlVector iend,
                Constraints iconstraints,
                double idt)
-  : start(istart), end(iend), constraints(iconstraints), dt(idt) {
-    // TODO: we need to keep the start and end velocities for the motion profile
+  : start(istart),
+    end(iend),
+    constraints(iconstraints),
+    dt(idt),
+    preferred_start_vel(std::isnan(istart.velocity) ? 0 : istart.velocity),
+    preferred_end_vel(std::isnan(iend.velocity) ? 0 : iend.velocity) {
+  std::cout << "Start: " << std::to_string(preferred_start_vel) << " End: " << std::to_string(preferred_end_vel) << std::endl;
+  // TODO: we need to keep the start and end velocities for the motion profile
 
-    // ensure that we don't have unspecified start/end velocities, this angers
-    // the spline math
-    if (std::isnan(start.velocity) || std::abs(start.velocity) < K_EPSILON) {
-      start.velocity = 1.2 * start.pose.dist(end.pose);
-    }
-    if (std::isnan(end.velocity) || std::abs(end.velocity) < K_EPSILON) {
-      end.velocity = 1.2 * start.pose.dist(end.pose);
-    }
+  // ensure that we don't have unspecified start/end velocities, this angers
+  // the spline math
+  if (std::isnan(start.velocity) || std::abs(start.velocity) < K_EPSILON) {
+    start.velocity = K_DEFAULT_VEL * start.pose.dist(end.pose);
   }
-
-Spline::Spline(Pose istart, Pose iend, Constraints iconstraints, double idt)
-  : constraints(iconstraints), dt(idt) {
-  const auto scalar = 1.2 * istart.dist(iend); // Magic number comes from WPILib
-  start = ControlVector(Pose(istart), scalar, 0.0);
-  end = ControlVector(Pose(iend), scalar, 0.0);
+  if (std::isnan(end.velocity) || std::abs(end.velocity) < K_EPSILON) {
+    end.velocity = K_DEFAULT_VEL * start.pose.dist(end.pose);
+  }
 }
 
+Spline::Spline(Pose istart, Pose iend, Constraints iconstraints, double idt)
+  : Spline(ControlVector(istart), ControlVector(iend), iconstraints, idt) {}
+
+/**
+ * NOTE: the time value here is meaningless since we'll remap it completely
+ * when imposing the constraints
+ */
 std::vector<PathPosition> Spline::plan() {
   // break the starting/goal velocities and accelerations into their
   // axis-specific components
@@ -138,8 +144,8 @@ std::tuple<double, double> Spline::impose_limits(PathPosition s,
   do {
     // Start by constraining the acceleration at the start of the segment
     // Note: The maximum constraint is subtracted by K_EPSILON to ensure that
-    // checking that the resulting path is within the constraints in tests
-    // is successful.
+    // checking that the resulting path is within the constraints is successful
+    // in unit tests.
     a_0_limited = std::copysign(
       std::min(constraints.max_accel - K_EPSILON, std::abs(s.accel)), s.accel);
 
@@ -175,6 +181,7 @@ Spline::parameterize(std::vector<PathPosition> &raw_path) {
 
   // forward pass through path
   parameterized_path[0] = raw_path[0];
+  parameterized_path[0].vel = preferred_start_vel;
   for (std::size_t i = 1; i < raw_path.size(); ++i) {
     parameterized_path[i] = raw_path[i];
     PathPosition parameterized_start = parameterized_path[i - 1];
@@ -186,6 +193,8 @@ Spline::parameterize(std::vector<PathPosition> &raw_path) {
   }
 
   // backward pass
+  // TODO: this is borked
+  parameterized_path.back().vel = preferred_end_vel;
   for (std::size_t i = raw_path.size() - 1; i > 0; --i) {
     PathPosition parameterized_start = parameterized_path[i];
     PathPosition parameterized_end = parameterized_path[i - 1];

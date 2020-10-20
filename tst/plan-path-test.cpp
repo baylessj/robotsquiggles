@@ -45,7 +45,13 @@ TEST(plan_plath_test, zero_start_end) {
   ASSERT_NEAR(path.back().pose.x, 4, Spline::K_EPSILON);
   ASSERT_NEAR(path.back().pose.y, 4, Spline::K_EPSILON);
   ASSERT_NEAR(path.back().pose.yaw, 0, Spline::K_EPSILON);
+
+  auto planned_path = spline.parameterize(path);
   for (auto p : path) {
+    std::cout << p.to_string() << std::endl;
+  }
+  std::cout << std::endl << std::endl;
+  for (auto p : planned_path) {
     std::cout << p.to_string() << std::endl;
   }
 }
