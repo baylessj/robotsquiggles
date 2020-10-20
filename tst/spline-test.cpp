@@ -1,3 +1,4 @@
+#include <cmath>
 #include <iostream>
 
 #include "gtest/gtest.h"
@@ -7,16 +8,20 @@
 using namespace squiggles;
 
 TEST(impose_limits_test, cap_velocity_1d) {
-  auto spline =
-    Spline({Pose(0, 0, 0), Pose(0, 0, 0)}, Constraints(2.0, 2.0, 1.0));
+  const double max_vel = 2.0;
+  const double max_accel = 2.0;
+  const double max_jerk = 1.0;
 
-  double pos = 2.0;
-  for (int i = 0; i < 10; ++i) {
-    pos += 0.01 + (3.0 - (i * 0.2)) * 0.1;
-    std::cout << pos << '\n';
-  }
+  auto spline = Spline({Pose(0, 0, 0), Pose(0, 0, 0)},
+                       Constraints(max_vel, max_accel, max_jerk));
 
-  // Triangle motion profile
+  // helper script for generating the position values
+  // double pos = 2.0;
+  // for (int i = 0; i < 10; ++i) {
+  //   pos += 0.01 + (3.0 - (i * (max_accel / 10))) * 0.1;
+  // }
+
+  // 1D Triangle motion profile
   // position is set by x_f = x_0 + v_0 * dt + .5 * a_0 * dt * dt
   std::vector<PathPosition> test_path = {
     PathPosition(Pose(0.00, 0, 0), 1.0, 2.0, 0.0, 0),
@@ -45,5 +50,7 @@ TEST(impose_limits_test, cap_velocity_1d) {
   std::vector<PathPosition> parameterized_path = spline.parameterize(test_path);
   for (auto p : parameterized_path) {
     std::cout << p.to_string() << '\n';
+    EXPECT_LE(std::abs(p.vel), max_vel);
+    EXPECT_LE(std::abs(p.accel), max_accel);
   }
 }

@@ -114,7 +114,7 @@ std::vector<PathPosition> Spline::plan() {
 std::tuple<double, double> Spline::impose_limits(PathPosition start,
                                                  PathPosition end) {
   double dist = end.pose.dist(start.pose);
-  if (dist < K_EPSILON) {
+  if (std::abs(dist) < K_EPSILON) {
     // distance is too small to care about, next
     return std::make_tuple(end.vel, start.accel);
   }
@@ -122,23 +122,23 @@ std::tuple<double, double> Spline::impose_limits(PathPosition start,
   double v_f_limited, a_0_limited;
   do {
     // Start by constraining the acceleration at the start of the segment
+    // Note: The maximum constraint is subtracted by K_EPSILON to ensure that
+    // checking that the resulting path is within the constraints in tests
+    // is successful.
     a_0_limited = std::copysign(
-      std::min(constraints.max_accel, std::abs(start.accel)), start.accel);
-    std::cout << "start: " << std::to_string(start.accel) << " lim: " << std::to_string(a_0_limited) << '\n';
+      std::min(constraints.max_accel - K_EPSILON, std::abs(start.accel)),
+      start.accel);
 
     // Extrapolate the velocity at the end of this segment based on the
     // acceleration at the start of the segment. If this final velocity
     // is greater than the velocity constraint then we need to recalculate
     // the acceleration at the start of the segment
     double v_sq = start.vel * start.vel + 2 * a_0_limited * dist;
-    // double v_f = std::copysign(std::sqrt(std::abs(v_sq)), v_sq);
     double v_f = std::sqrt(std::abs(v_sq));
-    std::cout << "start: " << std::to_string(start.vel) << " a: " << std::to_string(a_0_limited) << " dist: " << std::to_string(dist) << '\n';
 
     // limit the velocity to +- max while respecting its sign
-    v_f_limited =
-      std::copysign(std::min(constraints.max_vel, std::abs(v_f)), v_f);
-    std::cout << "start: " << std::to_string(start.vel) << " theor_vel: " << std::to_string(end.vel) << " calc: " << std::to_string(v_f) << " lim: " << std::to_string(v_f_limited) << '\n';
+    v_f_limited = std::copysign(
+      std::min(constraints.max_vel - K_EPSILON, std::abs(v_f)), v_f);
 
     // TODO: also constrain the max velocity based on the curvature so we
     // respect wheel speeds for tank drives and such
@@ -148,14 +148,6 @@ std::tuple<double, double> Spline::impose_limits(PathPosition start,
     // acceleration limits.
     a_0_limited =
       ((v_f_limited * v_f_limited) - (start.vel * start.vel)) / (2 * dist);
-    std::cout << "start_a: " << std::to_string(start.accel) << " lim: " << std::to_string(a_0_limited) << '\n';
-    // if (start.accel < 0) {
-    //   std::cout << "exit cond: " << std::to_string(std::abs(a_0_limited) - constraints.max_accel) << '\n';
-    //   std::cout << "\n\n";
-    //   break;
-    // }
-
-    std::cout << "\n\n";
   } while ((std::abs(a_0_limited) - constraints.max_accel) > K_EPSILON);
 
   return {v_f_limited, a_0_limited};
@@ -177,7 +169,38 @@ Spline::parameterize(std::vector<PathPosition> &raw_path) {
 
     auto [end_vel, start_accel] = impose_limits(start, raw_end);
     parameterized_path[i].vel = end_vel;
-    parameterized_path[i-1].accel = start_accel;
+    parameterized_path[i - 1].accel = start_accel;
+  }
+
+  // backward pass
+  for (std::size_t i = raw_path.size() - 1; i > 0; --i) {
+    PathPosition start = parameterized_path[i];
+    PathPosition end = parameterized_path[i - 1];
+
+    auto [end_vel, start_accel] = impose_limits(end, start);
+    parameterized_path[i - 1].vel = end_vel;
+    parameterized_path[i].accel = start_accel;
+  }
+
+  // integrate the constrained kinematics to obtain the timestamp when we'll
+  // reach the desired positions
+  for (std::size_t i = 1; i < raw_path.size(); ++i) {
+    PathPosition &start = parameterized_path[i - 1];
+    PathPosition &end = parameterized_path[i];
+    double dist = end.pose.dist(start.pose);
+    double a = ((end.vel * end.vel) - (start.vel * start.vel)) / (2 * dist);
+    double segment_dt;
+    if (std::abs(a) > K_EPSILON) {
+      // v_f = v_0 + a * dt
+      segment_dt = (end.vel - start.vel) / a;
+    } else if (std::abs(start.vel) > K_EPSILON) {
+      // dx = v * dt
+      segment_dt = dist / start.vel;
+    } else {
+      throw std::runtime_error(
+        "Zero acceleration and velocity for path is invalid");
+    }
+    end.time = start.time + segment_dt;
   }
   return parameterized_path;
 }
