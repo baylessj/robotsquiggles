@@ -9,30 +9,45 @@
 #include "spline.hpp"
 
 namespace squiggles {
-Spline::Spline(std::initializer_list<Pose> iwaypoints,
+Spline::Spline(ControlVector istart,
+               ControlVector iend,
                Constraints iconstraints,
-               double idt,
-               double istart_velocity,
-               double istart_acceleration,
-               double igoal_velocity,
-               double igoal_acceleration)
-  : points(iwaypoints),
-    s_x(points[0].x),
-    s_y(points[0].y),
-    s_yaw(points[0].yaw),
-    g_x(points[1].x),
-    g_y(points[1].y),
-    g_yaw(points[1].yaw),
-    constraints(iconstraints),
-    dt(idt),
-    s_v(istart_velocity),
-    g_v(igoal_velocity),
-    s_a(istart_acceleration),
-    g_a(igoal_acceleration) {}
+               double idt)
+  : start(istart), end(iend), constraints(iconstraints), dt(idt) {
+    // TODO: we need to keep the start and end velocities for the motion profile
+
+    // ensure that we don't have unspecified start/end velocities, this angers
+    // the spline math
+    if (std::isnan(start.velocity) || std::abs(start.velocity) < K_EPSILON) {
+      start.velocity = 1.2 * start.pose.dist(end.pose);
+    }
+    if (std::isnan(end.velocity) || std::abs(end.velocity) < K_EPSILON) {
+      end.velocity = 1.2 * start.pose.dist(end.pose);
+    }
+  }
+
+Spline::Spline(Pose istart, Pose iend, Constraints iconstraints, double idt)
+  : constraints(iconstraints), dt(idt) {
+  const auto scalar = 1.2 * istart.dist(iend); // Magic number comes from WPILib
+  start = ControlVector(Pose(istart), scalar, 0.0);
+  end = ControlVector(Pose(iend), scalar, 0.0);
+}
 
 std::vector<PathPosition> Spline::plan() {
   // break the starting/goal velocities and accelerations into their
   // axis-specific components
+  double s_x = start.pose.x;
+  double s_y = start.pose.y;
+  double s_yaw = start.pose.yaw;
+  double s_v = start.velocity;
+  double s_a = start.acceleration;
+
+  double g_x = end.pose.x;
+  double g_y = end.pose.y;
+  double g_yaw = end.pose.yaw;
+  double g_v = end.velocity;
+  double g_a = end.acceleration;
+
   double s_vx = s_v * cos(s_yaw);
   double s_vy = s_v * sin(s_yaw);
   double g_vx = g_v * cos(g_yaw);
@@ -111,12 +126,12 @@ std::vector<PathPosition> Spline::plan() {
  *
  * TODO: should we constrain jerk here too?
  */
-std::tuple<double, double> Spline::impose_limits(PathPosition start,
-                                                 PathPosition end) {
-  double dist = end.pose.dist(start.pose);
+std::tuple<double, double> Spline::impose_limits(PathPosition s,
+                                                 PathPosition e) {
+  double dist = e.pose.dist(s.pose);
   if (std::abs(dist) < K_EPSILON) {
     // distance is too small to care about, next
-    return std::make_tuple(end.vel, start.accel);
+    return std::make_tuple(e.vel, s.accel);
   }
 
   double v_f_limited, a_0_limited;
@@ -126,14 +141,13 @@ std::tuple<double, double> Spline::impose_limits(PathPosition start,
     // checking that the resulting path is within the constraints in tests
     // is successful.
     a_0_limited = std::copysign(
-      std::min(constraints.max_accel - K_EPSILON, std::abs(start.accel)),
-      start.accel);
+      std::min(constraints.max_accel - K_EPSILON, std::abs(s.accel)), s.accel);
 
     // Extrapolate the velocity at the end of this segment based on the
     // acceleration at the start of the segment. If this final velocity
     // is greater than the velocity constraint then we need to recalculate
     // the acceleration at the start of the segment
-    double v_sq = start.vel * start.vel + 2 * a_0_limited * dist;
+    double v_sq = s.vel * s.vel + 2 * a_0_limited * dist;
     double v_f = std::sqrt(std::abs(v_sq));
 
     // limit the velocity to +- max while respecting its sign
@@ -146,8 +160,7 @@ std::tuple<double, double> Spline::impose_limits(PathPosition start,
     // Re-calculate the limited acceleration to see if reaching the constrained
     // final velocity requires a starting acceleration that exceeds the
     // acceleration limits.
-    a_0_limited =
-      ((v_f_limited * v_f_limited) - (start.vel * start.vel)) / (2 * dist);
+    a_0_limited = ((v_f_limited * v_f_limited) - (s.vel * s.vel)) / (2 * dist);
   } while ((std::abs(a_0_limited) - constraints.max_accel) > K_EPSILON);
 
   return {v_f_limited, a_0_limited};
@@ -164,20 +177,21 @@ Spline::parameterize(std::vector<PathPosition> &raw_path) {
   parameterized_path[0] = raw_path[0];
   for (std::size_t i = 1; i < raw_path.size(); ++i) {
     parameterized_path[i] = raw_path[i];
-    PathPosition start = parameterized_path[i - 1];
+    PathPosition parameterized_start = parameterized_path[i - 1];
     PathPosition raw_end = raw_path[i];
 
-    auto [end_vel, start_accel] = impose_limits(start, raw_end);
+    auto [end_vel, start_accel] = impose_limits(parameterized_start, raw_end);
     parameterized_path[i].vel = end_vel;
     parameterized_path[i - 1].accel = start_accel;
   }
 
   // backward pass
   for (std::size_t i = raw_path.size() - 1; i > 0; --i) {
-    PathPosition start = parameterized_path[i];
-    PathPosition end = parameterized_path[i - 1];
+    PathPosition parameterized_start = parameterized_path[i];
+    PathPosition parameterized_end = parameterized_path[i - 1];
 
-    auto [end_vel, start_accel] = impose_limits(end, start);
+    auto [end_vel, start_accel] =
+      impose_limits(parameterized_end, parameterized_start);
     parameterized_path[i - 1].vel = end_vel;
     parameterized_path[i].accel = start_accel;
   }
@@ -185,22 +199,22 @@ Spline::parameterize(std::vector<PathPosition> &raw_path) {
   // integrate the constrained kinematics to obtain the timestamp when we'll
   // reach the desired positions
   for (std::size_t i = 1; i < raw_path.size(); ++i) {
-    PathPosition &start = parameterized_path[i - 1];
-    PathPosition &end = parameterized_path[i];
-    double dist = end.pose.dist(start.pose);
-    double a = ((end.vel * end.vel) - (start.vel * start.vel)) / (2 * dist);
+    PathPosition &s = parameterized_path[i - 1];
+    PathPosition &e = parameterized_path[i];
+    double dist = e.pose.dist(s.pose);
+    double a = ((e.vel * e.vel) - (s.vel * s.vel)) / (2 * dist);
     double segment_dt;
     if (std::abs(a) > K_EPSILON) {
       // v_f = v_0 + a * dt
-      segment_dt = (end.vel - start.vel) / a;
-    } else if (std::abs(start.vel) > K_EPSILON) {
+      segment_dt = (e.vel - s.vel) / a;
+    } else if (std::abs(s.vel) > K_EPSILON) {
       // v = dx / dt
-      segment_dt = dist / start.vel;
+      segment_dt = dist / s.vel;
     } else {
       throw std::runtime_error(
         "Zero acceleration and velocity for path is invalid");
     }
-    end.time = start.time + segment_dt;
+    e.time = s.time + segment_dt;
   }
   return parameterized_path;
 }

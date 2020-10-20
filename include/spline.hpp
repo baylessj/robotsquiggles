@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "constraints.hpp"
+#include "controlvector.hpp"
 #include "pathposition.hpp"
 #include "pose.hpp"
 
@@ -14,13 +15,12 @@ namespace squiggles {
  */
 class Spline {
   public:
-  Spline(std::initializer_list<Pose> iwaypoints,
+  Spline(ControlVector start,
+         ControlVector end,
          Constraints iconstraints,
-         double idt = 0.1,
-         double istart_velocity = 0.0,
-         double istart_acceleration = 0.0,
-         double igoal_velocity = 0.0,
-         double igoal_acceleration = 0.0);
+         double idt = 0.1);
+
+  Spline(Pose start, Pose end, Constraints iconstraints, double idt = 0.1);
 
   std::vector<PathPosition> plan();
 
@@ -35,21 +35,8 @@ class Spline {
   static constexpr double K_EPSILON = 1e-5;
 
   protected:
-  std::vector<Pose> points;
-
-  /**
-   * The starting pose in {x: m, y: m, yaw: rad}.
-   */
-  double s_x;
-  double s_y;
-  double s_yaw;
-
-  /**
-   * The ending (goal) pose {x: m, y: m, yaw: rad}
-   */
-  double g_x;
-  double g_y;
-  double g_yaw;
+  ControlVector start;
+  ControlVector end;
 
   /**
    *
@@ -60,18 +47,6 @@ class Spline {
    * The step size in seconds for the path.
    */
   double dt;
-
-  /**
-   * The starting and ending velocities in [m/s].
-   */
-  double s_v;
-  double g_v;
-
-  /**
-   * The starting and ending accelerations in [m/s*s].
-   */
-  double s_a;
-  double g_a;
 
   /**
    * The minimum and maximum times for a path to take.

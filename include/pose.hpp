@@ -4,8 +4,11 @@
 #include <cmath>
 
 namespace squiggles {
-struct Pose {
+class Pose {
+  public:
   Pose(double ix, double iy, double iyaw) : x(ix), y(iy), yaw(iyaw) {}
+
+  Pose() = default;
 
   double dist(const Pose &other) const {
     return std::sqrt((x - other.x) * (x - other.x) +
