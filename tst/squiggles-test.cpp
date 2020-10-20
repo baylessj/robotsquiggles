@@ -20,15 +20,14 @@ TEST(blaTest, test1) {
   double dt = 0.1;             // time tick [s]
 
   auto spline = Spline({Pose(sx, sy, syaw), Pose(gx, gy, gyaw)},
-                       max_accel,
-                       max_jerk,
+                       Constraints(100, max_accel, max_jerk),
                        dt,
                        sv,
                        sa,
                        gv,
                        ga);
   std::vector<PathPosition> path = spline.plan();
-  for (auto p : path) {
-    std::cout << "{x: " << p.pose.x << ", y: " << p.pose.y << "}\n";
-  }
+  // for (auto p : path) {
+  //   std::cout << "{x: " << p.pose.x << ", y: " << p.pose.y << "}\n";
+  // }
 }

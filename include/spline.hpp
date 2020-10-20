@@ -4,6 +4,7 @@
 #include <initializer_list>
 #include <vector>
 
+#include "constraints.hpp"
 #include "pathposition.hpp"
 #include "pose.hpp"
 
@@ -14,8 +15,7 @@ namespace squiggles {
 class Spline {
   public:
   Spline(std::initializer_list<Pose> iwaypoints,
-         double imax_acceleration,
-         double imax_jerk,
+         Constraints iconstraints,
          double idt = 0.1,
          double istart_velocity = 0.0,
          double istart_acceleration = 0.0,
@@ -23,6 +23,11 @@ class Spline {
          double igoal_acceleration = 0.0);
 
   std::vector<PathPosition> plan();
+
+  std::tuple<double, double> impose_limits(PathPosition start,
+                                           PathPosition end);
+
+  std::vector<PathPosition> parameterize(std::vector<PathPosition> &raw_path);
 
   protected:
   std::vector<Pose> points;
@@ -42,11 +47,9 @@ class Spline {
   double g_yaw;
 
   /**
-   * The acceleration [m/s*s] and jerk [m/s*s*s] limitations of the
-   * robot's movements
+   *
    */
-  double max_a;
-  double max_j;
+  Constraints constraints;
 
   /**
    * The step size in seconds for the path.
@@ -72,6 +75,11 @@ class Spline {
   // const int T_MAX = 15;
   const int T_MIN = 5;
   const int T_MAX = 100;
+
+  /**
+   * Values that are closer to each other than this value are considered equal.
+   */
+  const double K_EPSILON = 1e-5;
 };
 } // namespace squiggles
 
