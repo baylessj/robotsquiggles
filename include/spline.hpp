@@ -29,6 +29,11 @@ class Spline {
 
   std::vector<PathPosition> parameterize(std::vector<PathPosition> &raw_path);
 
+  /**
+   * Values that are closer to each other than this value are considered equal.
+   */
+  static constexpr double K_EPSILON = 1e-5;
+
   protected:
   std::vector<Pose> points;
 
@@ -75,11 +80,6 @@ class Spline {
   // const int T_MAX = 15;
   const int T_MIN = 5;
   const int T_MAX = 100;
-
-  /**
-   * Values that are closer to each other than this value are considered equal.
-   */
-  const double K_EPSILON = 1e-5;
 };
 } // namespace squiggles
 
