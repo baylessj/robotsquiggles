@@ -51,6 +51,8 @@ TEST(plan_plath_test, zero_start_end) {
     std::cout << p.to_string() << std::endl;
   }
   std::cout << std::endl << std::endl;
+  std::cout << "------------------" << std::endl;
+  std::cout << std::endl << std::endl;
   for (auto p : planned_path) {
     std::cout << p.to_string() << std::endl;
   }

@@ -29,6 +29,8 @@ class Spline {
 
   std::vector<PathPosition> parameterize(std::vector<PathPosition> &raw_path);
 
+  std::vector<PathPosition> p2(std::vector<PathPosition> &raw_path);
+
   /**
    * Values that are closer to each other than this value are considered equal.
    */
@@ -63,7 +65,32 @@ class Spline {
   const int T_MIN = 5;
   const int T_MAX = 100;
 
-  const double K_DEFAULT_VEL = 1.2;
+  // This was 1.2 in the WPILib example but that large of a value seems to
+  // create wild paths
+  const double K_DEFAULT_VEL = 0.12;
+
+  private:
+  struct ConstrainedState {
+    Pose pose = Pose();
+    double curvature = 0;
+    double distance = 0;
+    double max_vel = 0;
+    double min_accel = 0;
+    double max_accel = 0;
+
+    std::string to_string() {
+      return "ConstrainedState: {x: " + std::to_string(pose.x) +
+             ", y: " + std::to_string(pose.y) +
+             ", yaw: " + std::to_string(pose.yaw) +
+             ", k: " + std::to_string(curvature) +
+             ", dist: " + std::to_string(distance) +
+             ", v: " + std::to_string(max_vel) +
+             ", min_a: " + std::to_string(min_accel) +
+             ", max_a: " + std::to_string(max_accel) + "}";
+    }
+  };
+
+  void enforce_accel_lims(ConstrainedState *state);
 };
 } // namespace squiggles
 

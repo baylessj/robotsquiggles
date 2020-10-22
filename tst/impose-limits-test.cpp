@@ -92,8 +92,8 @@ TEST(impose_limits_test, cap_velocity_1d) {
     spline.parameterize(test_path_1d);
   for (auto p : parameterized_path) {
     DEBUG_PRINT(p.to_string());
-    EXPECT_LE(std::abs(p.vel), max_vel);
-    EXPECT_LE(std::abs(p.accel), max_accel);
+    EXPECT_LE(std::abs(p.vel) - Spline::K_EPSILON, max_vel);
+    EXPECT_LE(std::abs(p.accel) - Spline::K_EPSILON, max_accel);
   }
 }
 
@@ -109,8 +109,8 @@ TEST(impose_limits_test, cap_accel_1d) {
     spline.parameterize(test_path_1d);
   for (auto p : parameterized_path) {
     DEBUG_PRINT(p.to_string());
-    EXPECT_LE(std::abs(p.vel), max_vel);
-    EXPECT_LE(std::abs(p.accel), max_accel);
+    EXPECT_LE(std::abs(p.vel) - Spline::K_EPSILON, max_vel);
+    EXPECT_LE(std::abs(p.accel) - Spline::K_EPSILON, max_accel);
   }
 }
 
@@ -126,8 +126,8 @@ TEST(impose_limits_test, cap_both_1d) {
     spline.parameterize(test_path_1d);
   for (auto p : parameterized_path) {
     DEBUG_PRINT(p.to_string());
-    EXPECT_LE(std::abs(p.vel), max_vel);
-    EXPECT_LE(std::abs(p.accel), max_accel);
+    EXPECT_LE(std::abs(p.vel) - Spline::K_EPSILON, max_vel);
+    EXPECT_LE(std::abs(p.accel) - Spline::K_EPSILON, max_accel);
   }
 }
 
@@ -143,8 +143,8 @@ TEST(impose_limits_test, cap_velocity_2d) {
     spline.parameterize(test_path_2d);
   for (auto p : parameterized_path) {
     DEBUG_PRINT(p.to_string());
-    EXPECT_LE(std::abs(p.vel), max_vel);
-    EXPECT_LE(std::abs(p.accel), max_accel);
+    EXPECT_LE(std::abs(p.vel) - Spline::K_EPSILON, max_vel);
+    EXPECT_LE(std::abs(p.accel) - Spline::K_EPSILON, max_accel);
   }
 }
 
@@ -160,8 +160,8 @@ TEST(impose_limits_test, cap_accel_2d) {
     spline.parameterize(test_path_2d);
   for (auto p : parameterized_path) {
     DEBUG_PRINT(p.to_string());
-    EXPECT_LE(std::abs(p.vel), max_vel);
-    EXPECT_LE(std::abs(p.accel), max_accel);
+    EXPECT_LE(std::abs(p.vel) - Spline::K_EPSILON, max_vel);
+    EXPECT_LE(std::abs(p.accel) - Spline::K_EPSILON, max_accel);
   }
 }
 
@@ -177,7 +177,7 @@ TEST(impose_limits_test, cap_both_2d) {
     spline.parameterize(test_path_2d);
   for (auto p : parameterized_path) {
     DEBUG_PRINT(p.to_string());
-    EXPECT_LE(std::abs(p.vel), max_vel);
-    EXPECT_LE(std::abs(p.accel), max_accel);
+    EXPECT_LE(std::abs(p.vel) - Spline::K_EPSILON, max_vel);
+    EXPECT_LE(std::abs(p.accel) - Spline::K_EPSILON, max_accel);
   }
 }
