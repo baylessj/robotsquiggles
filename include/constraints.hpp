@@ -1,6 +1,9 @@
 #ifndef _CONSTRAINTS_HPP_
 #define _CONSTRAINTS_HPP_
 
+#include <cmath>
+#include <string>
+
 namespace squiggles {
 struct Constraints {
   Constraints(double imax_vel,

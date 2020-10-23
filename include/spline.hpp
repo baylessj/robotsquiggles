@@ -5,9 +5,9 @@
 #include <vector>
 
 #include "constraints.hpp"
-#include "controlvector.hpp"
-#include "pathposition.hpp"
-#include "pose.hpp"
+#include "geometry/controlvector.hpp"
+#include "geometry/generatedpoint.hpp"
+#include "geometry/profilepoint.hpp"
 
 namespace squiggles {
 /**
@@ -22,14 +22,9 @@ class Spline {
 
   Spline(Pose start, Pose end, Constraints iconstraints, double idt = 0.1);
 
-  std::vector<PathPosition> plan();
+  std::vector<GeneratedPoint> plan();
 
-  std::tuple<double, double> impose_limits(PathPosition start,
-                                           PathPosition end);
-
-  std::vector<PathPosition> parameterize(std::vector<PathPosition> &raw_path);
-
-  std::vector<PathPosition> p2(std::vector<PathPosition> &raw_path);
+  std::vector<ProfilePoint> parameterize(std::vector<GeneratedPoint> &raw_path);
 
   /**
    * Values that are closer to each other than this value are considered equal.
@@ -70,7 +65,35 @@ class Spline {
   const double K_DEFAULT_VEL = 0.12;
 
   private:
+  struct GeneratedVector {
+    GeneratedVector(GeneratedPoint ipoint,
+                    double ivel,
+                    double iaccel,
+                    double ijerk)
+      : point(ipoint), vel(ivel), accel(iaccel), jerk(ijerk) {}
+
+    GeneratedPoint point;
+    double vel;
+    double accel;
+    double jerk;
+  };
+
   struct ConstrainedState {
+    ConstrainedState(Pose ipose,
+                     double icurvature,
+                     double idistance,
+                     double imax_vel,
+                     double imin_accel,
+                     double imax_accel)
+      : pose(ipose),
+        curvature(icurvature),
+        distance(idistance),
+        max_vel(imax_vel),
+        min_accel(imin_accel),
+        max_accel(imax_accel) {}
+
+    ConstrainedState() = default;
+
     Pose pose = Pose();
     double curvature = 0;
     double distance = 0;
@@ -90,7 +113,7 @@ class Spline {
     }
   };
 
-  void enforce_accel_lims(ConstrainedState *state);
+  void enforce_limits(ConstrainedState* state);
 };
 } // namespace squiggles
 

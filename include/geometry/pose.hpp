@@ -2,6 +2,7 @@
 #define _SQUIGGLES_POSE_HPP_
 
 #include <cmath>
+#include <string>
 
 namespace squiggles {
 class Pose {
@@ -13,6 +14,11 @@ class Pose {
   double dist(const Pose &other) const {
     return std::sqrt((x - other.x) * (x - other.x) +
                      (y - other.y) * (y - other.y));
+  }
+
+  std::string to_string() {
+    return "Pose: {x: " + std::to_string(x) + ", y: " + std::to_string(y) +
+           ", yaw: " + std::to_string(yaw) + "}";
   }
 
   double x;
