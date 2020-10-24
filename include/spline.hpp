@@ -24,7 +24,7 @@ class Spline {
 
   std::vector<GeneratedPoint> plan();
 
-  std::vector<ProfilePoint> parameterize(std::vector<GeneratedPoint> &raw_path);
+  std::vector<ProfilePoint> parameterize(std::vector<GeneratedPoint>& raw_path);
 
   /**
    * Values that are closer to each other than this value are considered equal.
@@ -113,7 +113,18 @@ class Spline {
     }
   };
 
-  void enforce_limits(ConstrainedState* state);
+  void enforce_accel_lims(ConstrainedState* state);
+
+  void forward_pass(ConstrainedState* predecessor, ConstrainedState* successor);
+
+  void backward_pass(ConstrainedState* predecessor,
+                     ConstrainedState* successor);
+
+  std::vector<ProfilePoint>
+  integrate_constrained_states(std::vector<ConstrainedState> constrainedStates);
+
+  double vf(double vi, double a, double ds);
+  double ai(double vf, double vi, double s);
 };
 } // namespace squiggles
 

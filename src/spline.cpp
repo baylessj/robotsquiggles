@@ -19,10 +19,6 @@ Spline::Spline(ControlVector istart,
     dt(idt),
     preferred_start_vel(std::isnan(istart.vel) ? 0 : istart.vel),
     preferred_end_vel(std::isnan(iend.vel) ? 0 : iend.vel) {
-  std::cout << "Start: " << std::to_string(preferred_start_vel)
-            << " End: " << std::to_string(preferred_end_vel) << std::endl;
-  // TODO: we need to keep the start and end velocities for the motion profile
-
   // ensure that we don't have unspecified start/end velocities, this angers
   // the spline math
   if (std::isnan(start.vel) || std::abs(start.vel) < K_EPSILON) {
@@ -114,14 +110,14 @@ std::vector<GeneratedPoint> Spline::plan() {
     auto a_max =
       std::max_element(vectors.begin(),
                        vectors.end(),
-                       [](const GeneratedVector &a, const GeneratedVector &b) {
+                       [](const GeneratedVector& a, const GeneratedVector& b) {
                          return a.accel < b.accel;
                        })
         ->accel;
     auto j_max =
       std::max_element(vectors.begin(),
                        vectors.end(),
-                       [](const GeneratedVector &a, const GeneratedVector &b) {
+                       [](const GeneratedVector& a, const GeneratedVector& b) {
                          return a.jerk < b.jerk;
                        })
         ->jerk;
@@ -139,162 +135,134 @@ std::vector<GeneratedPoint> Spline::plan() {
 }
 
 std::vector<ProfilePoint>
-Spline::parameterize(std::vector<GeneratedPoint> &raw_path) {
+Spline::parameterize(std::vector<GeneratedPoint>& raw_path) {
   std::vector<ConstrainedState> constrainedStates(raw_path.size());
 
   // Forward Pass
-  ConstrainedState predecessor{raw_path.front().pose,
+  ConstrainedState predecessor(raw_path.front().pose,
                                0,
                                0,
                                preferred_start_vel,
                                constraints.min_accel,
-                               constraints.max_accel};
+                               constraints.max_accel);
   constrainedStates[0] = predecessor;
   for (std::size_t i = 0; i < raw_path.size(); ++i) {
-    auto &constrainedState = constrainedStates[i];
+    auto& constrainedState = constrainedStates[i];
     constrainedState.pose = raw_path[i].pose;
-
-    double ds = constrainedState.pose.dist(predecessor.pose);
-    constrainedState.distance = predecessor.distance + ds;
-
-    // We may need to iterate to find the maximum end vel and common
-    // accel, since accel limits may be a function of vel.
-    // XXX: while (true) bad
-    while (true) {
-      // Enforce global max vel and max reachable vel by global accel limit. 
-      // vf = std::sqrt(vi^2 + 2*a*d).
-
-      constrainedState.max_vel =
-        std::min(constraints.max_vel,
-                 std::sqrt(predecessor.max_vel * predecessor.max_vel +
-                           predecessor.max_accel * ds * 2.0));
-
-      constrainedState.min_accel = -constraints.max_accel;
-      constrainedState.max_accel = constraints.max_accel;
-
-      // At this point, the constrained state is fully constructed apart from
-      // all the custom-defined user constraints.
-      // for (const auto& constraint : constraints) {
-      //   constrainedState.max_vel = units::math::min(
-      //       constrainedState.max_vel,
-      //       constraint->max_vel(constrainedState.pose.first,
-      //                               constrainedState.pose.second,
-      //                               constrainedState.max_vel));
-      // }
-      // TODO: this is the whole tank drive modifications thing
-
-      // Now enforce all accel limits.
-      enforce_limits(&constrainedState);
-
-      if (ds < K_EPSILON)
-        break;
-
-      // If the actual accel for this state is higher than the max
-      // accel that we applied, then we need to reduce the max
-      // accel of the predecessor and try again.
-      auto actual_accel = (constrainedState.max_vel * constrainedState.max_vel -
-                           predecessor.max_vel * predecessor.max_vel) /
-                          (ds * 2.0);
-
-      // If we violate the max accel constraint, let's modify the
-      // predecessor.
-      if (constrainedState.max_accel < actual_accel - K_EPSILON) {
-        predecessor.max_accel = constrainedState.max_accel;
-      } else {
-        // Constrain the predecessor's max accel to the current
-        // accel.
-        if (actual_accel > predecessor.min_accel + K_EPSILON) {
-          predecessor.max_accel = actual_accel;
-        }
-        // If the actual accel is less than the predecessor's min
-        // accel, it will be repaired in the backward pass.
-        break;
-      }
-    }
+    forward_pass(&predecessor, &constrainedState);
     predecessor = constrainedState;
   }
 
-  ConstrainedState successor{raw_path.back().pose,
+  // Backward pass
+  ConstrainedState successor(raw_path.back().pose,
                              0,
                              constrainedStates.back().distance,
                              preferred_end_vel,
                              constraints.min_accel,
-                             constraints.max_accel};
-
-  // Backward pass
+                             constraints.max_accel);
   for (int i = raw_path.size() - 1; i >= 0; i--) {
-    auto &constrainedState = constrainedStates[i];
-    double ds = constrainedState.distance - successor.distance; // negative
-
-  // TODO: Below is still TBD
-
-  //   constrainedState.min_accel = std::max(constrainedState.min_accel, constraints.min_accel);
-
-  //   double prev_max_vel;
-  //   double new_max_vel = constrainedState.max_vel;
-  //   double prev_start_accel = successor.min_accel;
-  //   double start_accel_needed;
-  //   do {
-  //     prev_max_vel = new_max_vel;
-
-  //     // Enforce max vel limit (reverse)
-  //     // vf = std::sqrt(vi^2 + 2*a*d), where vi = successor.
-  //     new_max_vel = std::sqrt(successor.max_vel * successor.max_vel + prev_start_accel * ds * 2.0);
-
-  //     // If the actual accel for this state is lower than the min
-  //     // accel, then we need to lower the min accel of the
-  //     // successor and try again.
-  //     start_accel_needed = (new_max_vel * new_max_vel - successor.max_vel * successor.max_vel) /
-  //       (ds * 2.0);
-
-  //     prev_start_accel = constrainedState.min_accel;
-  //   } while (ds <= -K_EPSILON && new_max_vel < prev_max_vel && start_accel_needed <= constrainedState.min_accel - K_EPSILON);
-  //   successor.min_accel = start_accel_needed;
-  //   constrainedState.max_vel = new_max_vel;
-
-  //   successor = constrainedState;
-  // }
-
-    // XXX: infinite loop bad
-    while (true) {
-      // Enforce max vel limit (reverse)
-      // vf = std::sqrt(vi^2 + 2*a*d), where vi = successor.
-      double newmax_vel = std::sqrt(successor.max_vel * successor.max_vel +
-                                    successor.min_accel * ds * 2.0);
-
-      // No more limits to impose! This state can be finalized.
-      if (newmax_vel >= constrainedState.max_vel)
-        break;
-
-      constrainedState.max_vel = newmax_vel;
-
-      // Check all accel constraints with the new max vel.
-      enforce_limits(&constrainedState);
-
-      if (ds > -K_EPSILON)
-        break;
-
-      // If the actual accel for this state is lower than the min
-      // accel, then we need to lower the min accel of the
-      // successor and try again.
-      double actual_accel =
-        (constrainedState.max_vel * constrainedState.max_vel -
-         successor.max_vel * successor.max_vel) /
-        (ds * 2.0);
-      if (constrainedState.min_accel > actual_accel + K_EPSILON) {
-        successor.min_accel = constrainedState.min_accel;
-      } else {
-        successor.min_accel = actual_accel;
-        break;
-      }
-    }
-    successor = constrainedState;
+    backward_pass(&constrainedStates[i], &successor);
+    successor = constrainedStates[i];
   }
 
   // Now we can integrate the constrained states forward in time to obtain our
   // trajectory states.
+  return integrate_constrained_states(constrainedStates);
+}
 
-  std::vector<ProfilePoint> states(raw_path.size());
+/**
+ * We may need to iterate to find the maximum end vel and common accel, since
+ * accel limits may be a function of vel.
+ */
+void Spline::forward_pass(ConstrainedState* predecessor,
+                          ConstrainedState* successor) {
+  double ds = successor->pose.dist(predecessor->pose);
+  successor->distance = predecessor->distance + ds;
+
+  while (true) {
+    // Enforce global max vel and max reachable vel by global accel limit.
+    // vf = std::sqrt(vi^2 + 2*a*d).
+
+    successor->max_vel =
+      std::min(constraints.max_vel,
+               vf(predecessor->max_vel, predecessor->max_accel, ds));
+
+    successor->min_accel = -constraints.max_accel;
+    successor->max_accel = constraints.max_accel;
+
+    // At this point, the constrained state is fully constructed apart from
+    // all the custom-defined user constraints.
+    // for (const auto& constraint : constraints) {
+    //   constrainedState.max_vel = units::math::min(
+    //       constrainedState.max_vel,
+    //       constraint->max_vel(constrainedState.pose.first,
+    //                               constrainedState.pose.second,
+    //                               constrainedState.max_vel));
+    // }
+    // TODO: this is the whole tank drive modifications thing
+
+    // Now enforce all accel limits.
+    enforce_accel_lims(successor);
+
+    if (ds < K_EPSILON)
+      break;
+
+    // If the actual accel for this state is higher than the max
+    // accel that we applied, then we need to reduce the max
+    // accel of the predecessor and try again.
+    double start_accel_needed =
+      ai(successor->max_vel, predecessor->max_vel, ds);
+
+    // If we violate the max accel constraint, let's modify the
+    // predecessor.
+    if (successor->max_accel < start_accel_needed - K_EPSILON) {
+      predecessor->max_accel = successor->max_accel;
+    } else {
+      // Constrain the predecessor's max accel to the current
+      // accel.
+      if (start_accel_needed > predecessor->min_accel + K_EPSILON) {
+        predecessor->max_accel = start_accel_needed;
+      }
+      // If the actual accel is less than the predecessor's min
+      // accel, it will be repaired in the backward pass.
+      break;
+    }
+  }
+}
+
+/**
+ * Enforce the max velocity on the predecessor point and the max
+ * acceleration on the successor point.
+ */
+void Spline::backward_pass(ConstrainedState* predecessor,
+                           ConstrainedState* successor) {
+  double ds = predecessor->distance - successor->distance; // negative
+
+  while (vf(successor->max_vel, successor->min_accel, ds) <
+         predecessor->max_vel) {
+    predecessor->max_vel = vf(successor->max_vel, successor->min_accel, ds);
+    enforce_accel_lims(predecessor);
+
+    if (ds > -K_EPSILON)
+      break;
+
+    // Recalculate the needed acceleration from the successor point that will
+    // give us the desired velocity at the predecessor point. If this
+    // recalculated acceleration exceeds then constraints then we repeat this
+    // loop to find a suitable velocity for the predecessor point.
+    double end_accel_needed = ai(predecessor->max_vel, successor->max_vel, ds);
+    if ((end_accel_needed - K_EPSILON) <= predecessor->min_accel) {
+      successor->min_accel = predecessor->min_accel;
+    } else {
+      successor->min_accel = end_accel_needed;
+      break;
+    }
+  }
+}
+
+std::vector<ProfilePoint> Spline::integrate_constrained_states(
+  std::vector<ConstrainedState> constrainedStates) {
+  std::vector<ProfilePoint> out(constrainedStates.size());
   double t = 0;
   double s = 0;
   double v = 0;
@@ -314,7 +282,7 @@ Spline::parameterize(std::vector<GeneratedPoint> &raw_path) {
     double segment_dt = 0;
     if (i > 0) {
       // states.at(i - 1).accel = reversed ? -accel : accel;
-      states.at(i - 1).vector.accel = accel;
+      out.at(i - 1).vector.accel = accel;
       if (std::abs(accel) > K_EPSILON) {
         // v_f = v_0 + a * t
         segment_dt = (state.max_vel - v) / accel;
@@ -333,15 +301,20 @@ Spline::parameterize(std::vector<GeneratedPoint> &raw_path) {
 
     t += segment_dt;
 
-    // states[i] = {t, reversed ? -v : v, reversed ? -accel : accel,
-    //              state.pose.first, state.pose.second};
-    states[i] = ProfilePoint(ControlVector(state.pose, v, accel, 0), t);
+    out[i] = ProfilePoint(ControlVector(state.pose, v, accel, 0), t);
   }
-
-  return states;
+  return out;
 }
 
-void Spline::enforce_limits(ConstrainedState* state) {
+double Spline::vf(double vi, double a, double ds) {
+  return std::sqrt(vi * vi + a * ds * 2.0);
+}
+
+double Spline::ai(double vf, double vi, double ds) {
+  return vf * vf - vi * vi / (ds * 2.0);
+}
+
+void Spline::enforce_accel_lims(ConstrainedState* state) {
   // for (auto&& constraint : constraints) {
   //   double factor = reverse ? -1.0 : 1.0;
 

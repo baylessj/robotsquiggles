@@ -11,7 +11,7 @@ class Pose {
 
   Pose() = default;
 
-  double dist(const Pose &other) const {
+  double dist(const Pose& other) const {
     return std::sqrt((x - other.x) * (x - other.x) +
                      (y - other.y) * (y - other.y));
   }

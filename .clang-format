@@ -13,9 +13,11 @@ ColumnLimit: 80
 ContinuationIndentWidth: 2
 ConstructorInitializerAllOnOneLineOrOnePerLine: true
 ConstructorInitializerIndentWidth: 2
+DerivePointerAlignment: false
 IndentWidth: 2
 IndentWrappedFunctionNames: false
 MaxEmptyLinesToKeep: 1
+PointerAlignment: Left
 SortIncludes: true
 SortUsingDeclarations: true
 SpacesInContainerLiterals: false

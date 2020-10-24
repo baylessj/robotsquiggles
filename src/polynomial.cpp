@@ -29,11 +29,11 @@ QuinticPolynomial::QuinticPolynomial(double s_p,
    * We then invert A (in separate program) to solve for our coeffs 
    * via X=(A^-1)B
    *
-   *         --                              --                                                                                           --
-   *         | 10 / t^3 , -4 / t^2, 1 / 2*t   |
-   * A_inv = | -15 / t^4, 7 / t^3 , -1 / t^2  |
-   *         | 6 / t^5  , -3 / t^4, 1 / 2*t^3 |
-   *         --                              --                                                                                          --
+   *         --                               --
+   *         |  10 / t^3, -4 / t^2,  1 / 2*t   |
+   * A_inv = | -15 / t^4,  7 / t^3, -1 / t^2   |
+   *         |   6 / t^5, -3 / t^4,  1 / 2*t^3 |
+   *         --                               --
    */
   // clang-format on
   double A_11 = 10 / (t * t * t);
@@ -45,10 +45,6 @@ QuinticPolynomial::QuinticPolynomial(double s_p,
   double A_31 = 6 / (t * t * t * t * t);
   double A_32 = -3 / (t * t * t * t);
   double A_33 = 1 / (2 * t * t * t);
-
-  // std::cout << "[[ " << A_11 << ", " << A_12 << ", " << A_13 << "]\n";
-  // std::cout << " [ " << A_21 << ", " << A_22 << ", " << A_23 << "]\n";
-  // std::cout << " [ " << A_31 << ", " << A_32 << ", " << A_33 << "]]\n";
 
   double B_11 = g_p - a0 - a1 * t - a2 * t * t;
   double B_21 = g_v - a1 - 2 * a2 * t;
