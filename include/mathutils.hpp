@@ -5,6 +5,10 @@ namespace squiggles {
 double deg2rad(double deg);
 
 double rad2deg(double rad);
+
+template <class T> inline int sgn(T v) {
+  return (v > T(0)) - (v < T(0));
+}
 } // namespace squiggles
 
 #endif
