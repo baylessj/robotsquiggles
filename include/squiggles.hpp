@@ -8,7 +8,6 @@
 #ifndef _ROBOT_SQUIGGLES_H_
 #define _ROBOT_SQUIGGLES_H_
 
-#include "pathposition.hpp"
 #include "spline.hpp"
 
 // Debug only
