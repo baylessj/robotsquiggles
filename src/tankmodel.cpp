@@ -33,12 +33,8 @@ std::tuple<double, double> TankModel::accel_constraint(const Pose pose,
   auto max_wheel_speed = std::max(left, right);
   auto min_wheel_speed = std::min(left, right);
 
-  // Calculate maximum/minimum possible accelerations from motor dynamics
-  // and max/min wheel speeds
-  // auto maxWheelAcceleration =
-  //     m_feedforward.MaxAchievableAcceleration(m_maxVoltage, maxWheelSpeed);
-  // auto minWheelAcceleration =
-  //     m_feedforward.MinAchievableAcceleration(m_maxVoltage, minWheelSpeed);
+  // TODO: calculate the possible accelerations as a factor of current velocity
+  // to account for back-emf?
 
   // Robot chassis turning on radius = 1/|curvature|.  Outer wheel has radius
   // increased by half of the trackwidth T.  Inner wheel has radius decreased

@@ -6,7 +6,7 @@
 
 namespace squiggles {
 struct Constraints {
-  Constraints(double imax_vel,
+  Constraints(double imax_vel = std::numeric_limits<double>::max(),
               double imax_accel = std::numeric_limits<double>::max(),
               double imax_jerk = std::numeric_limits<double>::max(),
               double imin_accel = std::nan(""))
