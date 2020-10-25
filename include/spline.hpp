@@ -2,25 +2,36 @@
 #define _SQUIGGLES_SPLINE_HPP_
 
 #include <initializer_list>
+#include <memory>
 #include <vector>
 
 #include "constraints.hpp"
 #include "geometry/controlvector.hpp"
 #include "geometry/generatedpoint.hpp"
 #include "geometry/profilepoint.hpp"
+#include "physicalmodel/physicalmodel.hpp"
+#include "physicalmodel/passthroughmodel.hpp"
 
 namespace squiggles {
+
 /**
  *
  */
 class Spline {
   public:
-  Spline(ControlVector start,
-         ControlVector end,
-         Constraints iconstraints,
-         double idt = 0.1);
+  Spline(
+    ControlVector istart,
+    ControlVector iend,
+    Constraints iconstraints,
+    std::shared_ptr<PhysicalModel> imodel = std::make_shared<PassthroughModel>(),
+    double idt = 0.1);
 
-  Spline(Pose start, Pose end, Constraints iconstraints, double idt = 0.1);
+  Spline(
+    Pose istart,
+    Pose iend,
+    Constraints iconstraints,
+    std::shared_ptr<PhysicalModel> imodel = std::make_shared<PassthroughModel>(),
+    double idt = 0.1);
 
   std::vector<GeneratedPoint> plan();
 
@@ -39,6 +50,11 @@ class Spline {
    *
    */
   Constraints constraints;
+
+  /**
+   *
+   */
+  std::shared_ptr<PhysicalModel> model;
 
   /**
    * The step size in seconds for the path.
