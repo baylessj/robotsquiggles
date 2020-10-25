@@ -310,10 +310,11 @@ std::vector<ProfilePoint> Spline::integrate_constrained_states(
     v = state.max_vel;
     s = state.distance;
     auto k = state.curvature;
+    auto wheel_vels = model->linear_to_wheel_vels(v, k);
 
     t += segment_dt;
 
-    out[i] = ProfilePoint(ControlVector(state.pose, v, accel, 0), k, t);
+    out[i] = ProfilePoint(ControlVector(state.pose, v, accel, 0), wheel_vels, k, t);
   }
   return out;
 }

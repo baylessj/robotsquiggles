@@ -14,6 +14,8 @@ class PhysicalModel {
                           double curvature,
                           double vel) = 0;
 
+  virtual std::vector<double> linear_to_wheel_vels(double linear, double curvature) = 0;
+
   virtual std::string to_string() = 0;
 };
 } // namespace squiggles

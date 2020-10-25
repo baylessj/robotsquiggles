@@ -17,6 +17,10 @@ class PassthroughModel : public PhysicalModel {
     return Constraints();
   };
 
+  std::vector<double> linear_to_wheel_vels(UNUSED double lin_vel, UNUSED double curvature) override {
+    return std::vector<double>{};
+  }
+
   std::string to_string() override {
     return "PassthroughModel {}";
   }

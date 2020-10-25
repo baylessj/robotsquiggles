@@ -15,8 +15,10 @@ TankModel::constraints(const Pose pose, double curvature, double vel) {
 }
 
 double
-TankModel::vel_constraint(const Pose pose, double curvature, double vel) const {
-  auto [left, right] = linear_to_wheel_vels(vel, curvature);
+TankModel::vel_constraint(const Pose pose, double curvature, double vel) {
+  auto wheels = linear_to_wheel_vels(vel, curvature);
+  auto left = wheels[0];
+  auto right = wheels[1];
   auto cur_vel = std::max(std::abs(left), std::abs(right));
 
   if (cur_vel > linear_constraints.max_vel) {
@@ -86,11 +88,11 @@ std::tuple<double, double> TankModel::accel_constraint(const Pose pose,
   return std::make_tuple(min_chassis_accel, max_chassis_accel);
 }
 
-std::tuple<double, double>
-TankModel::linear_to_wheel_vels(double lin_vel, double curvature) const {
+std::vector<double>
+TankModel::linear_to_wheel_vels(double lin_vel, double curvature) {
   double omega = lin_vel * curvature;
-  return std::make_tuple(lin_vel - (track_width / 2) * omega,
-                         lin_vel + (track_width / 2) * omega);
+  return std::vector<double>{lin_vel - (track_width / 2) * omega,
+                         lin_vel + (track_width / 2) * omega};
 }
 
 std::string TankModel::to_string() {

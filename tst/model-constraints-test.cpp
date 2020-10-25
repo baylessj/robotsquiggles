@@ -27,14 +27,7 @@ TEST(model_constraints_test, sharp_turn) {
   ASSERT_NEAR(planned_path.front().vector.vel, 0.0, Spline::K_EPSILON);
   ASSERT_NEAR(planned_path.back().vector.vel, 0.0, Spline::K_EPSILON);
 
-  auto tank = TankModel(0.4, constraints);
-
   for (auto p : planned_path) {
-    auto [left, right] = tank.linear_to_wheel_vels(p.vector.vel, p.curvature);
-    // They seem to be _slightly_ exceeding the constraints for some reason
-    // ASSERT_LE(left, 2.0 + Spline::K_EPSILON);
-    // ASSERT_LE(right, 2.0 + Spline::K_EPSILON);
-    std::cout << p.to_string() << "    &    " << std::to_string(left) << " | "
-              << std::to_string(right) << std::endl;
+    std::cout << p.to_string() << std::endl;
   }
 }
