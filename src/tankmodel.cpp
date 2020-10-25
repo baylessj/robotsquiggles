@@ -1,3 +1,5 @@
+#include <iostream> 
+
 #include "physicalmodel/tankmodel.hpp"
 #include "mathutils.hpp"
 
@@ -6,10 +8,10 @@ TankModel::TankModel(double itrack_width, Constraints ilinear_constraints)
   : track_width(itrack_width), linear_constraints(ilinear_constraints) {}
 
 Constraints
-TankModel::constraints(const Pose pose, double curvature, double vel) const {
-  auto vel = vel_constraint(pose, curvature, vel);
+TankModel::constraints(const Pose pose, double curvature, double vel) {
+  auto max_vel = vel_constraint(pose, curvature, vel);
   auto [min_accel, max_accel] = accel_constraint(pose, curvature, vel);
-  return Constraints(vel, max_accel, 0.0, min_accel);
+  return Constraints(max_vel, max_accel, 0.0, min_accel);
 }
 
 double
@@ -19,8 +21,8 @@ TankModel::vel_constraint(const Pose pose, double curvature, double vel) const {
 
   if (cur_vel > linear_constraints.max_vel) {
     // normalize the wheel velocities
-    left = left / cur_vel * linear_constraints.max_vel;
-    right = right / cur_vel * linear_constraints.max_vel;
+    left = (left / cur_vel) * linear_constraints.max_vel;
+    right = (right / cur_vel) * linear_constraints.max_vel;
   }
 
   return (left + right / 2.0);
@@ -29,9 +31,9 @@ TankModel::vel_constraint(const Pose pose, double curvature, double vel) const {
 std::tuple<double, double> TankModel::accel_constraint(const Pose pose,
                                                        double curvature,
                                                        double vel) const {
-  auto [left, right] = linear_to_wheel_vels(vel, curvature);
-  auto max_wheel_speed = std::max(left, right);
-  auto min_wheel_speed = std::min(left, right);
+  // auto [left, right] = linear_to_wheel_vels(vel, curvature);
+  // auto max_wheel_speed = std::max(left, right);
+  // auto min_wheel_speed = std::min(left, right);
 
   // TODO: calculate the possible accelerations as a factor of current velocity
   // to account for back-emf?
@@ -87,7 +89,11 @@ std::tuple<double, double> TankModel::accel_constraint(const Pose pose,
 std::tuple<double, double>
 TankModel::linear_to_wheel_vels(double lin_vel, double curvature) const {
   double omega = lin_vel * curvature;
-  return std::make_tuple(lin_vel - track_width / 2 * omega,
-                         lin_vel + track_width / 2 * omega);
+  return std::make_tuple(lin_vel - (track_width / 2) * omega,
+                         lin_vel + (track_width / 2) * omega);
+}
+
+std::string TankModel::to_string() {
+  return "TankModel {w: " + std::to_string(track_width) + ", " + linear_constraints.to_string() + "}";
 }
 } // namespace squiggles

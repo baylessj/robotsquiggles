@@ -17,7 +17,7 @@ Spline::Spline(ControlVector istart,
   : start(istart),
     end(iend),
     constraints(iconstraints),
-    model(imodel),
+    model(std::move(imodel)),
     dt(idt),
     preferred_start_vel(std::isnan(istart.vel) ? 0 : istart.vel),
     preferred_end_vel(std::isnan(iend.vel) ? 0 : iend.vel) {
@@ -108,7 +108,7 @@ std::vector<GeneratedPoint> Spline::plan() {
         linear_jerk *= -1;
       }
 
-      double curvature = 0.0;
+      double curvature = (x_v * y_a - x_a * y_v) / ((x_v * x_v + y_v * y_v) * std::hypot(x_v, y_v));
 
       vectors.push_back(
         GeneratedVector(GeneratedPoint(Pose(x_p, y_p, yaw), curvature),
@@ -147,6 +147,7 @@ std::vector<GeneratedPoint> Spline::plan() {
 std::vector<ProfilePoint>
 Spline::parameterize(std::vector<GeneratedPoint>& raw_path) {
   std::vector<ConstrainedState> constrainedStates(raw_path.size());
+  std::cout << model->to_string() << std::endl;
 
   // Forward Pass
   ConstrainedState predecessor(raw_path.front().pose,
@@ -159,6 +160,7 @@ Spline::parameterize(std::vector<GeneratedPoint>& raw_path) {
   for (std::size_t i = 0; i < raw_path.size(); ++i) {
     auto& constrainedState = constrainedStates[i];
     constrainedState.pose = raw_path[i].pose;
+    constrainedState.curvature = raw_path[i].curvature;
     forward_pass(&predecessor, &constrainedState);
     predecessor = constrainedState;
   }
@@ -248,6 +250,8 @@ void Spline::backward_pass(ConstrainedState* predecessor,
   while (vf(successor->max_vel, successor->min_accel, ds) <
          predecessor->max_vel) {
     predecessor->max_vel = vf(successor->max_vel, successor->min_accel, ds);
+    auto model_max = model->constraints(predecessor->pose, predecessor->curvature, predecessor->max_vel).max_vel;
+    predecessor->max_vel = std::min(predecessor->max_vel, model_max);
     enforce_accel_lims(predecessor);
 
     if (ds > -K_EPSILON)
@@ -305,10 +309,11 @@ std::vector<ProfilePoint> Spline::integrate_constrained_states(
 
     v = state.max_vel;
     s = state.distance;
+    auto k = state.curvature;
 
     t += segment_dt;
 
-    out[i] = ProfilePoint(ControlVector(state.pose, v, accel, 0), t);
+    out[i] = ProfilePoint(ControlVector(state.pose, v, accel, 0), k, t);
   }
   return out;
 }
@@ -345,5 +350,4 @@ void Spline::enforce_accel_lims(ConstrainedState* state) {
              // reverse ? -minMaxAccel.minaccel : minMaxAccel.maxaccel);
              model_constraints.max_accel);
 }
-
 } // namespace squiggles

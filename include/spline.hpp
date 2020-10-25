@@ -10,25 +10,27 @@
 #include "geometry/generatedpoint.hpp"
 #include "geometry/profilepoint.hpp"
 #include "physicalmodel/physicalmodel.hpp"
+#include "physicalmodel/passthroughmodel.hpp"
 
 namespace squiggles {
+
 /**
  *
  */
 class Spline {
   public:
   Spline(
-    ControlVector start,
-    ControlVector end,
+    ControlVector istart,
+    ControlVector iend,
     Constraints iconstraints,
-    std::shared_ptr<PhysicalModel> imodel = std::make_shared<PhysicalModel>(),
+    std::shared_ptr<PhysicalModel> imodel = std::make_shared<PassthroughModel>(),
     double idt = 0.1);
 
   Spline(
-    Pose start,
-    Pose end,
+    Pose istart,
+    Pose iend,
     Constraints iconstraints,
-    std::shared_ptr<PhysicalModel> imodel = std::make_shared<PhysicalModel>(),
+    std::shared_ptr<PhysicalModel> imodel = std::make_shared<PassthroughModel>(),
     double idt = 0.1);
 
   std::vector<GeneratedPoint> plan();

@@ -10,13 +10,11 @@
 namespace squiggles {
 class PhysicalModel {
   public:
-  PhysicalModel() = default;
+  virtual Constraints constraints(const Pose pose,
+                          double curvature,
+                          double vel) = 0;
 
-  Constraints constraints(UNUSED const Pose pose,
-                          UNUSED double curvature,
-                          UNUSED double vel) const {
-    return Constraints();
-  };
+  virtual std::string to_string() = 0;
 };
 } // namespace squiggles
 

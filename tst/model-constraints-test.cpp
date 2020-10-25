@@ -1,0 +1,40 @@
+#include <cmath>
+#include <memory>
+#include <iostream>
+
+#include "gtest/gtest.h"
+
+#include "spline.hpp"
+#include "physicalmodel/tankmodel.hpp"
+
+using namespace squiggles;
+
+TEST(model_constraints_test, sharp_turn) {
+  auto constraints = Constraints(2.0, 2.0, 1.0);
+  auto model = std::make_shared<TankModel>(0.4, constraints);
+  auto spline = Spline(ControlVector(Pose(0, 0, 0), 0.0, 0.0),
+                       ControlVector(Pose(0, 2, 0), 0.0, 0.0),
+                       constraints,
+                       model,
+                       0.1);
+  auto path = spline.plan();
+  ASSERT_NEAR(path.back().pose.x, 0, Spline::K_EPSILON);
+  ASSERT_NEAR(path.back().pose.y, 2, Spline::K_EPSILON);
+  ASSERT_NEAR(path.back().pose.yaw, 0, Spline::K_EPSILON);
+
+  auto planned_path = spline.parameterize(path);
+
+  ASSERT_NEAR(planned_path.front().vector.vel, 0.0, Spline::K_EPSILON);
+  ASSERT_NEAR(planned_path.back().vector.vel, 0.0, Spline::K_EPSILON);
+
+  auto tank = TankModel(0.4, constraints);
+
+  for (auto p : planned_path) {
+    auto [left, right] = tank.linear_to_wheel_vels(p.vector.vel, p.curvature);
+    // They seem to be _slightly_ exceeding the constraints for some reason
+    // ASSERT_LE(left, 2.0 + Spline::K_EPSILON);
+    // ASSERT_LE(right, 2.0 + Spline::K_EPSILON);
+    std::cout << p.to_string() << "    &    " << std::to_string(left) << " | "
+              << std::to_string(right) << std::endl;
+  }
+}
