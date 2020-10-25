@@ -19,15 +19,15 @@ TankModel::vel_constraint(const Pose pose, double curvature, double vel) {
   auto wheels = linear_to_wheel_vels(vel, curvature);
   auto left = wheels[0];
   auto right = wheels[1];
-  auto cur_vel = std::max(std::abs(left), std::abs(right));
+  auto max_wheel_vel = std::max(std::abs(left), std::abs(right));
 
-  if (cur_vel > linear_constraints.max_vel) {
+  if (max_wheel_vel > linear_constraints.max_vel) {
     // normalize the wheel velocities
-    left = (left / cur_vel) * linear_constraints.max_vel;
-    right = (right / cur_vel) * linear_constraints.max_vel;
+    left = left / max_wheel_vel * linear_constraints.max_vel;
+    right = right / max_wheel_vel * linear_constraints.max_vel;
   }
 
-  return (left + right / 2.0);
+  return ((left + right) / 2.0);
 }
 
 std::tuple<double, double> TankModel::accel_constraint(const Pose pose,

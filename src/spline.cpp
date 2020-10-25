@@ -240,15 +240,14 @@ void Spline::forward_pass(ConstrainedState* predecessor,
 }
 
 /**
- * Enforce the max velocity on the predecessor point and the max
+ * Enforce the max velocity on the predecessor point and the min
  * acceleration on the successor point.
  */
 void Spline::backward_pass(ConstrainedState* predecessor,
                            ConstrainedState* successor) {
   double ds = predecessor->distance - successor->distance; // negative
 
-  while (vf(successor->max_vel, successor->min_accel, ds) <
-         predecessor->max_vel) {
+  while (predecessor->max_vel > vf(successor->max_vel, successor->min_accel, ds)) {
     predecessor->max_vel = vf(successor->max_vel, successor->min_accel, ds);
     auto model_max = model->constraints(predecessor->pose, predecessor->curvature, predecessor->max_vel).max_vel;
     predecessor->max_vel = std::min(predecessor->max_vel, model_max);
