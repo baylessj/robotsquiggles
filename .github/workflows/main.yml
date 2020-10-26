@@ -12,6 +12,7 @@ jobs:
         # run: sudo apt-get install lcov
         run: |
           git clone https://github.com/linux-test-project/lcov.git
+          cd lcov
           git checkout tags/v1.15
           make install
       - name: Init CMake
