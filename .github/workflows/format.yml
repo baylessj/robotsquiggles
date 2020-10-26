@@ -7,6 +7,12 @@ jobs:
   format:
     runs-on: ubuntu-latest
     steps:
+      - name: Cache multiple paths
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/clang+llvm-11.0.0-x86_64-linux-gnu-ubuntu-20.04
+          key: ${{ runner.os }}-${{ hashFiles('**/lockfiles') }}
       - uses: actions/checkout@v2
         with:
           # check out HEAD on the branch
@@ -16,6 +22,7 @@ jobs:
           fetch-depth: 2
       # format the latest commit
       - name: install clang-format-latest
+        working-directory: ~/
         run: |
           wget "https://github.com/llvm/llvm-project/releases/download/llvmorg-11.0.0/clang+llvm-11.0.0-x86_64-linux-gnu-ubuntu-20.04.tar.xz" -O clang.tar.xz
           tar xf clang.tar.xz
