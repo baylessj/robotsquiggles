@@ -15,6 +15,7 @@ jobs:
           cd lcov
           sudo make install
           lcov --version
+          gcov --version
       - name: Init CMake
         env:
           CC: gcc-9
