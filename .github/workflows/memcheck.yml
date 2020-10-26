@@ -12,16 +12,16 @@ jobs:
         run: sudo apt-get install valgrind
       - name: Init CMake
         env:
-          CC: gcc-7
-          CXX: g++-7
+          CC: gcc-9
+          CXX: g++-9
         run: |
           mkdir -p ./build
           ./run_cmake_unix.sh
       - name: Build
         working-directory: build
         env:
-          CC: gcc-7
-          CXX: g++-7
+          CC: gcc-9
+          CXX: g++-9
         run: make all
       - name: check for leaks
         working-directory: build

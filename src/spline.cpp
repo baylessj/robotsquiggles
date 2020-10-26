@@ -5,7 +5,6 @@
 #include <numeric>
 #include <tuple>
 
-#include "polynomial.hpp"
 #include "spline.hpp"
 
 namespace squiggles {
@@ -47,36 +46,13 @@ Spline::Spline(Pose istart,
  * when imposing the constraints
  */
 std::vector<GeneratedPoint> Spline::plan() {
-  // break the starting/goal velocities and accels into their
-  // axis-specific components
-  double s_x = start.pose.x;
-  double s_y = start.pose.y;
-  double s_yaw = start.pose.yaw;
-  double s_v = start.vel;
-  double s_a = start.accel;
-
-  double g_x = end.pose.x;
-  double g_y = end.pose.y;
-  double g_yaw = end.pose.yaw;
-  double g_v = end.vel;
-  double g_a = end.accel;
-
-  double s_vx = s_v * cos(s_yaw);
-  double s_vy = s_v * sin(s_yaw);
-  double g_vx = g_v * cos(g_yaw);
-  double g_vy = g_v * sin(g_yaw);
-  double s_ax = s_a * cos(s_yaw);
-  double s_ay = s_a * sin(s_yaw);
-  double g_ax = g_a * cos(g_yaw);
-  double g_ay = g_a * sin(g_yaw);
-
   // iterate through possible path durations until we find one that fits
   // our kinematic constraints
   std::vector<int> durations(T_MAX - T_MIN + 1);
   std::iota(std::begin(durations), std::end(durations), T_MIN);
   for (auto d : durations) {
-    auto x_qp = QuinticPolynomial(s_x, s_vx, s_ax, g_x, g_vx, g_ax, d);
-    auto y_qp = QuinticPolynomial(s_y, s_vy, s_ay, g_y, g_vy, g_ay, d);
+    auto x_qp = get_x_spline(d);
+    auto y_qp = get_y_spline(d);
 
     std::vector<GeneratedVector> vectors;
 
@@ -178,7 +154,16 @@ Spline::parameterize(std::vector<GeneratedPoint>& raw_path) {
 
   // Now we can integrate the constrained states forward in time to obtain our
   // trajectory states.
-  return integrate_constrained_states(constrainedStates);
+  auto time_adjusted = integrate_constrained_states(constrainedStates);
+
+  const auto num_time_steps = std::round(time_adjusted.back().time / dt) + 1;
+  std::vector<double> times(num_time_steps);
+  std::iota(std::begin(times), std::end(times), 0.0);
+  std::vector<ProfilePoint> out;
+  for (auto t : times) {
+    out.emplace_back(get_point_at_time(time_adjusted, t * dt));
+  }
+  return out;
 }
 
 /**
@@ -348,5 +333,117 @@ void Spline::enforce_accel_lims(ConstrainedState* state) {
     std::min(state->max_accel,
              // reverse ? -minMaxAccel.minaccel : minMaxAccel.maxaccel);
              model_constraints.max_accel);
+}
+
+ProfilePoint Spline::get_point_at_time(std::vector<ProfilePoint> points, double t) {
+  if (t <= points.front().time) return points.front();
+  if (t >= points.back().time) return points.back();
+
+  // Use binary search to get the element with a timestamp no less than the
+  // requested timestamp. This starts at 1 because we use the previous state
+  // later on for interpolation.
+  auto sample =
+      std::lower_bound(points.cbegin() + 1, points.cend(), t,
+                       [](const auto& a, const auto& b) { return a.time < b; });
+
+  auto prev_sample = sample - 1;
+
+  // The sample's timestamp is now greater than or equal to the requested
+  // timestamp. If it is greater, we need to interpolate between the
+  // previous state and the current state to get the exact state that we
+  // want.
+
+  // If the difference in states is negligible, then we are spot on!
+  if (std::abs(sample->time - prev_sample->time) < K_EPSILON) {
+    return *sample;
+  }
+  const auto i = (t - prev_sample->time) / (sample->time - prev_sample->time);
+  const auto duration = points.back().time;
+  // Interpolate between the two states for the state that we want.
+  return lerp_point(get_x_spline(duration), get_y_spline(duration), *prev_sample, *sample, i);
+}
+
+ProfilePoint Spline::lerp_point(QuinticPolynomial x_qp, QuinticPolynomial y_qp, ProfilePoint p_start, ProfilePoint p_end, double i) {
+  // Find the new [t] value.
+  const auto new_t = std::lerp(p_start.time, p_end.time, i);
+
+  // Find the delta time between the current state and the interpolated state.
+  const auto cur_dt = new_t - p_start.time;
+
+  // If delta time is negative, flip the order of interpolation.
+  if (cur_dt < 0) return lerp_point(x_qp, y_qp, p_end, p_start, 1.0 - i);
+
+  // Check whether the robot is reversing at this stage.
+  const auto reversing =
+      p_start.vector.vel < 0 ||
+      (std::abs(p_start.vector.vel) < K_EPSILON && p_start.vector.accel < 0);
+
+  // Calculate the new velocity.
+  // v = v_0 + at
+  const auto new_v = p_start.vector.vel + (p_start.vector.accel * cur_dt);
+
+  // Calculate the change in position.
+  // delta_s = v_0 t + 0.5 at^2
+  const auto new_s =
+      (p_start.vector.vel * cur_dt + 0.5 * p_start.vector.accel * cur_dt * cur_dt) *
+      (reversing ? -1.0 : 1.0);
+
+  // Return the new state. To find the new position for the new state, we need
+  // to interpolate between the two endpoint poses. The fraction for
+  // interpolation is the change in position (delta s) divided by the total
+  // distance between the two endpoints.
+  const double interpolationFrac =
+      new_s / p_end.vector.pose.dist(p_start.vector.pose);
+  
+  const auto new_curvature = std::lerp(p_start.curvature, p_end.curvature, interpolationFrac);
+  std::vector<double> new_wheel_vels = model->linear_to_wheel_vels(new_v, new_curvature);
+  const auto new_x = x_qp.calc_point(new_t);
+  const auto new_y = y_qp.calc_point(new_t);
+  const auto new_yaw = std::atan2(y_qp.calc_first_derivative(new_t), x_qp.calc_first_derivative(new_t));
+  // const auto new_pose = p_start.vector.pose.lerp(p_end.vector.pose, interpolationFrac);
+
+  return ProfilePoint(ControlVector(Pose(new_x, new_y, new_yaw), new_v, p_start.vector.accel, p_start.vector.jerk), new_wheel_vels, new_curvature, new_t);
+}
+
+QuinticPolynomial Spline::get_x_spline(double duration) {
+  // break the starting/goal velocities and accels into their
+  // axis-specific components
+  double s_x = start.pose.x;
+  double s_yaw = start.pose.yaw;
+  double s_v = start.vel;
+  double s_a = start.accel;
+
+  double g_x = end.pose.x;
+  double g_yaw = end.pose.yaw;
+  double g_v = end.vel;
+  double g_a = end.accel;
+
+  double s_vx = s_v * std::cos(s_yaw);
+  double g_vx = g_v * std::cos(g_yaw);
+  double s_ax = s_a * std::cos(s_yaw);
+  double g_ax = g_a * std::cos(g_yaw);
+
+  return QuinticPolynomial(s_x, s_vx, s_ax, g_x, g_vx, g_ax, duration);
+}
+
+QuinticPolynomial Spline::get_y_spline(double duration) {
+  // break the starting/goal velocities and accels into their
+  // axis-specific components
+  double s_y = start.pose.y;
+  double s_yaw = start.pose.yaw;
+  double s_v = start.vel;
+  double s_a = start.accel;
+
+  double g_y = end.pose.y;
+  double g_yaw = end.pose.yaw;
+  double g_v = end.vel;
+  double g_a = end.accel;
+
+  double s_vy = s_v * std::sin(s_yaw);
+  double g_vy = g_v * std::sin(g_yaw);
+  double s_ay = s_a * std::sin(s_yaw);
+  double g_ay = g_a * std::sin(g_yaw);
+
+  return QuinticPolynomial(s_y, s_vy, s_ay, g_y, g_vy, g_ay, duration);
 }
 } // namespace squiggles

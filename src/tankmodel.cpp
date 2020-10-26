@@ -90,6 +90,12 @@ std::tuple<double, double> TankModel::accel_constraint(UNUSED const Pose pose,
 
 std::vector<double>
 TankModel::linear_to_wheel_vels(double lin_vel, double curvature) {
+  if (std::abs(lin_vel) < 1e-5) {
+    return {0, 0};
+  } else if (std::abs(curvature) < 1e-5) {
+    return {lin_vel, lin_vel};
+  }
+
   double omega = lin_vel * curvature;
   return std::vector<double>{lin_vel - (track_width / 2) * omega,
                          lin_vel + (track_width / 2) * omega};
