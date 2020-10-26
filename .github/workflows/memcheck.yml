@@ -18,9 +18,11 @@ jobs:
           mkdir -p ./build
           ./run_cmake_unix.sh
       - name: Build
+        working-directory: build
         env:
           CC: gcc-7
           CXX: g++-7
-        run: cd build && make all
+        run: make all
       - name: check for leaks
+        working-directory: build
         run: valgrind --tool=memcheck --leak-check=full --leak-resolution=med --show-leak-kinds=all --undef-value-errors=yes --track-origins=yes  --error-exitcode=1 --show-reachable=no ./src/RobotSquiggles_run
