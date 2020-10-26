@@ -34,6 +34,7 @@ VisData compute_path(double sx,
                      double max_vel,
                      double max_accel,
                      double max_jerk,
+                     double track_width,
                      double dt);
 }
 

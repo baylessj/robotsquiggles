@@ -16,11 +16,18 @@ VisData compute_path(double sx,
                      double max_vel,
                      double max_accel,
                      double max_jerk,
+                     double track_width,
                      double dt) {
   auto constraints = Constraints(max_vel, max_accel, max_jerk);
+  std::shared_ptr<PhysicalModel> model;
+  if (track_width > Spline::K_EPSILON) {
+    model = std::make_shared<TankModel>(track_width, constraints);
+  } else {
+    model = std::make_shared<PassthroughModel>();
+  }
   auto spline = Spline(ControlVector(Pose(sx, sy, syaw), sv, sa), ControlVector(Pose(gx, gy, gyaw), gv, ga),
                        constraints,
-                       std::make_shared<TankModel>(0.4, constraints),
+                       model,
                        dt);
   std::vector<GeneratedPoint> raw_path = spline.plan();
   std::vector<ProfilePoint> path = spline.parameterize(raw_path);
@@ -35,8 +42,13 @@ VisData compute_path(double sx,
     out.points[i].v = path[i].vector.vel;
     out.points[i].a = path[i].vector.accel;
     out.points[i].j = path[i].vector.jerk;
-    out.points[i].lv = path[i].wheel_velocities[0];
-    out.points[i].rv = path[i].wheel_velocities[1];
+    if (track_width > Spline::K_EPSILON) {
+      out.points[i].lv = path[i].wheel_velocities[0];
+      out.points[i].rv = path[i].wheel_velocities[1];
+    } else {
+      out.points[i].lv = 0.0;
+      out.points[i].rv = 0.0;
+    }
   }
   return out;
 }
