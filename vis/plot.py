@@ -5,7 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-clib = CDLL("./build/src/libRobotSquiggles.so")
+clib = CDLL("./build/libRobotSquiggles.so")
 
 
 class VisDataPoint(Structure):
@@ -126,14 +126,14 @@ def main():
         )
         plt.pause(0.001)
 
-    clib.parameterize.argtypes = [
-        VisData,
-        c_double,
-        c_double,
-        c_double,
-    ]
-    clib.parameterize.restype = VisData
-    visdata = clib.parameterize(visdata, max_vel, max_accel, max_jerk)
+    # clib.parameterize.argtypes = [
+    #     VisData,
+    #     c_double,
+    #     c_double,
+    #     c_double,
+    # ]
+    # clib.parameterize.restype = VisData
+    # visdata = clib.parameterize(visdata, max_vel, max_accel, max_jerk)
 
     for i in range(visdata.size):
         time[i] = visdata.points[i].time

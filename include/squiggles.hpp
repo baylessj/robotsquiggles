@@ -8,9 +8,13 @@
 #ifndef _ROBOT_SQUIGGLES_H_
 #define _ROBOT_SQUIGGLES_H_
 
-#include "spline.hpp"
+#include "geometry/controlvector.hpp"
+#include "geometry/pose.hpp"
+#include "geometry/profilepoint.hpp"
 
-// Debug only
-#include "pythoncompat.hpp"
+#include "physicalmodel/physicalmodel.hpp"
+#include "physicalmodel/tankmodel.hpp"
+
+#include "spline.hpp"
 
 #endif

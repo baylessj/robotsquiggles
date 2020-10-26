@@ -2,6 +2,7 @@
 #define _SQUIGGLES_PATH_POSITION_HPP_
 
 #include <string>
+#include <vector>
 
 #include "controlvector.hpp"
 
