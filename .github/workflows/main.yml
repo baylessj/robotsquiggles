@@ -14,7 +14,7 @@ jobs:
           git clone https://github.com/linux-test-project/lcov.git
           cd lcov
           git checkout tags/v1.15
-          make install
+          sudo make install
       - name: Init CMake
         env:
           CC: gcc-9.3
