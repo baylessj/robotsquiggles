@@ -15,6 +15,7 @@ jobs:
           cd lcov
           git checkout tags/v1.15
           sudo make install
+          lcov --version
       - name: Init CMake
         env:
           CC: gcc-9
