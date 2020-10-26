@@ -17,8 +17,8 @@ jobs:
           sudo make install
       - name: Init CMake
         env:
-          CC: gcc-9.3
-          CXX: g++-9.3
+          CC: gcc-9
+          CXX: g++-9
         run: |
           mkdir -p ./build
           ./run_cmake_unix.sh
