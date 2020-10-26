@@ -1,10 +1,8 @@
-
 #include "squiggles.hpp"
 #include "compat.hpp"
 
 using namespace squiggles;
 
-// extern "C" {
 VisData compute_path(double sx,
                      double sy,
                      double syaw,
@@ -15,10 +13,11 @@ VisData compute_path(double sx,
                      double gyaw,
                      double gv,
                      double ga,
+                     double max_vel,
                      double max_accel,
                      double max_jerk,
                      double dt) {
-  auto constraints = Constraints(9999, max_accel, max_jerk);
+  auto constraints = Constraints(max_vel, max_accel, max_jerk);
   auto spline = Spline(ControlVector(Pose(sx, sy, syaw), sv, sa), ControlVector(Pose(gx, gy, gyaw), gv, ga),
                        constraints,
                        std::make_shared<TankModel>(0.4, constraints),
@@ -30,13 +29,14 @@ VisData compute_path(double sx,
   out.points = new VisDataPoint[path.size()];
   for (std::size_t i = 0; i < path.size(); ++i) {
     out.points[i].time = path[i].time;
-    out.points[i].rx = path[i].vector.pose.x;
-    out.points[i].ry = path[i].vector.pose.y;
-    out.points[i].ryaw = path[i].vector.pose.yaw;
-    out.points[i].rv = path[i].vector.vel;
-    out.points[i].ra = path[i].vector.accel;
-    out.points[i].rj = path[i].vector.jerk;
+    out.points[i].x = path[i].vector.pose.x;
+    out.points[i].y = path[i].vector.pose.y;
+    out.points[i].yaw = path[i].vector.pose.yaw;
+    out.points[i].v = path[i].vector.vel;
+    out.points[i].a = path[i].vector.accel;
+    out.points[i].j = path[i].vector.jerk;
+    out.points[i].lv = path[i].wheel_velocities[0];
+    out.points[i].rv = path[i].wheel_velocities[1];
   }
   return out;
 }
-// }

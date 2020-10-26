@@ -1,23 +1,18 @@
 #ifndef _PYTHON_COMPAT_HPP_
 #define _PYTHON_COMPAT_HPP_
 
-// #if __cplusplus
 extern "C" {
-// #endif
-  // Should be visible in dll without this but this makes sure
-// #ifdef __GNUC__
-// #define EXPORT extern "C" __attribute__((visibility("default"))) 
-// #else
-// #define EXPORT
-// #endif
+
 typedef struct {
   double time;
-  double rx;
-  double ry;
-  double ryaw;
+  double x;
+  double y;
+  double yaw;
+  double v;
+  double a;
+  double j;
+  double lv;
   double rv;
-  double ra;
-  double rj;
 } VisDataPoint;
 
 typedef struct {
@@ -36,11 +31,10 @@ VisData compute_path(double sx,
                      double gyaw,
                      double gv,
                      double ga,
+                     double max_vel,
                      double max_accel,
                      double max_jerk,
                      double dt);
-// #if __cplusplus
 }
-// #endif
 
 #endif
