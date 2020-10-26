@@ -131,7 +131,7 @@ def main():
     sa = 0.1  # start accel [m/ss]
     gx = 4.0  # goal x position [m]
     # gx = 0.0
-    gy = 4.0  # goal y position [m]
+    gy = 2.0  # goal y position [m]
     gyaw = np.deg2rad(20.0)  # goal yaw angle [rad]
     gv = 1.0  # goal speed [m/s]
     ga = 0.1  # goal accel [m/ss]
@@ -139,8 +139,8 @@ def main():
     max_accel = 1.0  # max accel [m/ss]
     max_jerk = 0.5  # max jerk [m/sss]
     dt = 0.1  # time tick [s]
-    # track_width = 0.4
-    track_width = 0.0
+    track_width = 0.4
+    # track_width = 0.0
 
     clib.compute_path.argtypes = [
         c_double,
@@ -219,5 +219,5 @@ def main():
         lv.append(visdata.points[i].lv)
         rv.append(visdata.points[i].rv)
 
-    # path(time, x, y, yaw, lx, ly, rx, ry, lv, rv)
-    kinematics(time, v, a)
+    path(time, x, y, yaw, lx, ly, rx, ry, lv, rv)
+    # kinematics(time, v, a)
