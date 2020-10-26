@@ -12,13 +12,13 @@ jobs:
         run: sudo apt-get install lcov
       - name: Init CMake
         env:
-          CC: gcc-7
-          CXX: g++-7
+          CC: gcc-9
+          CXX: g++-9
         run: |
           mkdir -p ./build
           ./run_cmake_unix.sh
       - name: Build
         env:
-          CC: gcc-7
-          CXX: g++-7
+          CC: gcc-9
+          CXX: g++-9
         run: cd build && make all && cd ..
