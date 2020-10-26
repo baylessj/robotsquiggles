@@ -9,18 +9,22 @@ jobs:
         with:
           submodules: true
       - name: Install LCOV dependency
-        run: sudo apt-get install lcov
+        # run: sudo apt-get install lcov
+        run: |
+          git clone https://github.com/linux-test-project/lcov.git
+          git checkout tags/v1.15
+          make install
       - name: Init CMake
         env:
-          CC: gcc-7
-          CXX: g++-7
+          CC: gcc-9.3
+          CXX: g++-9.3
         run: |
           mkdir -p ./build
           ./run_cmake_unix.sh
       - name: Build
         env:
-          CC: gcc-7
-          CXX: g++-7
+          CC: gcc-9.3
+          CXX: g++-9.3
         run: cd build && make all && cd ..
       - name: Test
         run: ./build/tst/RobotSquiggles_tst
