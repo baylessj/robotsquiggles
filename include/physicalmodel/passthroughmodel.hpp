@@ -3,9 +3,6 @@
 
 #include "physicalmodel/physicalmodel.hpp"
 
-// This silences a warning in GCC/Clang about not using passed parameters
-#define UNUSED __attribute__((unused))
-
 namespace squiggles {
 class PassthroughModel : public PhysicalModel {
   public:
