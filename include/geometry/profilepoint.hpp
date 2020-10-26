@@ -3,6 +3,7 @@
 
 #include <string>
 #include <vector>
+#include <iostream>
 
 #include "controlvector.hpp"
 
@@ -14,11 +15,12 @@ struct ProfilePoint {
   ProfilePoint() = default;
 
   std::string to_string() {
-    std::string wheels = "";
+    std::string wheels = "{";
     for (auto& w : wheel_velocities) {
       wheels += std::to_string(w);
       wheels += ", ";
     }
+    wheels += "}";
     return "ProfilePoint: {" + vector.to_string() + ", wheels: " + wheels +
            ", k: " + std::to_string(curvature) + ", t: " + std::to_string(time) + "}";
   }

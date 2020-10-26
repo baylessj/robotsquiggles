@@ -11,9 +11,36 @@ class Pose {
 
   Pose() = default;
 
+  Pose operator+(const Pose& other) const {
+    const auto new_x = x + (other.x * std::cos(yaw) - other.y * std::sin(yaw));
+    const auto new_y = y + (other.x * std::sin(yaw) + other.y * std::cos(yaw));
+    return Pose(new_x, new_y, yaw + other.yaw);
+  }
+
+  Pose& operator+=(const Pose& other) {
+    x += (other.x * std::cos(yaw) - other.y * std::sin(yaw));
+    y += (other.x * std::sin(yaw) + other.y * std::cos(yaw));
+    yaw += other.yaw;
+    return *this;
+  }
+
+  Pose operator-(const Pose& other) const {
+    const auto new_x = x - (other.x * std::cos(yaw) - other.y * std::sin(yaw));
+    const auto new_y = y - (other.x * std::sin(yaw) + other.y * std::cos(yaw));
+    return Pose(new_x, new_y, yaw - other.yaw);
+  }
+
+  Pose operator*(double scalar) const {
+    return Pose(scalar * x, scalar * y, scalar * yaw);
+  }
+
   double dist(const Pose& other) const {
     return std::sqrt((x - other.x) * (x - other.x) +
                      (y - other.y) * (y - other.y));
+  }
+
+  Pose lerp(const Pose& other, double i) const {
+    return *this + (other - *this) * i;
   }
 
   std::string to_string() {

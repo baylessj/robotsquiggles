@@ -141,6 +141,9 @@ class Spline {
 
   double vf(double vi, double a, double ds);
   double ai(double vf, double vi, double s);
+
+  ProfilePoint get_point_at_time(std::vector<ProfilePoint> points, double t);
+  ProfilePoint lerp_point(ProfilePoint start, ProfilePoint end, double i);
 };
 } // namespace squiggles
 
