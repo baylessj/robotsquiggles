@@ -1,6 +1,6 @@
 # Squiggles
 
-![codecov](https://img.shields.io/codecov/c/gh/baylessj/robotsquiggles) ![license](https://img.shields.io/github/license/baylessj/robotsquiggles)
+[![GitHub Build](https://github.com/baylessj/robotsquiggles/workflows/Build/badge.svg)]() ![codecov](https://img.shields.io/codecov/c/gh/baylessj/robotsquiggles) ![license](https://img.shields.io/github/license/baylessj/robotsquiggles)
 
 ![Basic Path](./img/squiggly.png)
 

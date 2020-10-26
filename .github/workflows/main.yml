@@ -36,24 +36,3 @@ jobs:
         with:
           token: ${{secrets.CODECOV_TOKEN}}
           file: ./coverage.info
-  build:
-    name: build
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-        with:
-          submodules: true
-      - name: Install LCOV dependency
-        run: sudo apt-get install lcov
-      - name: Init CMake
-        env:
-          CC: gcc-7
-          CXX: g++-7
-        run: |
-          mkdir -p ./build
-          ./run_cmake_unix.sh
-      - name: Build
-        env:
-          CC: gcc-7
-          CXX: g++-7
-        run: cd build && make all && cd ..
