@@ -147,7 +147,6 @@ std::vector<GeneratedPoint> Spline::plan() {
 std::vector<ProfilePoint>
 Spline::parameterize(std::vector<GeneratedPoint>& raw_path) {
   std::vector<ConstrainedState> constrainedStates(raw_path.size());
-  std::cout << model->to_string() << std::endl;
 
   // Forward Pass
   ConstrainedState predecessor(raw_path.front().pose,
