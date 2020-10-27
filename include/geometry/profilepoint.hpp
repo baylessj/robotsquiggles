@@ -1,16 +1,22 @@
 #ifndef _SQUIGGLES_PATH_POSITION_HPP_
 #define _SQUIGGLES_PATH_POSITION_HPP_
 
+#include <iostream>
 #include <string>
 #include <vector>
-#include <iostream>
 
 #include "controlvector.hpp"
 
 namespace squiggles {
 struct ProfilePoint {
-  ProfilePoint(ControlVector ivector, std::vector<double> iwheel_velocities, double icurvature, double itime)
-    : vector(ivector), wheel_velocities(iwheel_velocities), curvature(icurvature), time(itime) {}
+  ProfilePoint(ControlVector ivector,
+               std::vector<double> iwheel_velocities,
+               double icurvature,
+               double itime)
+    : vector(ivector),
+      wheel_velocities(iwheel_velocities),
+      curvature(icurvature),
+      time(itime) {}
 
   ProfilePoint() = default;
 
@@ -22,7 +28,8 @@ struct ProfilePoint {
     }
     wheels += "}";
     return "ProfilePoint: {" + vector.to_string() + ", wheels: " + wheels +
-           ", k: " + std::to_string(curvature) + ", t: " + std::to_string(time) + "}";
+           ", k: " + std::to_string(curvature) +
+           ", t: " + std::to_string(time) + "}";
   }
 
   ControlVector vector;

@@ -1,0 +1,38 @@
+name: "format code"
+
+# run on pull requests to develop
+on: pull_request
+
+jobs:
+  format:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Cache multiple paths
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/clang+llvm-11.0.0-x86_64-linux-gnu-ubuntu-20.04
+          key: ${{ runner.os }}-${{ hashFiles('**/lockfiles') }}
+      - uses: actions/checkout@v2
+        with:
+          # check out HEAD on the branch
+          ref: ${{ github.head_ref }}
+          # make sure the parent commit is grabbed as well, because
+          # that's what will get formatted (i.e. the most recent commit)
+          fetch-depth: 2
+      # format the latest commit
+      - name: install clang-format-latest
+        run: |
+          sudo apt install libncurses6 libncurses-dev 
+          wget "https://github.com/llvm/llvm-project/releases/download/llvmorg-11.0.0/clang+llvm-11.0.0-x86_64-linux-gnu-ubuntu-20.04.tar.xz" -O clang.tar.xz
+          tar xf clang.tar.xz
+          cd clang+llvm-11.0.0-x86_64-linux-gnu-ubuntu-20.04
+          sudo cp -R * /usr/
+      - name: actually run clang-format
+        run: ./run_clang_format.sh
+      # commit the changes (if there are any)
+      - name: Commit changes
+        uses: stefanzweifel/git-auto-commit-action@v4.1.2
+        with:
+          commit_message: 🎨 apply clang-format changes
+          branch: ${{ github.head_ref }}

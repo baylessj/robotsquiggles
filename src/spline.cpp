@@ -84,7 +84,8 @@ std::vector<GeneratedPoint> Spline::plan() {
         linear_jerk *= -1;
       }
 
-      double curvature = (x_v * y_a - x_a * y_v) / ((x_v * x_v + y_v * y_v) * std::hypot(x_v, y_v));
+      double curvature = (x_v * y_a - x_a * y_v) /
+                         ((x_v * x_v + y_v * y_v) * std::hypot(x_v, y_v));
 
       vectors.push_back(
         GeneratedVector(GeneratedPoint(Pose(x_p, y_p, yaw), curvature),
@@ -231,9 +232,14 @@ void Spline::backward_pass(ConstrainedState* predecessor,
                            ConstrainedState* successor) {
   double ds = predecessor->distance - successor->distance; // negative
 
-  while (predecessor->max_vel > vf(successor->max_vel, successor->min_accel, ds)) {
+  while (predecessor->max_vel >
+         vf(successor->max_vel, successor->min_accel, ds)) {
     predecessor->max_vel = vf(successor->max_vel, successor->min_accel, ds);
-    auto model_max = model->constraints(predecessor->pose, predecessor->curvature, predecessor->max_vel).max_vel;
+    auto model_max = model
+                       ->constraints(predecessor->pose,
+                                     predecessor->curvature,
+                                     predecessor->max_vel)
+                       .max_vel;
     predecessor->max_vel = std::min(predecessor->max_vel, model_max);
     enforce_accel_lims(predecessor);
 
@@ -297,7 +303,8 @@ std::vector<ProfilePoint> Spline::integrate_constrained_states(
 
     t += segment_dt;
 
-    out[i] = ProfilePoint(ControlVector(state.pose, v, accel, 0), wheel_vels, k, t);
+    out[i] =
+      ProfilePoint(ControlVector(state.pose, v, accel, 0), wheel_vels, k, t);
   }
   return out;
 }
@@ -335,16 +342,20 @@ void Spline::enforce_accel_lims(ConstrainedState* state) {
              model_constraints.max_accel);
 }
 
-ProfilePoint Spline::get_point_at_time(std::vector<ProfilePoint> points, double t) {
-  if (t <= points.front().time) return points.front();
-  if (t >= points.back().time) return points.back();
+ProfilePoint Spline::get_point_at_time(std::vector<ProfilePoint> points,
+                                       double t) {
+  if (t <= points.front().time)
+    return points.front();
+  if (t >= points.back().time)
+    return points.back();
 
   // Use binary search to get the element with a timestamp no less than the
   // requested timestamp. This starts at 1 because we use the previous state
   // later on for interpolation.
-  auto sample =
-      std::lower_bound(points.cbegin() + 1, points.cend(), t,
-                       [](const auto& a, const auto& b) { return a.time < b; });
+  auto sample = std::lower_bound(
+    points.cbegin() + 1, points.cend(), t, [](const auto& a, const auto& b) {
+      return a.time < b;
+    });
 
   auto prev_sample = sample - 1;
 
@@ -360,10 +371,15 @@ ProfilePoint Spline::get_point_at_time(std::vector<ProfilePoint> points, double 
   const auto i = (t - prev_sample->time) / (sample->time - prev_sample->time);
   const auto duration = points.back().time;
   // Interpolate between the two states for the state that we want.
-  return lerp_point(get_x_spline(duration), get_y_spline(duration), *prev_sample, *sample, i);
+  return lerp_point(
+    get_x_spline(duration), get_y_spline(duration), *prev_sample, *sample, i);
 }
 
-ProfilePoint Spline::lerp_point(QuinticPolynomial x_qp, QuinticPolynomial y_qp, ProfilePoint p_start, ProfilePoint p_end, double i) {
+ProfilePoint Spline::lerp_point(QuinticPolynomial x_qp,
+                                QuinticPolynomial y_qp,
+                                ProfilePoint p_start,
+                                ProfilePoint p_end,
+                                double i) {
   // Find the new [t] value.
   const auto new_t = std::lerp(p_start.time, p_end.time, i);
 
@@ -371,12 +387,13 @@ ProfilePoint Spline::lerp_point(QuinticPolynomial x_qp, QuinticPolynomial y_qp, 
   const auto cur_dt = new_t - p_start.time;
 
   // If delta time is negative, flip the order of interpolation.
-  if (cur_dt < 0) return lerp_point(x_qp, y_qp, p_end, p_start, 1.0 - i);
+  if (cur_dt < 0)
+    return lerp_point(x_qp, y_qp, p_end, p_start, 1.0 - i);
 
   // Check whether the robot is reversing at this stage.
   const auto reversing =
-      p_start.vector.vel < 0 ||
-      (std::abs(p_start.vector.vel) < K_EPSILON && p_start.vector.accel < 0);
+    p_start.vector.vel < 0 ||
+    (std::abs(p_start.vector.vel) < K_EPSILON && p_start.vector.accel < 0);
 
   // Calculate the new velocity.
   // v = v_0 + at
@@ -384,25 +401,35 @@ ProfilePoint Spline::lerp_point(QuinticPolynomial x_qp, QuinticPolynomial y_qp, 
 
   // Calculate the change in position.
   // delta_s = v_0 t + 0.5 at^2
-  const auto new_s =
-      (p_start.vector.vel * cur_dt + 0.5 * p_start.vector.accel * cur_dt * cur_dt) *
-      (reversing ? -1.0 : 1.0);
+  const auto new_s = (p_start.vector.vel * cur_dt +
+                      0.5 * p_start.vector.accel * cur_dt * cur_dt) *
+                     (reversing ? -1.0 : 1.0);
 
   // Return the new state. To find the new position for the new state, we need
   // to interpolate between the two endpoint poses. The fraction for
   // interpolation is the change in position (delta s) divided by the total
   // distance between the two endpoints.
   const double interpolationFrac =
-      new_s / p_end.vector.pose.dist(p_start.vector.pose);
-  
-  const auto new_curvature = std::lerp(p_start.curvature, p_end.curvature, interpolationFrac);
-  std::vector<double> new_wheel_vels = model->linear_to_wheel_vels(new_v, new_curvature);
+    new_s / p_end.vector.pose.dist(p_start.vector.pose);
+
+  const auto new_curvature =
+    std::lerp(p_start.curvature, p_end.curvature, interpolationFrac);
+  std::vector<double> new_wheel_vels =
+    model->linear_to_wheel_vels(new_v, new_curvature);
   const auto new_x = x_qp.calc_point(new_t);
   const auto new_y = y_qp.calc_point(new_t);
-  const auto new_yaw = std::atan2(y_qp.calc_first_derivative(new_t), x_qp.calc_first_derivative(new_t));
-  // const auto new_pose = p_start.vector.pose.lerp(p_end.vector.pose, interpolationFrac);
+  const auto new_yaw = std::atan2(y_qp.calc_first_derivative(new_t),
+                                  x_qp.calc_first_derivative(new_t));
+  // const auto new_pose = p_start.vector.pose.lerp(p_end.vector.pose,
+  // interpolationFrac);
 
-  return ProfilePoint(ControlVector(Pose(new_x, new_y, new_yaw), new_v, p_start.vector.accel, p_start.vector.jerk), new_wheel_vels, new_curvature, new_t);
+  return ProfilePoint(ControlVector(Pose(new_x, new_y, new_yaw),
+                                    new_v,
+                                    p_start.vector.accel,
+                                    p_start.vector.jerk),
+                      new_wheel_vels,
+                      new_curvature,
+                      new_t);
 }
 
 QuinticPolynomial Spline::get_x_spline(double duration) {

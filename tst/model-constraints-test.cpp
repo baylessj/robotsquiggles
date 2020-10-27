@@ -1,11 +1,11 @@
 #include <cmath>
-#include <memory>
 #include <iostream>
+#include <memory>
 
 #include "gtest/gtest.h"
 
-#include "spline.hpp"
 #include "physicalmodel/tankmodel.hpp"
+#include "spline.hpp"
 
 using namespace squiggles;
 
@@ -25,7 +25,8 @@ TEST(model_constraints_test, sharp_turn) {
   auto planned_path = spline.parameterize(path);
 
   ASSERT_NEAR(planned_path.front().vector.vel, 0.0, Spline::K_EPSILON);
-  ASSERT_LE(planned_path.back().vector.vel, 0.1); // again, minor changes from lerp
+  ASSERT_LE(planned_path.back().vector.vel,
+            0.1); // again, minor changes from lerp
 
   for (auto p : planned_path) {
     // Giving a tiny bit of room above the max vel to account for the lerp
@@ -51,7 +52,8 @@ TEST(model_constraints_test, smooth_arc) {
   auto planned_path = spline.parameterize(path);
 
   ASSERT_NEAR(planned_path.front().vector.vel, 0.0, Spline::K_EPSILON);
-  ASSERT_LE(planned_path.back().vector.vel, 0.1); // again, minor changes from lerp
+  ASSERT_LE(planned_path.back().vector.vel,
+            0.1); // again, minor changes from lerp
 
   for (auto p : planned_path) {
     ASSERT_LE(p.wheel_velocities[0], 2.0001);

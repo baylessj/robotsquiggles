@@ -6,12 +6,12 @@
 #include <vector>
 
 #include "constraints.hpp"
-#include "polynomial.hpp"
 #include "geometry/controlvector.hpp"
 #include "geometry/generatedpoint.hpp"
 #include "geometry/profilepoint.hpp"
-#include "physicalmodel/physicalmodel.hpp"
 #include "physicalmodel/passthroughmodel.hpp"
+#include "physicalmodel/physicalmodel.hpp"
+#include "polynomial.hpp"
 
 namespace squiggles {
 
@@ -20,19 +20,19 @@ namespace squiggles {
  */
 class Spline {
   public:
-  Spline(
-    ControlVector istart,
-    ControlVector iend,
-    Constraints iconstraints,
-    std::shared_ptr<PhysicalModel> imodel = std::make_shared<PassthroughModel>(),
-    double idt = 0.1);
+  Spline(ControlVector istart,
+         ControlVector iend,
+         Constraints iconstraints,
+         std::shared_ptr<PhysicalModel> imodel =
+           std::make_shared<PassthroughModel>(),
+         double idt = 0.1);
 
-  Spline(
-    Pose istart,
-    Pose iend,
-    Constraints iconstraints,
-    std::shared_ptr<PhysicalModel> imodel = std::make_shared<PassthroughModel>(),
-    double idt = 0.1);
+  Spline(Pose istart,
+         Pose iend,
+         Constraints iconstraints,
+         std::shared_ptr<PhysicalModel> imodel =
+           std::make_shared<PassthroughModel>(),
+         double idt = 0.1);
 
   std::vector<GeneratedPoint> plan();
 
@@ -144,7 +144,11 @@ class Spline {
   double ai(double vf, double vi, double s);
 
   ProfilePoint get_point_at_time(std::vector<ProfilePoint> points, double t);
-  ProfilePoint lerp_point(QuinticPolynomial x_qp, QuinticPolynomial y_qp, ProfilePoint start, ProfilePoint end, double i);
+  ProfilePoint lerp_point(QuinticPolynomial x_qp,
+                          QuinticPolynomial y_qp,
+                          ProfilePoint start,
+                          ProfilePoint end,
+                          double i);
 
   QuinticPolynomial get_x_spline(double duration);
   QuinticPolynomial get_y_spline(double duration);
