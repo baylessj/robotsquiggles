@@ -24,7 +24,6 @@ jobs:
       - name: install clang-format-latest
         run: |
           sudo apt install libncurses5 libncurses5-dev 
-          sudo link /lib/libtinfo.so.6 /lib/libtinfo.so.5
           wget "https://github.com/llvm/llvm-project/releases/download/llvmorg-11.0.0/clang+llvm-11.0.0-x86_64-linux-gnu-ubuntu-20.04.tar.xz" -O clang.tar.xz
           tar xf clang.tar.xz
           cd clang+llvm-11.0.0-x86_64-linux-gnu-ubuntu-20.04
