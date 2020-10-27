@@ -105,7 +105,7 @@ the LICENSE file or at [opensource.org](https://opensource.org/licenses/MIT).
 
 ## Acknowledgments
 
-This code was influenced by the following excellent libraries:
+This code was influenced by libraries and knowledge from the following sources:
 
 - [Team 254 and the WPILib Team](https://github.com/wpilibsuite/allwpilib)
 - [Jaci Brunning](https://github.com/JaciBrunning/Pathfinder)
