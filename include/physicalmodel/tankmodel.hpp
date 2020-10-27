@@ -9,12 +9,17 @@
 namespace squiggles {
 class TankModel : public PhysicalModel {
   public:
+  /**
+   * Defines a model of a tank drive or differential drive robot.
+   */
   TankModel(double itrack_width, Constraints ilinear_constraints);
 
-  Constraints constraints(UNUSED const Pose pose, double curvature, double vel) override;
+  Constraints
+  constraints(UNUSED const Pose pose, double curvature, double vel) override;
 
-  std::vector<double> linear_to_wheel_vels(double lin_vel, double curvature) override;
-  
+  std::vector<double> linear_to_wheel_vels(double lin_vel,
+                                           double curvature) override;
+
   std::string to_string() override;
 
   private:

@@ -6,6 +6,9 @@
 
 namespace squiggles {
 struct Constraints {
+  /**
+   * Defines the motion constraints for a path.
+   */
   Constraints(double imax_vel = std::numeric_limits<double>::max(),
               double imax_accel = std::numeric_limits<double>::max(),
               double imax_jerk = std::numeric_limits<double>::max(),
@@ -15,7 +18,10 @@ struct Constraints {
   }
 
   std::string to_string() const {
-    return "Constraints: {max_vel: " + std::to_string(max_vel) + ", max_accel: " + std::to_string(max_accel) + ", max_jerk: " + std::to_string(max_jerk) + ", min_accel: " + std::to_string(min_accel) + "}";
+    return "Constraints: {max_vel: " + std::to_string(max_vel) +
+           ", max_accel: " + std::to_string(max_accel) +
+           ", max_jerk: " + std::to_string(max_jerk) +
+           ", min_accel: " + std::to_string(min_accel) + "}";
   }
 
   double max_vel;

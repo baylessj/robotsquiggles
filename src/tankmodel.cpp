@@ -1,7 +1,7 @@
-#include <iostream> 
+#include <iostream>
 
+#include "math/utils.hpp"
 #include "physicalmodel/tankmodel.hpp"
-#include "mathutils.hpp"
 
 namespace squiggles {
 TankModel::TankModel(double itrack_width, Constraints ilinear_constraints)
@@ -14,8 +14,9 @@ TankModel::constraints(UNUSED const Pose pose, double curvature, double vel) {
   return Constraints(max_vel, max_accel, 0.0, min_accel);
 }
 
-double
-TankModel::vel_constraint(UNUSED const Pose pose, double curvature, double vel) {
+double TankModel::vel_constraint(UNUSED const Pose pose,
+                                 double curvature,
+                                 double vel) {
   auto wheels = linear_to_wheel_vels(vel, curvature);
   auto left = wheels[0];
   auto right = wheels[1];
@@ -88,8 +89,8 @@ std::tuple<double, double> TankModel::accel_constraint(UNUSED const Pose pose,
   return std::make_tuple(min_chassis_accel, max_chassis_accel);
 }
 
-std::vector<double>
-TankModel::linear_to_wheel_vels(double lin_vel, double curvature) {
+std::vector<double> TankModel::linear_to_wheel_vels(double lin_vel,
+                                                    double curvature) {
   if (std::abs(lin_vel) < 1e-5) {
     return {0, 0};
   } else if (std::abs(curvature) < 1e-5) {
@@ -98,10 +99,11 @@ TankModel::linear_to_wheel_vels(double lin_vel, double curvature) {
 
   double omega = lin_vel * curvature;
   return std::vector<double>{lin_vel - (track_width / 2) * omega,
-                         lin_vel + (track_width / 2) * omega};
+                             lin_vel + (track_width / 2) * omega};
 }
 
 std::string TankModel::to_string() {
-  return "TankModel {w: " + std::to_string(track_width) + ", " + linear_constraints.to_string() + "}";
+  return "TankModel {w: " + std::to_string(track_width) + ", " +
+         linear_constraints.to_string() + "}";
 }
 } // namespace squiggles

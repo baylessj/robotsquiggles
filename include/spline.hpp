@@ -6,82 +6,96 @@
 #include <vector>
 
 #include "constraints.hpp"
-#include "polynomial.hpp"
 #include "geometry/controlvector.hpp"
-#include "geometry/generatedpoint.hpp"
 #include "geometry/profilepoint.hpp"
-#include "physicalmodel/physicalmodel.hpp"
+#include "math/quinticpolynomial.hpp"
 #include "physicalmodel/passthroughmodel.hpp"
+#include "physicalmodel/physicalmodel.hpp"
 
 namespace squiggles {
-
-/**
- *
- */
-class Spline {
+class SplineGenerator {
   public:
-  Spline(
-    ControlVector istart,
-    ControlVector iend,
-    Constraints iconstraints,
-    std::shared_ptr<PhysicalModel> imodel = std::make_shared<PassthroughModel>(),
-    double idt = 0.1);
-
-  Spline(
-    Pose istart,
-    Pose iend,
-    Constraints iconstraints,
-    std::shared_ptr<PhysicalModel> imodel = std::make_shared<PassthroughModel>(),
-    double idt = 0.1);
-
-  std::vector<GeneratedPoint> plan();
-
-  std::vector<ProfilePoint> parameterize(std::vector<GeneratedPoint>& raw_path);
+  /**
+   * Generates curves that match the given motion constraints.
+   */
+  SplineGenerator(Constraints iconstraints,
+                  std::shared_ptr<PhysicalModel> imodel =
+                    std::make_shared<PassthroughModel>(),
+                  double idt = 0.1);
 
   /**
-   * Values that are closer to each other than this value are considered equal.
+   * Creates a motion profiled path between the given waypoints.
+   *
+   * NOTE: currently only two waypoints are supported for a given path.
    */
-  static constexpr double K_EPSILON = 1e-5;
+  std::vector<ProfilePoint> generate(std::initializer_list<Pose> iwaypoints);
+
+  /**
+   * Creates a motion profiled path between the given waypoints.
+   *
+   * NOTE: currently only two waypoints are supported for a given path.
+   */
+  std::vector<ProfilePoint>
+  generate(std::initializer_list<ControlVector> iwaypoints);
 
   protected:
-  ControlVector start;
-  ControlVector end;
-
   /**
-   *
+   * The maximum allowable values for the robot's motion.
    */
   Constraints constraints;
 
   /**
-   *
+   * Defines the physical structure of the robot and translates the linear
+   * kinematics to wheel velocities.
    */
   std::shared_ptr<PhysicalModel> model;
 
   /**
-   * The step size in seconds for the path.
+   * The time difference between each value in the generated path.
    */
   double dt;
 
   /**
-   * These are split from the control vectors to allow the starting and/or
-   * ending velocities to be 0 when constraining the motion profiles.
+   * The minimum and maximum durations for a path to take. A larger range allows
+   * for longer possible paths at the expense of a longer path generation time.
    */
-  double preferred_start_vel;
-  double preferred_end_vel;
+  const int T_MIN = 2;
+  const int T_MAX = 15;
 
   /**
-   * The minimum and maximum times for a path to take.
+   * This is factor is used to create a "dummy velocity" in the initial path
+   * generation step one or both of the preferred start or end velocities is
+   * zero. The velocity will be replaced with the preferred start/end velocity
+   * in parameterization but a nonzero velocity is needed for the spline
+   * calculation.
+   *
+   * This was 1.2 in the WPILib example but that large of a value seems to
+   * create wild paths, 0.12 worked better in testing with VEX-sized paths.
    */
-  // const int T_MIN = 2;
-  // const int T_MAX = 15;
-  const int T_MIN = 5;
-  const int T_MAX = 100;
-
-  // This was 1.2 in the WPILib example but that large of a value seems to
-  // create wild paths
   const double K_DEFAULT_VEL = 0.12;
 
-  private:
+  /**
+   * The output of the initial, "naive" generation step. We discard the
+   * derivative values to replace them with values from a motion profile.
+   */
+  struct GeneratedPoint {
+    GeneratedPoint(Pose ipose, double icurvature = 0.0)
+      : pose(ipose), curvature(icurvature) {}
+
+    std::string to_string() {
+      return "GeneratedPoint: {" + pose.to_string() +
+             ", curvature: " + std::to_string(curvature) + "}";
+    }
+
+    Pose pose;
+    double curvature;
+  };
+
+  /**
+   * An intermediate value used in the "naive" generation step. Contains the
+   * final GeneratedPoint value that will be returned as well as the spline's
+   * derivative values to perform the initial check against the constraints.
+   */
   struct GeneratedVector {
     GeneratedVector(GeneratedPoint ipoint,
                     double ivel,
@@ -93,8 +107,20 @@ class Spline {
     double vel;
     double accel;
     double jerk;
+
+    std::string to_string() {
+      return "GeneratedVector: {" + point.to_string() +
+             ", vel: " + std::to_string(vel) +
+             ", accel: " + std::to_string(accel) +
+             ", jerk: " + std::to_string(jerk) + "}";
+    }
   };
 
+  /**
+   * An intermediate value used in the parameterization step. Adds the
+   * constrained values from the motion profile to the output from the "naive"
+   * generation step.
+   */
   struct ConstrainedState {
     ConstrainedState(Pose ipose,
                      double icurvature,
@@ -130,24 +156,99 @@ class Spline {
     }
   };
 
-  void enforce_accel_lims(ConstrainedState* state);
+  /**
+   * Performs the "naive" generation step.
+   *
+   * This step calculates the spline polynomials that fit within the
+   * SplineGenerator's acceleration and jerk constraints and returns the points
+   * that form the curve.
+   */
+  std::vector<GeneratedPoint> gen_raw_path(ControlVector start,
+                                           ControlVector end);
 
-  void forward_pass(ConstrainedState* predecessor, ConstrainedState* successor);
+  /**
+   * Imposes a linear motion profile on the raw path.
+   *
+   * This step creates the velocity and acceleration values to command the robot
+   * at each point along the curve.
+   */
+  std::vector<ProfilePoint>
+  parameterize(const ControlVector start,
+               const ControlVector end,
+               const std::vector<GeneratedPoint>& raw_path,
+               const double preferred_start_vel,
+               const double preferred_end_vel);
 
-  void backward_pass(ConstrainedState* predecessor,
-                     ConstrainedState* successor);
-
+  /**
+   * Finds the new timestamps for each point along the curve based on the motion
+   * profile.
+   */
   std::vector<ProfilePoint>
   integrate_constrained_states(std::vector<ConstrainedState> constrainedStates);
 
+  /**
+   * Finds the ProfilePoint on the profiled curve for the given timestamp.
+   *
+   * This with interpolate between points on the curve if a point with an exact
+   * matching timestamp is not found.
+   */
+  ProfilePoint get_point_at_time(const ControlVector start,
+                                 const ControlVector end,
+                                 std::vector<ProfilePoint> points,
+                                 double t);
+
+  /**
+   * Linearly interpolates between points along the profiled curve.
+   */
+  ProfilePoint lerp_point(QuinticPolynomial x_qp,
+                          QuinticPolynomial y_qp,
+                          ProfilePoint start,
+                          ProfilePoint end,
+                          double i);
+
+  /**
+   * Returns the spline curve for the given control vectors and path duration.
+   */
+  QuinticPolynomial get_x_spline(const ControlVector start,
+                                 const ControlVector end,
+                                 const double duration);
+  QuinticPolynomial get_y_spline(const ControlVector start,
+                                 const ControlVector end,
+                                 const double duration);
+
+  /**
+   * Applies the general constraints and model constraints to the given state.
+   */
+  void enforce_accel_lims(ConstrainedState* state);
+
+  /**
+   * Imposes the motion profile constraints on a segment of the path from the
+   * perspective of iterating forwards through the path.
+   */
+  void forward_pass(ConstrainedState* predecessor, ConstrainedState* successor);
+
+  /**
+   * Imposes the motion profile constraints on a segment of the path from the
+   * perspective of iterating backwards through the path.
+   */
+  void backward_pass(ConstrainedState* predecessor,
+                     ConstrainedState* successor);
+
+  /**
+   * Calculates the final velocity for a path segment.
+   */
   double vf(double vi, double a, double ds);
+
+  /**
+   * Calculates the initial acceleration needed to match the segments'
+   * velocities.
+   */
   double ai(double vf, double vi, double s);
 
-  ProfilePoint get_point_at_time(std::vector<ProfilePoint> points, double t);
-  ProfilePoint lerp_point(QuinticPolynomial x_qp, QuinticPolynomial y_qp, ProfilePoint start, ProfilePoint end, double i);
-
-  QuinticPolynomial get_x_spline(double duration);
-  QuinticPolynomial get_y_spline(double duration);
+  /**
+   * Values that are closer to each other than this value are considered equal.
+   */
+  static constexpr double K_EPSILON = 1e-5;
 };
 } // namespace squiggles
 

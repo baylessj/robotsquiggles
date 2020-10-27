@@ -3,6 +3,7 @@
 
 #include "gtest/gtest.h"
 
+#include "shared.hpp"
 #include "spline.hpp"
 
 // #define DEBUG
@@ -75,44 +76,58 @@ using namespace squiggles;
 //   1), 1.0, -2.0, 0.0), 2.0),
 // };
 
-std::vector<GeneratedPoint> test_path_1d = {
-  GeneratedPoint(Pose(0.00, 0, 0)), GeneratedPoint(Pose(0.11, 0, 0)),
-  GeneratedPoint(Pose(0.24, 0, 0)), GeneratedPoint(Pose(0.39, 0, 0)),
-  GeneratedPoint(Pose(0.56, 0, 0)), GeneratedPoint(Pose(0.75, 0, 0)),
-  GeneratedPoint(Pose(0.96, 0, 0)), GeneratedPoint(Pose(1.19, 0, 0)),
-  GeneratedPoint(Pose(1.44, 0, 0)), GeneratedPoint(Pose(1.71, 0, 0)),
-  GeneratedPoint(Pose(2.00, 0, 0)), GeneratedPoint(Pose(2.31, 0, 0)),
-  GeneratedPoint(Pose(2.60, 0, 0)), GeneratedPoint(Pose(2.87, 0, 0)),
-  GeneratedPoint(Pose(3.12, 0, 0)), GeneratedPoint(Pose(3.35, 0, 0)),
-  GeneratedPoint(Pose(3.56, 0, 0)), GeneratedPoint(Pose(3.75, 0, 0)),
-  GeneratedPoint(Pose(3.92, 0, 0)), GeneratedPoint(Pose(4.07, 0, 0)),
-  GeneratedPoint(Pose(4.20, 0, 0)),
-};
+class ParameterizationTester : public SplineGenerator {
 
-std::vector<GeneratedPoint> test_path_2d = {
-  GeneratedPoint(Pose(0.00, 0, 1)),
-  GeneratedPoint(Pose(0.059433, 0.092562, 1)),
-  GeneratedPoint(Pose(0.129673, 0.201953, 1)),
-  GeneratedPoint(Pose(0.210718, 0.328174, 1)),
-  GeneratedPoint(Pose(0.302569, 0.471224, 1)),
-  GeneratedPoint(Pose(0.405227, 0.631103, 1)),
-  GeneratedPoint(Pose(0.518690, 0.807812, 1)),
-  GeneratedPoint(Pose(0.642960, 1.001350, 1)),
-  GeneratedPoint(Pose(0.778035, 1.211718, 1)),
-  GeneratedPoint(Pose(0.923917, 1.438915, 1)),
-  GeneratedPoint(Pose(1.080605, 1.682942, 1)),
-  GeneratedPoint(Pose(1.248098, 1.943798, 1)),
-  GeneratedPoint(Pose(1.404786, 2.187825, 1)),
-  GeneratedPoint(Pose(1.550668, 2.415022, 1)),
-  GeneratedPoint(Pose(1.685743, 2.625389, 1)),
-  GeneratedPoint(Pose(1.810013, 2.818928, 1)),
-  GeneratedPoint(Pose(1.923476, 2.995637, 1)),
-  GeneratedPoint(Pose(2.026134, 3.155516, 1)),
-  GeneratedPoint(Pose(2.117985, 3.298566, 1)),
-  GeneratedPoint(Pose(2.199030, 3.424787, 1)),
-  GeneratedPoint(Pose(2.269270, 3.534178, 1)),
-};
+  std::vector<GeneratedPoint> test_path_1d = {
+    GeneratedPoint(Pose(0.00, 0, 0)), GeneratedPoint(Pose(0.11, 0, 0)),
+    GeneratedPoint(Pose(0.24, 0, 0)), GeneratedPoint(Pose(0.39, 0, 0)),
+    GeneratedPoint(Pose(0.56, 0, 0)), GeneratedPoint(Pose(0.75, 0, 0)),
+    GeneratedPoint(Pose(0.96, 0, 0)), GeneratedPoint(Pose(1.19, 0, 0)),
+    GeneratedPoint(Pose(1.44, 0, 0)), GeneratedPoint(Pose(1.71, 0, 0)),
+    GeneratedPoint(Pose(2.00, 0, 0)), GeneratedPoint(Pose(2.31, 0, 0)),
+    GeneratedPoint(Pose(2.60, 0, 0)), GeneratedPoint(Pose(2.87, 0, 0)),
+    GeneratedPoint(Pose(3.12, 0, 0)), GeneratedPoint(Pose(3.35, 0, 0)),
+    GeneratedPoint(Pose(3.56, 0, 0)), GeneratedPoint(Pose(3.75, 0, 0)),
+    GeneratedPoint(Pose(3.92, 0, 0)), GeneratedPoint(Pose(4.07, 0, 0)),
+    GeneratedPoint(Pose(4.20, 0, 0)),
+  };
 
+  std::vector<GeneratedPoint> test_path_2d = {
+    GeneratedPoint(Pose(0.00, 0, 1)),
+    GeneratedPoint(Pose(0.059433, 0.092562, 1)),
+    GeneratedPoint(Pose(0.129673, 0.201953, 1)),
+    GeneratedPoint(Pose(0.210718, 0.328174, 1)),
+    GeneratedPoint(Pose(0.302569, 0.471224, 1)),
+    GeneratedPoint(Pose(0.405227, 0.631103, 1)),
+    GeneratedPoint(Pose(0.518690, 0.807812, 1)),
+    GeneratedPoint(Pose(0.642960, 1.001350, 1)),
+    GeneratedPoint(Pose(0.778035, 1.211718, 1)),
+    GeneratedPoint(Pose(0.923917, 1.438915, 1)),
+    GeneratedPoint(Pose(1.080605, 1.682942, 1)),
+    GeneratedPoint(Pose(1.248098, 1.943798, 1)),
+    GeneratedPoint(Pose(1.404786, 2.187825, 1)),
+    GeneratedPoint(Pose(1.550668, 2.415022, 1)),
+    GeneratedPoint(Pose(1.685743, 2.625389, 1)),
+    GeneratedPoint(Pose(1.810013, 2.818928, 1)),
+    GeneratedPoint(Pose(1.923476, 2.995637, 1)),
+    GeneratedPoint(Pose(2.026134, 3.155516, 1)),
+    GeneratedPoint(Pose(2.117985, 3.298566, 1)),
+    GeneratedPoint(Pose(2.199030, 3.424787, 1)),
+    GeneratedPoint(Pose(2.269270, 3.534178, 1)),
+  };
+
+  public:
+  ParameterizationTester(Constraints iconstraints)
+    : SplineGenerator(iconstraints) {}
+
+  std::vector<ProfilePoint> plan_1d() {
+    return parameterize(Pose(0, 0, 0), Pose(0, 0, 0), test_path_1d, 0, 0);
+  }
+
+  std::vector<ProfilePoint> plan_2d() {
+    return parameterize(Pose(0, 0, 0), Pose(0, 0, 0), test_path_1d, 0, 0);
+  }
+};
 // TEST(helper_scripts, pos) {
 //   // helper script for generating the position values
 //   double pos = 2.0;
@@ -133,15 +148,14 @@ TEST(impose_limits_test, cap_velocity_1d) {
   const double max_accel = 2.0;
   const double max_jerk = 1.0;
 
-  auto spline = Spline(
-    Pose(0, 0, 0), Pose(0, 0, 0), Constraints(max_vel, max_accel, max_jerk));
+  auto spline =
+    ParameterizationTester(Constraints(max_vel, max_accel, max_jerk));
 
-  std::vector<ProfilePoint> parameterized_path =
-    spline.parameterize(test_path_1d);
+  std::vector<ProfilePoint> parameterized_path = spline.plan_1d();
   for (auto p : parameterized_path) {
     DEBUG_PRINT(p.to_string());
-    EXPECT_LE(std::abs(p.vector.vel) - Spline::K_EPSILON, max_vel);
-    EXPECT_LE(std::abs(p.vector.accel) - Spline::K_EPSILON, max_accel);
+    EXPECT_LE(std::abs(p.vector.vel) - TEST_EPSILON, max_vel);
+    EXPECT_LE(std::abs(p.vector.accel) - TEST_EPSILON, max_accel);
   }
 }
 
@@ -150,15 +164,14 @@ TEST(impose_limits_test, cap_accel_1d) {
   const double max_accel = 0.2;
   const double max_jerk = 1.0;
 
-  auto spline = Spline(
-    Pose(0, 0, 0), Pose(0, 0, 0), Constraints(max_vel, max_accel, max_jerk));
+  auto spline =
+    ParameterizationTester(Constraints(max_vel, max_accel, max_jerk));
 
-  std::vector<ProfilePoint> parameterized_path =
-    spline.parameterize(test_path_1d);
+  std::vector<ProfilePoint> parameterized_path = spline.plan_1d();
   for (auto p : parameterized_path) {
     DEBUG_PRINT(p.to_string());
-    EXPECT_LE(std::abs(p.vector.vel) - Spline::K_EPSILON, max_vel);
-    EXPECT_LE(std::abs(p.vector.accel) - Spline::K_EPSILON, max_accel);
+    EXPECT_LE(std::abs(p.vector.vel) - TEST_EPSILON, max_vel);
+    EXPECT_LE(std::abs(p.vector.accel) - TEST_EPSILON, max_accel);
   }
 }
 
@@ -167,15 +180,14 @@ TEST(impose_limits_test, cap_both_1d) {
   const double max_accel = 1.0;
   const double max_jerk = 1.0;
 
-  auto spline = Spline(
-    Pose(0, 0, 0), Pose(0, 0, 0), Constraints(max_vel, max_accel, max_jerk));
+  auto spline =
+    ParameterizationTester(Constraints(max_vel, max_accel, max_jerk));
 
-  std::vector<ProfilePoint> parameterized_path =
-    spline.parameterize(test_path_1d);
+  std::vector<ProfilePoint> parameterized_path = spline.plan_1d();
   for (auto p : parameterized_path) {
     DEBUG_PRINT(p.to_string());
-    EXPECT_LE(std::abs(p.vector.vel) - Spline::K_EPSILON, max_vel);
-    EXPECT_LE(std::abs(p.vector.accel) - Spline::K_EPSILON, max_accel);
+    EXPECT_LE(std::abs(p.vector.vel) - TEST_EPSILON, max_vel);
+    EXPECT_LE(std::abs(p.vector.accel) - TEST_EPSILON, max_accel);
   }
 }
 
@@ -184,15 +196,14 @@ TEST(impose_limits_test, cap_velocity_2d) {
   const double max_accel = 2.0;
   const double max_jerk = 1.0;
 
-  auto spline = Spline(
-    Pose(0, 0, 0), Pose(0, 0, 0), Constraints(max_vel, max_accel, max_jerk));
+  auto spline =
+    ParameterizationTester(Constraints(max_vel, max_accel, max_jerk));
 
-  std::vector<ProfilePoint> parameterized_path =
-    spline.parameterize(test_path_2d);
+  std::vector<ProfilePoint> parameterized_path = spline.plan_2d();
   for (auto p : parameterized_path) {
     DEBUG_PRINT(p.to_string());
-    EXPECT_LE(std::abs(p.vector.vel) - Spline::K_EPSILON, max_vel);
-    EXPECT_LE(std::abs(p.vector.accel) - Spline::K_EPSILON, max_accel);
+    EXPECT_LE(std::abs(p.vector.vel) - TEST_EPSILON, max_vel);
+    EXPECT_LE(std::abs(p.vector.accel) - TEST_EPSILON, max_accel);
   }
 }
 
@@ -201,15 +212,14 @@ TEST(impose_limits_test, cap_accel_2d) {
   const double max_accel = 0.2;
   const double max_jerk = 1.0;
 
-  auto spline = Spline(
-    Pose(0, 0, 0), Pose(0, 0, 0), Constraints(max_vel, max_accel, max_jerk));
+  auto spline =
+    ParameterizationTester(Constraints(max_vel, max_accel, max_jerk));
 
-  std::vector<ProfilePoint> parameterized_path =
-    spline.parameterize(test_path_2d);
+  std::vector<ProfilePoint> parameterized_path = spline.plan_2d();
   for (auto p : parameterized_path) {
     DEBUG_PRINT(p.to_string());
-    EXPECT_LE(std::abs(p.vector.vel) - Spline::K_EPSILON, max_vel);
-    EXPECT_LE(std::abs(p.vector.accel) - Spline::K_EPSILON, max_accel);
+    EXPECT_LE(std::abs(p.vector.vel) - TEST_EPSILON, max_vel);
+    EXPECT_LE(std::abs(p.vector.accel) - TEST_EPSILON, max_accel);
   }
 }
 
@@ -218,14 +228,13 @@ TEST(impose_limits_test, cap_both_2d) {
   const double max_accel = 1.0;
   const double max_jerk = 1.0;
 
-  auto spline = Spline(
-    Pose(0, 0, 0), Pose(0, 0, 0), Constraints(max_vel, max_accel, max_jerk));
+  auto spline =
+    ParameterizationTester(Constraints(max_vel, max_accel, max_jerk));
 
-  std::vector<ProfilePoint> parameterized_path =
-    spline.parameterize(test_path_2d);
+  std::vector<ProfilePoint> parameterized_path = spline.plan_2d();
   for (auto p : parameterized_path) {
     DEBUG_PRINT(p.to_string());
-    EXPECT_LE(std::abs(p.vector.vel) - Spline::K_EPSILON, max_vel);
-    EXPECT_LE(std::abs(p.vector.accel) - Spline::K_EPSILON, max_accel);
+    EXPECT_LE(std::abs(p.vector.vel) - TEST_EPSILON, max_vel);
+    EXPECT_LE(std::abs(p.vector.accel) - TEST_EPSILON, max_accel);
   }
 }
