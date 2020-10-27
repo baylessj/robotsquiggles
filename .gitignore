@@ -55,3 +55,4 @@ build/
 coverage.info
 vis/__pycache__
 .vscode
+clang*
