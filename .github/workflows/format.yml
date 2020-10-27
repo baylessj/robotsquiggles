@@ -26,7 +26,7 @@ jobs:
           wget "https://github.com/llvm/llvm-project/releases/download/llvmorg-11.0.0/clang+llvm-11.0.0-x86_64-linux-gnu-ubuntu-20.04.tar.xz" -O clang.tar.xz
           tar xf clang.tar.xz
           cd clang+llvm-11.0.0-x86_64-linux-gnu-ubuntu-20.04
-          sudo cp -R ./bin/* /usr/bin/
+          sudo cp -R * /usr/
       - name: actually run clang-format
         run: ./run_clang_format.sh
       # commit the changes (if there are any)
