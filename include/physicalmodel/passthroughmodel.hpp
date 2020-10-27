@@ -1,3 +1,9 @@
+/**
+ * Copyright 2020 Jonathan Bayless
+ *
+ * Use of this source code is governed by an MIT-style license that can be found
+ * in the LICENSE file or at https://opensource.org/licenses/MIT.
+ */
 #ifndef _PHYSICAL_MODEL_PASSTHROUGH_MODEL_HPP_
 #define _PHYSICAL_MODEL_PASSTHROUGH_MODEL_HPP_
 

@@ -1,3 +1,9 @@
+/**
+ * Copyright 2020 Jonathan Bayless
+ *
+ * Use of this source code is governed by an MIT-style license that can be found
+ * in the LICENSE file or at https://opensource.org/licenses/MIT.
+ */
 #ifndef _SQUIGGLES_SPLINE_HPP_
 #define _SQUIGGLES_SPLINE_HPP_
 
@@ -17,6 +23,11 @@ class SplineGenerator {
   public:
   /**
    * Generates curves that match the given motion constraints.
+   *
+   * @param iconstraints The maximum allowable values for the robot's motion.
+   * @param imodel The robot's physical characteristics and constraints
+   * @param idt The difference in time in seconds between each state for the
+   *            generated paths.
    */
   SplineGenerator(Constraints iconstraints,
                   std::shared_ptr<PhysicalModel> imodel =
@@ -26,7 +37,12 @@ class SplineGenerator {
   /**
    * Creates a motion profiled path between the given waypoints.
    *
-   * NOTE: currently only two waypoints are supported for a given path.
+   * @note currently only two waypoints are supported for a given path.
+   *
+   * @param iwaypoints The list of poses that the robot should reach along the
+   *                   path.
+   *
+   * @return A series of robot states defining a path between the poses.
    */
   std::vector<ProfilePoint> generate(std::initializer_list<Pose> iwaypoints);
 
@@ -34,6 +50,11 @@ class SplineGenerator {
    * Creates a motion profiled path between the given waypoints.
    *
    * NOTE: currently only two waypoints are supported for a given path.
+   *
+   * @param iwaypoints The list of vectors that the robot should reach along the
+   *                   path.
+   *
+   * @return A series of robot states defining a path between the vectors.
    */
   std::vector<ProfilePoint>
   generate(std::initializer_list<ControlVector> iwaypoints);

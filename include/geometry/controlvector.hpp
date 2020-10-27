@@ -1,3 +1,9 @@
+/**
+ * Copyright 2020 Jonathan Bayless
+ *
+ * Use of this source code is governed by an MIT-style license that can be found
+ * in the LICENSE file or at https://opensource.org/licenses/MIT.
+ */
 #ifndef _GEOMETRY_CONTROL_VECTOR_HPP_
 #define _GEOMETRY_CONTROL_VECTOR_HPP_
 
@@ -11,6 +17,11 @@ class ControlVector {
   public:
   /**
    * A vector used to specify a state along a hermite spline.
+   *
+   * @param ipose The 2D position and heading.
+   * @param ivel The velocity component of the vector.
+   * @param iaccel The acceleration component of the vector.
+   * @param ijerk The jerk component of the vector.
    */
   ControlVector(Pose ipose,
                 double ivel = std::nan(""),
@@ -20,6 +31,11 @@ class ControlVector {
 
   ControlVector() = default;
 
+  /**
+   * Serializes the Control Vector data for debugging.
+   *
+   * @return The Control Vector data.
+   */
   std::string to_string() {
     return "ControlVector: {" + pose.to_string() +
            ", v: " + std::to_string(vel) + ", a: " + std::to_string(accel) +
