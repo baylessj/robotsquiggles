@@ -37,8 +37,8 @@ TEST(plan_plath_test, zero_end) {
 
 TEST(plan_plath_test, zero_start_end) {
   auto spline = SplineGenerator(Constraints(2.0, 2.0, 10.0));
-  auto path = spline.generate({ControlVector(Pose(0, 0, 1), 0.0),
-                               ControlVector(Pose(2, 2, 1), 0.0)});
+  auto path = spline.generate(
+    {ControlVector(Pose(0, 0, 1), 0.0), ControlVector(Pose(2, 2, 1), 0.0)});
   ASSERT_NEAR(path.back().vector.pose.x, 2, TEST_EPSILON);
   ASSERT_NEAR(path.back().vector.pose.y, 2, TEST_EPSILON);
   ASSERT_NEAR(path.back().vector.pose.yaw, 1, TEST_EPSILON);
