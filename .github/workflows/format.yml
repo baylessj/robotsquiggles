@@ -27,6 +27,8 @@ jobs:
           tar xf clang.tar.xz
           cd clang+llvm-11.0.0-x86_64-linux-gnu-ubuntu-20.04
           sudo cp -R ./bin/* /usr/bin/
+      - name: actually run clang-format
+        run: ./run_clang_format.sh
       # commit the changes (if there are any)
       - name: Commit changes
         uses: stefanzweifel/git-auto-commit-action@v4.1.2
