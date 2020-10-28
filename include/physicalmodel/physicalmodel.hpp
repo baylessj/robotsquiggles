@@ -23,7 +23,8 @@ class PhysicalModel {
    * @param pose The 2D pose for this state in the path.
    * @param curvature The change in heading at this state in the path in 1 /
    *                  meters.
-   * @param vel The linear velocity at this state in the path in meters per second.
+   * @param vel The linear velocity at this state in the path in meters per
+   * second.
    */
   virtual Constraints
   constraints(const Pose pose, double curvature, double vel) = 0;
