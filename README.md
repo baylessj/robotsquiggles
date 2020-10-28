@@ -1,11 +1,11 @@
-# Squiggles
-
-![Logo](./img/logo.png)
+<div style="text-align:center">
+<img src="./img/logo.png" />
 
 ---
 
 ![GitHub release](https://img.shields.io/github/v/release/baylessj/robotsquiggles?include_prereleases) ![GitHub Build](https://github.com/baylessj/robotsquiggles/workflows/Build/badge.svg) ![codecov](https://img.shields.io/codecov/c/gh/baylessj/robotsquiggles) ![license](https://img.shields.io/github/license/baylessj/robotsquiggles)
 
+</div>
 A library for generating spline-based paths for robots.
 
 The "squiggles" created by this path generation library allow for smooth, fast
