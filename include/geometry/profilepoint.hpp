@@ -20,11 +20,11 @@ struct ProfilePoint {
    *
    * @param ivector The pose and associated dynamics at this state in the path.
    * @param iwheel_velocities The component of the robot's velocity provided by
-   *                          each wheel.
+   *                          each wheel in meters per second.
    * @param icurvature The degree to which the curve deviates from a straight
-   *                   line at this point.
+   *                   line at this point in 1 / meters.
    * @param itime The timestamp for this state relative to the start of the
-   *              path.
+   *              path in seconds.
    */
   ProfilePoint(ControlVector ivector,
                std::vector<double> iwheel_velocities,

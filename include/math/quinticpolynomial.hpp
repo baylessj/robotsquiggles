@@ -15,13 +15,15 @@ class QuinticPolynomial {
   /**
    * Defines the polynomial function for a spline in one dimension.
    *
-   * @param s_p The starting position of the curve.
-   * @param s_v The starting velocity of the curve.
-   * @param s_a The starting acceleration of the curve.
-   * @param g_p The goal or ending position of the curve.
-   * @param g_v The goal or ending velocity of the curve.
-   * @param g_a The goal or ending acceleration of the curve.
-   * @param t The desired duration for the curve.
+   * @param s_p The starting position of the curve in meters.
+   * @param s_v The starting velocity of the curve in meters per second.
+   * @param s_a The starting acceleration of the curve in meters per second per
+   *            second.
+   * @param g_p The goal or ending position of the curve in meters.
+   * @param g_v The goal or ending velocity of the curve in meters per second.
+   * @param g_a The goal or ending acceleration of the curve in meters per
+   *            second per second.
+   * @param t The desired duration for the curve in seconds.
    */
   QuinticPolynomial(double s_p,
                     double s_v,

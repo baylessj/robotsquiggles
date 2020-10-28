@@ -15,10 +15,14 @@ struct Constraints {
   /**
    * Defines the motion constraints for a path.
    *
-   * @param imax_vel The maximum allowable velocity for the robot in m/s.
-   * @param imax_accel The maximum allowable acceleration for the robot in m/s/s
-   * @param imax_jerk The maximum allowable jerk for the robot in m/s/s/s
-   * @param imin_accel The minimum allowable acceleration for the robot in m/s/s
+   * @param imax_vel The maximum allowable velocity for the robot in meters per
+   *                 second.
+   * @param imax_accel The maximum allowable acceleration for the robot in
+   *                   meters per second per second.
+   * @param imax_jerk The maximum allowable jerk for the robot in meters per
+   *                  second per second per second (m/s^3).
+   * @param imin_accel The minimum allowable acceleration for the robot in
+   *                   meters per second per second.
    */
   Constraints(double imax_vel = std::numeric_limits<double>::max(),
               double imax_accel = std::numeric_limits<double>::max(),

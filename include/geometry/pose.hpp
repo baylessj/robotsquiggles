@@ -16,9 +16,9 @@ class Pose {
   /**
    * Specifies a point and heading in 2D space.
    *
-   * @param ix The x position of the point.
-   * @param iy The y position of the point.
-   * @param iyaw The heading at the point.
+   * @param ix The x position of the point in meters.
+   * @param iy The y position of the point in meters.
+   * @param iyaw The heading at the point in radians.
    */
   Pose(double ix, double iy, double iyaw) : x(ix), y(iy), yaw(iyaw) {}
 
