@@ -1,9 +1,13 @@
 <div style="text-align:center">
-<img align="center" src="./img/logo.png" />
+<p align="center">
+<img src="./img/logo.png" />
+</p>
 
----
+<hr>
 
-<img align="center" src="https://img.shields.io/github/v/release/baylessj/robotsquiggles?include_prereleases" /> <img align="center" src="https://github.com/baylessj/robotsquiggles/workflows/Build/badge.svg" /> <img align="center" src="https://img.shields.io/codecov/c/gh/baylessj/robotsquiggles" /> <img align="center" src="https://img.shields.io/github/license/baylessj/robotsquiggles" />
+<p align="center">
+<img src="https://img.shields.io/github/v/release/baylessj/robotsquiggles?include_prereleases" /> <img src="https://github.com/baylessj/robotsquiggles/workflows/Build/badge.svg" /> <img src="https://img.shields.io/codecov/c/gh/baylessj/robotsquiggles" /> <img src="https://img.shields.io/github/license/baylessj/robotsquiggles" />
+</p>
 
 </div>
 A library for generating spline-based paths for robots.
