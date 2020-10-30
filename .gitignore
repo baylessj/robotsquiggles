@@ -56,3 +56,8 @@ coverage.info
 vis/__pycache__
 .vscode
 clang*
+
+docs/_build
+docs/doxyoutput
+docs/api
+
