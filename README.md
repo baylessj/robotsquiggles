@@ -6,10 +6,11 @@
 <hr>
 
 <p align="center">
-<img src="https://img.shields.io/github/v/release/baylessj/robotsquiggles?include_prereleases" /> <img src="https://github.com/baylessj/robotsquiggles/workflows/Build/badge.svg" /> <img src="https://img.shields.io/codecov/c/gh/baylessj/robotsquiggles" /> <img src="https://img.shields.io/github/license/baylessj/robotsquiggles" />
+<img src="https://img.shields.io/github/v/release/baylessj/robotsquiggles?include_prereleases" /> <img src="https://github.com/baylessj/robotsquiggles/workflows/Build/badge.svg" /> <a href="https://squiggles.readthedocs.io/en/latest"><img src="https://readthedocs.org/projects/squiggles/badge/?version=latest"/></a> <img src="https://img.shields.io/codecov/c/gh/baylessj/robotsquiggles" /> <img src="https://img.shields.io/github/license/baylessj/robotsquiggles" />
 </p>
 
 </div>
+
 A library for generating spline-based paths for robots.
 
 The "squiggles" created by this path generation library allow for smooth, fast
@@ -40,9 +41,9 @@ driving:
 ```cpp
 #include "squiggles.hpp"
 
-const double MAX_VEL = 2.0; // in meters per second
+const double MAX_VEL = 2.0;   // in meters per second
 const double MAX_ACCEL = 3.0; // in meters per second per second
-const double MAX_JERK = 6.0; // in meters per second per second per second
+const double MAX_JERK = 6.0;  // in meters per second per second per second
 auto constraints = squiggles::Constraints(MAX_VEL, MAX_ACCEL, MAX_JERK);
 ```
 
@@ -113,7 +114,7 @@ the LICENSE file or at [opensource.org](https://opensource.org/licenses/MIT).
 
 ## Acknowledgments
 
-This code was influenced by libraries and knowledge from the following sources:
+This code was made possible by influence from the following sources:
 
 - [Team 254 and the WPILib Team](https://github.com/wpilibsuite/allwpilib)
 - [Jaci Brunning](https://github.com/JaciBrunning/Pathfinder)
