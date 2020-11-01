@@ -1,6 +1,12 @@
+/**
+ * Copyright 2020 Jonathan Bayless
+ *
+ * Use of this source code is governed by an MIT-style license that can be found
+ * in the LICENSE file or at https://opensource.org/licenses/MIT.
+ */
 #include <iostream>
 
-#include "mathutils.hpp"
+#include "math/utils.hpp"
 #include "physicalmodel/tankmodel.hpp"
 
 namespace squiggles {

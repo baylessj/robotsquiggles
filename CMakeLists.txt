@@ -14,20 +14,18 @@ add_subdirectory(lib/googletest)
 
 set(VIS_SO
   include/constraints.hpp
-  include/mathutils.hpp
-  include/polynomial.hpp 
+  include/math/utils.hpp
+  include/math/quinticpolynomial.hpp 
   include/spline.hpp 
   include/squiggles.hpp
   include/geometry/controlvector.hpp 
-  include/geometry/generatedpoint.hpp
   include/geometry/pose.hpp 
   include/geometry/profilepoint.hpp
   include/physicalmodel/passthroughmodel.hpp
   include/physicalmodel/physicalmodel.hpp
   include/physicalmodel/tankmodel.hpp
   src/main.cpp
-  src/mathutils.cpp
-  src/polynomial.cpp
+  src/quinticpolynomial.cpp
   src/spline.cpp
   src/tankmodel.cpp
   vis/compat.hpp

@@ -1,7 +1,13 @@
+/**
+ * Copyright 2020 Jonathan Bayless
+ *
+ * Use of this source code is governed by an MIT-style license that can be found
+ * in the LICENSE file or at https://opensource.org/licenses/MIT.
+ */
 #include <iostream>
 #include <string>
 
-#include "polynomial.hpp"
+#include "math/quinticpolynomial.hpp"
 
 namespace squiggles {
 QuinticPolynomial::QuinticPolynomial(double s_p,
@@ -71,13 +77,6 @@ double QuinticPolynomial::calc_second_derivative(double t) {
 
 double QuinticPolynomial::calc_third_derivative(double t) {
   return 6 * a3 + 24 * a4 * t + 60 * a5 * t * t;
-}
-
-std::string QuinticPolynomial::to_string() {
-  return "QuinticPolynomial: {0: " + std::to_string(a0) +
-         " 1: " + std::to_string(a1) + " 2: " + std::to_string(a2) +
-         " 3: " + std::to_string(a3) + " 4: " + std::to_string(a4) +
-         " 5: " + std::to_string(a5) + "}";
 }
 
 } // namespace squiggles

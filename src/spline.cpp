@@ -1,3 +1,9 @@
+/**
+ * Copyright 2020 Jonathan Bayless
+ *
+ * Use of this source code is governed by an MIT-style license that can be found
+ * in the LICENSE file or at https://opensource.org/licenses/MIT.
+ */
 #include <algorithm>
 #include <array>
 #include <cmath>
@@ -8,51 +14,63 @@
 #include "spline.hpp"
 
 namespace squiggles {
-Spline::Spline(ControlVector istart,
-               ControlVector iend,
-               Constraints iconstraints,
-               std::shared_ptr<PhysicalModel> imodel,
-               double idt)
-  : start(istart),
-    end(iend),
-    constraints(iconstraints),
-    model(std::move(imodel)),
-    dt(idt),
-    preferred_start_vel(std::isnan(istart.vel) ? 0 : istart.vel),
-    preferred_end_vel(std::isnan(iend.vel) ? 0 : iend.vel) {
-  // ensure that we don't have unspecified start/end velocities, this angers
-  // the spline math
+SplineGenerator::SplineGenerator(Constraints iconstraints,
+                                 std::shared_ptr<PhysicalModel> imodel,
+                                 double idt)
+  : constraints(iconstraints), model(std::move(imodel)), dt(idt) {}
+
+std::vector<ProfilePoint>
+SplineGenerator::generate(std::initializer_list<Pose> iwaypoints) {
+  if (iwaypoints.size() != 2) {
+    throw std::runtime_error(
+      "Cannot create paths with a number of points other than 2");
+  }
+
+  std::vector<Pose> points = iwaypoints;
+  return generate({ControlVector(points[0]), ControlVector(points[1])});
+}
+
+std::vector<ProfilePoint>
+SplineGenerator::generate(std::initializer_list<ControlVector> iwaypoints) {
+  if (iwaypoints.size() != 2) {
+    throw std::runtime_error(
+      "Cannot create paths with a number of points other than 2");
+  }
+
+  std::vector<ControlVector> points = iwaypoints;
+  auto& start = points[0];
+  auto& end = points[1];
+
+  const auto preferred_start_vel = std::isnan(start.vel) ? 0 : start.vel;
+  const auto preferred_end_vel = std::isnan(end.vel) ? 0 : end.vel;
+
   if (std::isnan(start.vel) || std::abs(start.vel) < K_EPSILON) {
     start.vel = K_DEFAULT_VEL * start.pose.dist(end.pose);
   }
   if (std::isnan(end.vel) || std::abs(end.vel) < K_EPSILON) {
     end.vel = K_DEFAULT_VEL * start.pose.dist(end.pose);
   }
-}
 
-Spline::Spline(Pose istart,
-               Pose iend,
-               Constraints iconstraints,
-               std::shared_ptr<PhysicalModel> imodel,
-               double idt)
-  : Spline(ControlVector(istart),
-           ControlVector(iend),
-           iconstraints,
-           imodel,
-           idt) {}
+  const auto raw_path = gen_raw_path(start, end);
+  // TODO: check if the vel or accel constraints are actually hit by the raw
+  // path and return the raw path if not?
+  return parameterize(
+    start, end, raw_path, preferred_start_vel, preferred_end_vel);
+}
 
 /**
  * NOTE: the time value here is meaningless since we'll remap it completely
  * when imposing the constraints
  */
-std::vector<GeneratedPoint> Spline::plan() {
+std::vector<SplineGenerator::GeneratedPoint>
+SplineGenerator::gen_raw_path(ControlVector start, ControlVector end) {
   // iterate through possible path durations until we find one that fits
   // our kinematic constraints
   std::vector<int> durations(T_MAX - T_MIN + 1);
   std::iota(std::begin(durations), std::end(durations), T_MIN);
   for (auto d : durations) {
-    auto x_qp = get_x_spline(d);
-    auto y_qp = get_y_spline(d);
+    auto x_qp = get_x_spline(start, end, d);
+    auto y_qp = get_y_spline(start, end, d);
 
     std::vector<GeneratedVector> vectors;
 
@@ -122,7 +140,11 @@ std::vector<GeneratedPoint> Spline::plan() {
 }
 
 std::vector<ProfilePoint>
-Spline::parameterize(std::vector<GeneratedPoint>& raw_path) {
+SplineGenerator::parameterize(const ControlVector start,
+                              const ControlVector end,
+                              const std::vector<GeneratedPoint>& raw_path,
+                              const double preferred_start_vel,
+                              const double preferred_end_vel) {
   std::vector<ConstrainedState> constrainedStates(raw_path.size());
 
   // Forward Pass
@@ -162,7 +184,7 @@ Spline::parameterize(std::vector<GeneratedPoint>& raw_path) {
   std::iota(std::begin(times), std::end(times), 0.0);
   std::vector<ProfilePoint> out;
   for (auto t : times) {
-    out.emplace_back(get_point_at_time(time_adjusted, t * dt));
+    out.emplace_back(get_point_at_time(start, end, time_adjusted, t * dt));
   }
   return out;
 }
@@ -171,8 +193,8 @@ Spline::parameterize(std::vector<GeneratedPoint>& raw_path) {
  * We may need to iterate to find the maximum end vel and common accel, since
  * accel limits may be a function of vel.
  */
-void Spline::forward_pass(ConstrainedState* predecessor,
-                          ConstrainedState* successor) {
+void SplineGenerator::forward_pass(ConstrainedState* predecessor,
+                                   ConstrainedState* successor) {
   double ds = successor->pose.dist(predecessor->pose);
   successor->distance = predecessor->distance + ds;
 
@@ -228,8 +250,8 @@ void Spline::forward_pass(ConstrainedState* predecessor,
  * Enforce the max velocity on the predecessor point and the min
  * acceleration on the successor point.
  */
-void Spline::backward_pass(ConstrainedState* predecessor,
-                           ConstrainedState* successor) {
+void SplineGenerator::backward_pass(ConstrainedState* predecessor,
+                                    ConstrainedState* successor) {
   double ds = predecessor->distance - successor->distance; // negative
 
   while (predecessor->max_vel >
@@ -260,7 +282,7 @@ void Spline::backward_pass(ConstrainedState* predecessor,
   }
 }
 
-std::vector<ProfilePoint> Spline::integrate_constrained_states(
+std::vector<ProfilePoint> SplineGenerator::integrate_constrained_states(
   std::vector<ConstrainedState> constrainedStates) {
   std::vector<ProfilePoint> out(constrainedStates.size());
   double t = 0;
@@ -309,15 +331,15 @@ std::vector<ProfilePoint> Spline::integrate_constrained_states(
   return out;
 }
 
-double Spline::vf(double vi, double a, double ds) {
+double SplineGenerator::vf(double vi, double a, double ds) {
   return std::sqrt(vi * vi + a * ds * 2.0);
 }
 
-double Spline::ai(double vf, double vi, double ds) {
+double SplineGenerator::ai(double vf, double vi, double ds) {
   return vf * vf - vi * vi / (ds * 2.0);
 }
 
-void Spline::enforce_accel_lims(ConstrainedState* state) {
+void SplineGenerator::enforce_accel_lims(ConstrainedState* state) {
   // for (auto&& constraint : constraints) {
   //   double factor = reverse ? -1.0 : 1.0;
 
@@ -342,8 +364,11 @@ void Spline::enforce_accel_lims(ConstrainedState* state) {
              model_constraints.max_accel);
 }
 
-ProfilePoint Spline::get_point_at_time(std::vector<ProfilePoint> points,
-                                       double t) {
+ProfilePoint
+SplineGenerator::get_point_at_time(const ControlVector start,
+                                   const ControlVector end,
+                                   std::vector<ProfilePoint> points,
+                                   double t) {
   if (t <= points.front().time)
     return points.front();
   if (t >= points.back().time)
@@ -371,15 +396,18 @@ ProfilePoint Spline::get_point_at_time(std::vector<ProfilePoint> points,
   const auto i = (t - prev_sample->time) / (sample->time - prev_sample->time);
   const auto duration = points.back().time;
   // Interpolate between the two states for the state that we want.
-  return lerp_point(
-    get_x_spline(duration), get_y_spline(duration), *prev_sample, *sample, i);
+  return lerp_point(get_x_spline(start, end, duration),
+                    get_y_spline(start, end, duration),
+                    *prev_sample,
+                    *sample,
+                    i);
 }
 
-ProfilePoint Spline::lerp_point(QuinticPolynomial x_qp,
-                                QuinticPolynomial y_qp,
-                                ProfilePoint p_start,
-                                ProfilePoint p_end,
-                                double i) {
+ProfilePoint SplineGenerator::lerp_point(QuinticPolynomial x_qp,
+                                         QuinticPolynomial y_qp,
+                                         ProfilePoint p_start,
+                                         ProfilePoint p_end,
+                                         double i) {
   // Find the new [t] value.
   const auto new_t = std::lerp(p_start.time, p_end.time, i);
 
@@ -432,7 +460,9 @@ ProfilePoint Spline::lerp_point(QuinticPolynomial x_qp,
                       new_t);
 }
 
-QuinticPolynomial Spline::get_x_spline(double duration) {
+QuinticPolynomial SplineGenerator::get_x_spline(const ControlVector start,
+                                                const ControlVector end,
+                                                const double duration) {
   // break the starting/goal velocities and accels into their
   // axis-specific components
   double s_x = start.pose.x;
@@ -453,7 +483,9 @@ QuinticPolynomial Spline::get_x_spline(double duration) {
   return QuinticPolynomial(s_x, s_vx, s_ax, g_x, g_vx, g_ax, duration);
 }
 
-QuinticPolynomial Spline::get_y_spline(double duration) {
+QuinticPolynomial SplineGenerator::get_y_spline(const ControlVector start,
+                                                const ControlVector end,
+                                                const double duration) {
   // break the starting/goal velocities and accels into their
   // axis-specific components
   double s_y = start.pose.y;
