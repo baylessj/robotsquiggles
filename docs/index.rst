@@ -3,18 +3,65 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to squiggles's documentation!
-=====================================
+Squiggles
+=========
+
+.. image:: logo.png
+    :alt: Squiggles logo
+    :align: center
+
+A library for generating spline-based paths for robots.
+
+The "squiggles" created by this path generation library allow for smooth, fast
+autonomous movements. Robots can follow the generated paths through the use of
+the wheel velocities calculated at each point *along with an appropriate feedback
+controller*.
+
+Getting Started
+---------------
+
+**1. Install the Library**
+
+The list of installation options and their instructions can be found in :doc:`installation`.
+
+**2. Generate Some Paths**
+
+You can follow along with the examples in :doc:`example-paths` or jump straight
+into the :doc:`api/library_root`.
+
+**3. Add a Closed Loop Controller**
+
+It is possible to directly command the generated wheel velocities to a robot but
+any mismatch between your robot measurements and reality will cause your robot
+to go off course. Writing a closed-loop path following controller is an exercise
+left to the reader but the :doc:`controller-suggestions` document has some tips
+to help get you started.
+
+Table of Contents
+----------------- 
 
 .. toctree::
-   :maxdepth: 2
+   :caption: Basics
 
-   about
+   controller-suggestions
+   example-paths
+   installation
+
+.. toctree::
+   :caption: Internals
+
+   physical-models
+   maths
+
+.. toctree::
+   :caption: API Reference
+   :maxdepth: 2
+   
    api/library_root
 
-Indices and tables
-==================
+.. toctree::
+   :caption: Additional Material
 
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+   release-notes/index
+   resources
+
