@@ -29,7 +29,7 @@ version = ""
 # The full version, including alpha/beta/rc tags
 release = "0.1.0"
 
-html_logo = "logo-white.png"
+html_logo = "img/logo-white.png"
 
 
 # -- General configuration ---------------------------------------------------

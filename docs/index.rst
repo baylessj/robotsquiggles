@@ -6,7 +6,7 @@
 Squiggles
 =========
 
-.. image:: logo.png
+.. image:: img/logo.png
     :alt: Squiggles logo
     :align: center
 
@@ -24,12 +24,17 @@ Getting Started
 
 The list of installation options and their instructions can be found in :doc:`installation`.
 
-**2. Generate Some Paths**
+**2. Find Your Robot's Constraints**
+
+The guide in :doc:`constraints` should help you identify the size and speed of
+your robot.
+
+**3. Generate Some Paths**
 
 You can follow along with the examples in :doc:`example-paths` or jump straight
 into the :doc:`api/library_root`.
 
-**3. Add a Closed Loop Controller**
+**4. Add a Closed Loop Controller**
 
 It is possible to directly command the generated wheel velocities to a robot but
 any mismatch between your robot measurements and reality will cause your robot
@@ -42,13 +47,16 @@ Table of Contents
 
 .. toctree::
    :caption: Basics
+   :titlesonly:
 
-   controller-suggestions
-   example-paths
    installation
+   example-paths
+   constraints
+   controller-suggestions
 
 .. toctree::
    :caption: Internals
+   :titlesonly:
 
    physical-models
    maths
@@ -61,6 +69,7 @@ Table of Contents
 
 .. toctree::
    :caption: Additional Material
+   :titlesonly:
 
    release-notes/index
    resources

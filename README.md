@@ -1,6 +1,6 @@
 <div style="text-align:center">
 <p align="center">
-<img src="./img/logo.png" />
+<img src="./docs/img/logo.png" />
 </p>
 
 <hr>
@@ -28,11 +28,11 @@ You can also add Squiggles to your project as a static library by downloading
 [the latest release from Github](https://github.com/baylessj/robotsquiggles/releases).
 
 For instructions on building the library in a development environment see
-[CONTRIBUTING](https://github.com/baylessj/robotsquiggles/CONTRIBUTING.md).
+[CONTRIBUTING](https://github.com/baylessj/robotsquiggles/blob/main/CONTRIBUTING.md).
 
 ## Example Path
 
-![Basic Path](./img/squiggly.png)
+![Basic Path](./docs/img/squiggly.png)
 
 The above path can be created in three simple steps. First, define the
 `Constraints` with the robot's maximum velocity, acceleration, and jerk when
@@ -81,7 +81,7 @@ auto path = generator.generate({Pose(0, 0, 0), Pose(2, 2, 0)});
 
 ## Motion Profiles
 
-![Motion Profile](./img/profile.png)
+![Motion Profile](./docs/img/profile.png)
 
 The robot's `Constraints` provide the maximum allowable dynamics for the
 generated paths. Careful measurement and configuration of these parameters ensures
@@ -105,7 +105,7 @@ is the best choice.
 Currently only "tank drive" or "differential drive" robots are supported, as
 shown below.
 
-![Negative Wheel Vels](./img/neg_wheel_vel.png)
+![Negative Wheel Vels](./docs/img/neg_wheel_vel.png)
 
 ## License
 
