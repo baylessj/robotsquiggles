@@ -67,9 +67,7 @@ TEST(plan_path_test, three_points_nonzero) {
 
 TEST(plan_path_test, three_points_zero) {
   auto spline = SplineGenerator(Constraints(20.0, 2.0, 10.0));
-  auto path = spline.generate({Pose(0, 0, 1),
-                               Pose(1, 1, 1),
-                               Pose(2, 2, 1)});
+  auto path = spline.generate({Pose(0, 0, 1), Pose(1, 1, 1), Pose(2, 2, 1)});
   ASSERT_NEAR(path.back().vector.pose.x, 2, TEST_EPSILON);
   ASSERT_NEAR(path.back().vector.pose.y, 2, TEST_EPSILON);
   ASSERT_NEAR(path.back().vector.pose.yaw, 1, TEST_EPSILON);

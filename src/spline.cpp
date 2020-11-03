@@ -42,11 +42,14 @@ std::vector<ProfilePoint> SplineGenerator::_generate(Iter start, Iter end) {
     auto spline_start = *std::prev(vec);
     auto spline_end = *vec;
 
-    auto preferred_start_vel = std::isnan(spline_start.vel) ? 0 : spline_start.vel;
+    auto preferred_start_vel =
+      std::isnan(spline_start.vel) ? 0 : spline_start.vel;
     auto preferred_end_vel = std::isnan(spline_end.vel) ? 0 : spline_end.vel;
 
-    if (std::isnan(spline_start.vel) || std::abs(spline_start.vel) < K_EPSILON) {
-      spline_start.vel = K_DEFAULT_VEL * spline_start.pose.dist(spline_end.pose);
+    if (std::isnan(spline_start.vel) ||
+        std::abs(spline_start.vel) < K_EPSILON) {
+      spline_start.vel =
+        K_DEFAULT_VEL * spline_start.pose.dist(spline_end.pose);
     }
     if (std::isnan(spline_end.vel) || std::abs(spline_end.vel) < K_EPSILON) {
       spline_end.vel = K_DEFAULT_VEL * spline_start.pose.dist(spline_end.pose);
@@ -55,8 +58,11 @@ std::vector<ProfilePoint> SplineGenerator::_generate(Iter start, Iter end) {
     auto raw_path = gen_raw_path(spline_start, spline_end);
     // TODO: check if the vel or accel constraints are actually hit by the raw
     // path and return the raw path if not?
-    auto profiled_path = parameterize(
-      spline_start, spline_end, raw_path, preferred_start_vel, preferred_end_vel);
+    auto profiled_path = parameterize(spline_start,
+                                      spline_end,
+                                      raw_path,
+                                      preferred_start_vel,
+                                      preferred_end_vel);
     path.insert(path.end(), profiled_path.begin(), profiled_path.end());
   }
   return path;
