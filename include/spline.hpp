@@ -178,6 +178,14 @@ class SplineGenerator {
   };
 
   /**
+   * The actual function called by the "generate" functions.
+   *
+   * Translates the initializer lists into a vector.
+   */
+  template <class Iter>
+  std::vector<ProfilePoint> _generate(Iter start, Iter end);
+
+  /**
    * Performs the "naive" generation step.
    *
    * This step calculates the spline polynomials that fit within the
