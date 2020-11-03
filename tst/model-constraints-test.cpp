@@ -10,6 +10,23 @@
 
 using namespace squiggles;
 
+TEST(model_constraints_test, min_constraints) {
+  auto constraints = Constraints(1.0);
+  auto model = std::make_shared<TankModel>(0.4, constraints);
+  auto spline = SplineGenerator(constraints, model, 0.1);
+  auto path = spline.generate({
+    ControlVector(Pose(0, 0, 0), 0.0, 0.0),
+    ControlVector(Pose(0, 2, 0), 0.0, 0.0),
+  });
+
+  ASSERT_NEAR(path.back().vector.pose.x, 0, TEST_EPSILON);
+  ASSERT_NEAR(path.back().vector.pose.y, 2, TEST_EPSILON);
+  ASSERT_NEAR(path.back().vector.pose.yaw, 0, TEST_EPSILON);
+
+  ASSERT_NEAR(path.front().vector.vel, 0.0, TEST_EPSILON);
+  ASSERT_LE(path.back().vector.vel, 0.1);
+}
+
 TEST(model_constraints_test, sharp_turn) {
   auto constraints = Constraints(2.0, 2.0, 1.0);
   auto model = std::make_shared<TankModel>(0.4, constraints);

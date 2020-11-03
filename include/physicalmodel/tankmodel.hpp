@@ -25,7 +25,7 @@ class TankModel : public PhysicalModel {
   TankModel(double itrack_width, Constraints ilinear_constraints);
 
   Constraints
-  constraints(UNUSED const Pose pose, double curvature, double vel) override;
+  constraints(const Pose pose, double curvature, double vel) override;
 
   std::vector<double> linear_to_wheel_vels(double lin_vel,
                                            double curvature) override;

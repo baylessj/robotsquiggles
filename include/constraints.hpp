@@ -24,12 +24,16 @@ struct Constraints {
    * @param imin_accel The minimum allowable acceleration for the robot in
    *                   meters per second per second.
    */
-  Constraints(double imax_vel = std::numeric_limits<double>::max(),
+  Constraints(double imax_vel,
               double imax_accel = std::numeric_limits<double>::max(),
               double imax_jerk = std::numeric_limits<double>::max(),
               double imin_accel = std::nan(""))
     : max_vel(imax_vel), max_accel(imax_accel), max_jerk(imax_jerk) {
-    min_accel = std::isnan(imin_accel) ? -imax_accel : imin_accel;
+      if (imax_accel == std::numeric_limits<double>::max()) {
+        min_accel = std::numeric_limits<double>::lowest();
+      } else {
+        min_accel = std::isnan(imin_accel) ? -imax_accel : imin_accel;
+      }
   }
 
   /**
