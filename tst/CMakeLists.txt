@@ -5,7 +5,7 @@ file(GLOB_RECURSE TEST_SOURCES LIST_DIRECTORIES false *.hpp *.cpp)
 include_directories(.)
 
 # Below line seemed to cause issues with collecting coverage from source
-set(SOURCES ${TEST_SOURCES})
+# set(SOURCES ${TEST_SOURCES})
 
 add_executable(${BINARY} ${TEST_SOURCES})
 
