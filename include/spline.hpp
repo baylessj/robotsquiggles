@@ -180,7 +180,10 @@ class SplineGenerator {
   /**
    * The actual function called by the "generate" functions.
    *
-   * Translates the initializer lists into a vector.
+   * @param start An iterator pointing to the first ControlVector in the path
+   * @param end An iterator pointting to the last ControlVector in the path
+   * 
+   * @return The points from each path concatenated together
    */
   template <class Iter>
   std::vector<ProfilePoint> _generate(Iter start, Iter end);
