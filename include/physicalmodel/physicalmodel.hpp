@@ -11,7 +11,7 @@
 #include "geometry/pose.hpp"
 
 // This silences a warning in GCC/Clang about not using passed parameters
-#define UNUSED __attribute__((unused))
+#define UNUSED(var) ((void)var)
 
 namespace squiggles {
 class PhysicalModel {
