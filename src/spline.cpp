@@ -21,41 +21,51 @@ SplineGenerator::SplineGenerator(Constraints iconstraints,
 
 std::vector<ProfilePoint>
 SplineGenerator::generate(std::initializer_list<Pose> iwaypoints) {
-  if (iwaypoints.size() != 2) {
-    throw std::runtime_error(
-      "Cannot create paths with a number of points other than 2");
-  }
-
   std::vector<Pose> points = iwaypoints;
-  return generate({ControlVector(points[0]), ControlVector(points[1])});
+  std::vector<ControlVector> vectors;
+  for (auto p : points) {
+    vectors.emplace_back(ControlVector(p));
+  }
+  return _generate(vectors.begin(), vectors.end());
 }
 
 std::vector<ProfilePoint>
 SplineGenerator::generate(std::initializer_list<ControlVector> iwaypoints) {
-  if (iwaypoints.size() != 2) {
-    throw std::runtime_error(
-      "Cannot create paths with a number of points other than 2");
+  return _generate(iwaypoints.begin(), iwaypoints.end());
+}
+
+template <class Iter>
+std::vector<ProfilePoint> SplineGenerator::_generate(Iter start, Iter end) {
+  std::vector<ProfilePoint> path;
+  for (auto vec = std::next(start); vec != end; ++vec) {
+    // create copies of the values
+    auto spline_start = *std::prev(vec);
+    auto spline_end = *vec;
+
+    auto preferred_start_vel =
+      std::isnan(spline_start.vel) ? 0 : spline_start.vel;
+    auto preferred_end_vel = std::isnan(spline_end.vel) ? 0 : spline_end.vel;
+
+    if (std::isnan(spline_start.vel) ||
+        std::abs(spline_start.vel) < K_EPSILON) {
+      spline_start.vel =
+        K_DEFAULT_VEL * spline_start.pose.dist(spline_end.pose);
+    }
+    if (std::isnan(spline_end.vel) || std::abs(spline_end.vel) < K_EPSILON) {
+      spline_end.vel = K_DEFAULT_VEL * spline_start.pose.dist(spline_end.pose);
+    }
+
+    auto raw_path = gen_raw_path(spline_start, spline_end);
+    // TODO: check if the vel or accel constraints are actually hit by the raw
+    // path and return the raw path if not?
+    auto profiled_path = parameterize(spline_start,
+                                      spline_end,
+                                      raw_path,
+                                      preferred_start_vel,
+                                      preferred_end_vel);
+    path.insert(path.end(), profiled_path.begin(), profiled_path.end());
   }
-
-  std::vector<ControlVector> points = iwaypoints;
-  auto& start = points[0];
-  auto& end = points[1];
-
-  const auto preferred_start_vel = std::isnan(start.vel) ? 0 : start.vel;
-  const auto preferred_end_vel = std::isnan(end.vel) ? 0 : end.vel;
-
-  if (std::isnan(start.vel) || std::abs(start.vel) < K_EPSILON) {
-    start.vel = K_DEFAULT_VEL * start.pose.dist(end.pose);
-  }
-  if (std::isnan(end.vel) || std::abs(end.vel) < K_EPSILON) {
-    end.vel = K_DEFAULT_VEL * start.pose.dist(end.pose);
-  }
-
-  const auto raw_path = gen_raw_path(start, end);
-  // TODO: check if the vel or accel constraints are actually hit by the raw
-  // path and return the raw path if not?
-  return parameterize(
-    start, end, raw_path, preferred_start_vel, preferred_end_vel);
+  return path;
 }
 
 /**

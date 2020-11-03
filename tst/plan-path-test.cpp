@@ -54,3 +54,21 @@ TEST(plan_plath_test, zero_start_end) {
   //   std::cout << p.to_string() << std::endl;
   // }
 }
+
+TEST(plan_path_test, three_points_nonzero) {
+  auto spline = SplineGenerator(Constraints(20.0, 2.0, 10.0));
+  auto path = spline.generate({ControlVector(Pose(0, 0, 1), 1.0, 2.0),
+                               ControlVector(Pose(1, 1, 1), 1.0, 0.0),
+                               ControlVector(Pose(2, 2, 1), 1.0, -2.0)});
+  ASSERT_NEAR(path.back().vector.pose.x, 2, TEST_EPSILON);
+  ASSERT_NEAR(path.back().vector.pose.y, 2, TEST_EPSILON);
+  ASSERT_NEAR(path.back().vector.pose.yaw, 1, TEST_EPSILON);
+}
+
+TEST(plan_path_test, three_points_zero) {
+  auto spline = SplineGenerator(Constraints(20.0, 2.0, 10.0));
+  auto path = spline.generate({Pose(0, 0, 1), Pose(1, 1, 1), Pose(2, 2, 1)});
+  ASSERT_NEAR(path.back().vector.pose.x, 2, TEST_EPSILON);
+  ASSERT_NEAR(path.back().vector.pose.y, 2, TEST_EPSILON);
+  ASSERT_NEAR(path.back().vector.pose.yaw, 1, TEST_EPSILON);
+}
