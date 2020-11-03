@@ -28,7 +28,7 @@ jobs:
           CXX: g++-9
         run: cd build && make all && cd ..
       - name: Test
-        run: ./build/tst/RobotSquiggles_tst
+        run: ./build/src/RobotSquiggles_lib
       - name: Collect Coverage
         run: |
           lcov --directory ./build/tst/CMakeFiles/RobotSquiggles_tst.dir/ --capture --output-file coverage.info
