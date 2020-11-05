@@ -68,4 +68,4 @@ set(VIS_SO
   vis/compat.hpp
   vis/compat.cpp)
 
-add_library(${CMAKE_PROJECT_NAME} SHARED ${VIS_SO}) # creates a shared object for use with python
+add_library(RobotSquiggles SHARED ${VIS_SO}) # creates a shared object for use with python
