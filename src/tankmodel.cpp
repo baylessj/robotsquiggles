@@ -21,9 +21,8 @@ TankModel::constraints(const Pose pose, double curvature, double vel) {
   return Constraints(max_vel, max_accel, 0.0, min_accel);
 }
 
-double TankModel::vel_constraint(const Pose pose,
-                                 double curvature,
-                                 double vel) {
+double
+TankModel::vel_constraint(const Pose pose, double curvature, double vel) {
   UNUSED(pose);
   auto wheels = linear_to_wheel_vels(vel, curvature);
   auto left = wheels[0];

@@ -17,9 +17,8 @@ class PassthroughModel : public PhysicalModel {
    */
   PassthroughModel() = default;
 
-  Constraints constraints(const Pose pose,
-                          double curvature,
-                          double vel) override {
+  Constraints
+  constraints(const Pose pose, double curvature, double vel) override {
     UNUSED(pose);
     UNUSED(curvature);
     return Constraints(vel);

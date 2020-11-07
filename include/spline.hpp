@@ -44,6 +44,7 @@ class SplineGenerator {
    *
    * @return A series of robot states defining a path between the poses.
    */
+  std::vector<ProfilePoint> generate(std::vector<Pose> iwaypoints);
   std::vector<ProfilePoint> generate(std::initializer_list<Pose> iwaypoints);
 
   /**
@@ -56,6 +57,7 @@ class SplineGenerator {
    *
    * @return A series of robot states defining a path between the vectors.
    */
+  std::vector<ProfilePoint> generate(std::vector<ControlVector> iwaypoints);
   std::vector<ProfilePoint>
   generate(std::initializer_list<ControlVector> iwaypoints);
 

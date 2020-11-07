@@ -20,6 +20,16 @@ SplineGenerator::SplineGenerator(Constraints iconstraints,
   : constraints(iconstraints), model(std::move(imodel)), dt(idt) {}
 
 std::vector<ProfilePoint>
+SplineGenerator::generate(std::vector<Pose> iwaypoints) {
+  std::vector<Pose> points = iwaypoints;
+  std::vector<ControlVector> vectors;
+  for (auto p : points) {
+    vectors.emplace_back(ControlVector(p));
+  }
+  return _generate(vectors.begin(), vectors.end());
+}
+
+std::vector<ProfilePoint>
 SplineGenerator::generate(std::initializer_list<Pose> iwaypoints) {
   std::vector<Pose> points = iwaypoints;
   std::vector<ControlVector> vectors;
@@ -27,6 +37,11 @@ SplineGenerator::generate(std::initializer_list<Pose> iwaypoints) {
     vectors.emplace_back(ControlVector(p));
   }
   return _generate(vectors.begin(), vectors.end());
+}
+
+std::vector<ProfilePoint>
+SplineGenerator::generate(std::vector<ControlVector> iwaypoints) {
+  return _generate(iwaypoints.begin(), iwaypoints.end());
 }
 
 std::vector<ProfilePoint>
