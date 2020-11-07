@@ -98,6 +98,10 @@ set(squiggles_build_include_dirs
   "${squiggles_SOURCE_DIR}")
 include_directories(${squiggles_build_include_dirs})
 
+target_include_directories(squiggles SYSTEM INTERFACE
+    "$<BUILD_INTERFACE:${squiggles_build_include_dirs}>"
+    "$<INSTALL_INTERFACE:$<INSTALL_PREFIX>/${CMAKE_INSTALL_INCLUDEDIR}>")
+
 install_project(squiggles)
 
 set(VIS_SO
