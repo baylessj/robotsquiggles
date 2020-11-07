@@ -92,6 +92,12 @@ if (DEFINED CMAKE_VERSION AND NOT "${CMAKE_VERSION}" VERSION_LESS "2.8.11")
     "$<BUILD_INTERFACE:${squiggles_build_include_dirs}>"
     "$<INSTALL_INTERFACE:$<INSTALL_PREFIX>/${CMAKE_INSTALL_INCLUDEDIR}>")
 endif()
+
+set(squiggles_build_include_dirs
+  "${squiggles_SOURCE_DIR}/include"
+  "${squiggles_SOURCE_DIR}")
+include_directories(${squiggles_build_include_dirs})
+
 install_project(squiggles)
 
 set(VIS_SO
