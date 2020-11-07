@@ -87,11 +87,6 @@ endif()
 
 cxx_library(squiggles "${cxx_strict}" src/main.cpp)
 set_target_properties(squiggles PROPERTIES VERSION ${SQUIGGLES_VERSION})
-if (DEFINED CMAKE_VERSION AND NOT "${CMAKE_VERSION}" VERSION_LESS "2.8.11")
-  target_include_directories(squiggles SYSTEM INTERFACE
-    "$<BUILD_INTERFACE:${squiggles_build_include_dirs}>"
-    "$<INSTALL_INTERFACE:$<INSTALL_PREFIX>/${CMAKE_INSTALL_INCLUDEDIR}>")
-endif()
 
 set(squiggles_build_include_dirs
   "${squiggles_SOURCE_DIR}/include"
