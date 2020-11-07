@@ -7,6 +7,22 @@ option(INSTALL_SQUIGGLES "Enables installation of the squiggles library" ON)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++2a -Wall -Wextra -Wshadow -Wnull-dereference -Wno-psabi -Wno-unused-function -pthread -g -O0 -fprofile-arcs -ftest-coverage --coverage -D THREADS_STD")
 
+set(SQUIGGLES_SOURCES include/constraints.hpp
+  include/math/utils.hpp
+  include/math/quinticpolynomial.hpp 
+  include/spline.hpp 
+  include/squiggles.hpp
+  include/geometry/controlvector.hpp 
+  include/geometry/pose.hpp 
+  include/geometry/profilepoint.hpp
+  include/physicalmodel/passthroughmodel.hpp
+  include/physicalmodel/physicalmodel.hpp
+  include/physicalmodel/tankmodel.hpp
+  src/main.cpp
+  src/quinticpolynomial.cpp
+  src/spline.cpp
+  src/tankmodel.cpp)
+
 if (SQUIGGLES_TEST)
     # Download and unpack googletest at configure time
     configure_file(CMakeLists.txt.in external-dependencies/CMakeLists.txt)
@@ -85,7 +101,7 @@ if (INSTALL_SQUIGGLES)
     DESTINATION ${cmake_files_install_dir})
 endif()
 
-cxx_library(squiggles "${cxx_strict}" src/main.cpp)
+cxx_library(squiggles "${cxx_strict}" ${SQUIGGLES_SOURCES})
 set_target_properties(squiggles PROPERTIES VERSION ${SQUIGGLES_VERSION})
 
 set(squiggles_build_include_dirs
@@ -100,21 +116,7 @@ target_include_directories(squiggles SYSTEM INTERFACE
 install_project(squiggles)
 
 set(VIS_SO
-  include/constraints.hpp
-  include/math/utils.hpp
-  include/math/quinticpolynomial.hpp 
-  include/spline.hpp 
-  include/squiggles.hpp
-  include/geometry/controlvector.hpp 
-  include/geometry/pose.hpp 
-  include/geometry/profilepoint.hpp
-  include/physicalmodel/passthroughmodel.hpp
-  include/physicalmodel/physicalmodel.hpp
-  include/physicalmodel/tankmodel.hpp
-  src/main.cpp
-  src/quinticpolynomial.cpp
-  src/spline.cpp
-  src/tankmodel.cpp
+  ${SQUIGGLES_SOURCES}
   vis/compat.hpp
   vis/compat.cpp)
 
