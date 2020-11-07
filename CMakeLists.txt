@@ -1,7 +1,8 @@
 cmake_minimum_required(VERSION 3.10)
-project(RobotSquiggles)
+project(squiggles)
 
 option(SQUIGGLES_TEST "determines if we're gonna pull googletest" OFF)
+option(INSTALL_SQUIGGLES "Enables installation of the squiggles library" ON)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++2a -Wall -Wextra -Wshadow -Wnull-dereference -Wno-psabi -Wno-unused-function -pthread -g -O0 -fprofile-arcs -ftest-coverage --coverage -D THREADS_STD")
@@ -48,6 +49,50 @@ if (SQUIGGLES_TEST)
     add_subdirectory(tst)
 endif()
 add_subdirectory(vis)
+
+#-------------------------------------------------------------------------------
+
+set(SQUIGGLES_VERSION 0.1.0)
+
+if (CMAKE_VERSION VERSION_LESS 3.0)
+  project(squiggles CXX C)
+  set(PROJECT_VERSION ${SQUIGGLES_VERSION})
+else()
+  cmake_policy(SET CMP0048 NEW)
+  project(squiggles VERSION ${SQUIGGLES_VERSION} LANGUAGES CXX C)
+endif()
+cmake_minimum_required(VERSION 2.6.4)
+
+if (POLICY CMP0063) # Visibility
+  cmake_policy(SET CMP0063 NEW)
+endif (POLICY CMP0063)
+
+if (INSTALL_SQUIGGLES)
+  include(CMakePackageConfigHelpers)
+  set(cmake_package_name Squiggles)
+  set(targets_export_name ${cmake_package_name}Targets CACHE INTERNAL "")
+  set(generated_dir "${CMAKE_CURRENT_BINARY_DIR}/generated" CACHE INTERNAL "")
+  set(cmake_files_install_dir "${CMAKE_INSTALL_LIBDIR}/cmake/${cmake_package_name}")
+  set(version_file "${generated_dir}/${cmake_package_name}ConfigVersion.cmake")
+  write_basic_package_version_file(${version_file} VERSION ${SQUIGGLES_VERSION} COMPATIBILITY AnyNewerVersion)
+  install(EXPORT ${targets_export_name}
+    NAMESPACE ${cmake_package_name}::
+    DESTINATION ${cmake_files_install_dir})
+  set(config_file "${generated_dir}/${cmake_package_name}Config.cmake")
+  configure_package_config_file("${gtest_SOURCE_DIR}/cmake/Config.cmake.in"
+    "${config_file}" INSTALL_DESTINATION ${cmake_files_install_dir})
+  install(FILES ${version_file} ${config_file}
+    DESTINATION ${cmake_files_install_dir})
+endif()
+
+cxx_library(squiggles "${cxx_strict}" src/main.cpp)
+set_target_properties(squiggles PROPERTIES VERSION ${SQUIGGLES_VERSION})
+if (DEFINED CMAKE_VERSION AND NOT "${CMAKE_VERSION}" VERSION_LESS "2.8.11")
+  target_include_directories(squiggles SYSTEM INTERFACE
+    "$<BUILD_INTERFACE:${squiggles_build_include_dirs}>"
+    "$<INSTALL_INTERFACE:$<INSTALL_PREFIX>/${CMAKE_INSTALL_INCLUDEDIR}>")
+endif()
+install_project(squiggles)
 
 set(VIS_SO
   include/constraints.hpp
