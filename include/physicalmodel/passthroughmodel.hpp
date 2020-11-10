@@ -31,7 +31,7 @@ class PassthroughModel : public PhysicalModel {
     return std::vector<double>{};
   }
 
-  std::string to_string() override {
+  std::string to_string() const override {
     return "PassthroughModel {}";
   }
 };

@@ -30,7 +30,7 @@ class TankModel : public PhysicalModel {
   std::vector<double> linear_to_wheel_vels(double lin_vel,
                                            double curvature) override;
 
-  std::string to_string() override;
+  std::string to_string() const override;
 
   private:
   double vel_constraint(const Pose pose, double curvature, double vel);

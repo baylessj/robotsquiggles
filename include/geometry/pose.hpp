@@ -41,7 +41,7 @@ class Pose {
    *
    * @return The Pose data.
    */
-  std::string to_string() {
+  std::string to_string() const {
     return "Pose: {x: " + std::to_string(x) + ", y: " + std::to_string(y) +
            ", yaw: " + std::to_string(yaw) + "}";
   }

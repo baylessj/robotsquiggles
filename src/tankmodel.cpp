@@ -110,7 +110,7 @@ std::vector<double> TankModel::linear_to_wheel_vels(double lin_vel,
                              lin_vel + (track_width / 2) * omega};
 }
 
-std::string TankModel::to_string() {
+std::string TankModel::to_string() const {
   return "TankModel {w: " + std::to_string(track_width) + ", " +
          linear_constraints.to_string() + "}";
 }

@@ -42,7 +42,7 @@ struct ProfilePoint {
    *
    * @return The Profile Point data.
    */
-  std::string to_string() {
+  std::string to_string() const {
     std::string wheels = "{";
     for (auto& w : wheel_velocities) {
       wheels += std::to_string(w);

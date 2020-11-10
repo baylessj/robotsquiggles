@@ -36,7 +36,7 @@ class ControlVector {
    *
    * @return The Control Vector data.
    */
-  std::string to_string() {
+  std::string to_string() const {
     return "ControlVector: {" + pose.to_string() +
            ", v: " + std::to_string(vel) + ", a: " + std::to_string(accel) +
            ", j: " + std::to_string(jerk) + "}";

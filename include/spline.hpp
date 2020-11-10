@@ -105,7 +105,7 @@ class SplineGenerator {
     GeneratedPoint(Pose ipose, double icurvature = 0.0)
       : pose(ipose), curvature(icurvature) {}
 
-    std::string to_string() {
+    std::string to_string() const {
       return "GeneratedPoint: {" + pose.to_string() +
              ", curvature: " + std::to_string(curvature) + "}";
     }
@@ -131,7 +131,7 @@ class SplineGenerator {
     double accel;
     double jerk;
 
-    std::string to_string() {
+    std::string to_string() const {
       return "GeneratedVector: {" + point.to_string() +
              ", vel: " + std::to_string(vel) +
              ", accel: " + std::to_string(accel) +
@@ -167,7 +167,7 @@ class SplineGenerator {
     double min_accel = 0;
     double max_accel = 0;
 
-    std::string to_string() {
+    std::string to_string() const {
       return "ConstrainedState: {x: " + std::to_string(pose.x) +
              ", y: " + std::to_string(pose.y) +
              ", yaw: " + std::to_string(pose.yaw) +

@@ -47,7 +47,7 @@ class QuinticPolynomial {
    *
    * @return The Quintic Polynomial data.
    */
-  std::string to_string() {
+  std::string to_string() const {
     return "QuinticPolynomial: {0: " + std::to_string(a0) +
            " 1: " + std::to_string(a1) + " 2: " + std::to_string(a2) +
            " 3: " + std::to_string(a3) + " 4: " + std::to_string(a4) +
