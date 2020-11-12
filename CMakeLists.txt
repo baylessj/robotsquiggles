@@ -18,6 +18,7 @@ set(SQUIGGLES_SOURCES include/constraints.hpp
   include/physicalmodel/passthroughmodel.hpp
   include/physicalmodel/physicalmodel.hpp
   include/physicalmodel/tankmodel.hpp
+  src/io.cpp
   src/main.cpp
   src/quinticpolynomial.cpp
   src/spline.cpp
