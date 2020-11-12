@@ -16,6 +16,7 @@
 #include "physicalmodel/tankmodel.hpp"
 
 #include "constraints.hpp"
+#include "io.hpp"
 #include "spline.hpp"
 
 #endif
