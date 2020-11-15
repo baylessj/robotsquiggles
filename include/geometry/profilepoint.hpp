@@ -54,6 +54,15 @@ struct ProfilePoint {
            ", t: " + std::to_string(time) + "}";
   }
 
+  std::string to_csv() const {
+    std::string wheels = "";
+    for (auto& w : wheel_velocities) {
+      wheels += ",";
+      wheels += std::to_string(w);
+    }
+    return vector.to_csv() + "," + std::to_string(curvature) + "," + std::to_string(time) + wheels;
+  }
+
   ControlVector vector;
   std::vector<double> wheel_velocities;
   double curvature;

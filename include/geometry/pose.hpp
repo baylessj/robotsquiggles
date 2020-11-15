@@ -46,6 +46,10 @@ class Pose {
            ", yaw: " + std::to_string(yaw) + "}";
   }
 
+  std::string to_csv() const {
+    return std::to_string(x) + "," + std::to_string(y) + "," + std::to_string(yaw);
+  }
+
   double x;
   double y;
   double yaw;

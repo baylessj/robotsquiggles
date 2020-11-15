@@ -21,7 +21,7 @@ int serialize_path(FILE* file, std::vector<ProfilePoint> path);
 /**
  * Converts CSV data into a path.
  */
-std::vector<ProfilePoint> deserialize_path(FILE* file);
+std::optional<std::vector<ProfilePoint>> deserialize_path(FILE* file);
 
 /**
  * Converts CSV data from the Pathfinder library's format to a Squiggles path.

@@ -10,17 +10,74 @@
 
 namespace squiggles {
 int serialize_path(FILE* file, std::vector<ProfilePoint> path) {
+  if (!file || path.size() == 0) {
+    return -1;
+  }
 
+  fputs("x, y, yaw, vel, accel, jerk, curvature, time, wheels", file);
+  for (auto p : path) {
+    fputs(p.to_csv().c_str(), file);
+  }
+  return 0;
 }
 
-std::vector<ProfilePoint> deserialize_path(FILE* file) {
-
-}
-
-static std::vector<ProfilePoint> deserialize_pathfinder_segment(FILE* file) {
+std::optional<std::vector<ProfilePoint>> deserialize_path(FILE* file) {
   if (file == NULL) {
       std::cout << "File does not exist!" << std::endl;
-      return {};
+      return std::nullopt;
+  }
+  
+  std::vector<ProfilePoint> path;
+  char line[1024];
+  int line_n = 0;
+  int seg_n = 0;
+  while (fgets(line, 1024, file)) {
+      char *tmp = strdup(line);
+      if (tmp == NULL) {
+          std::cout << "strdup returned null. Have you run out of RAM, Heap Space, or have been hit by a cosmic ray?" << std::endl;
+          return {};
+      }
+      if (line_n == 0) {
+        line_n++;
+      } 
+
+      char *record;
+      record = strtok(tmp, ",");
+      double x   = strtod(record, NULL);
+      record = strtok(NULL, ",");
+      double y    = strtod(record, NULL);
+      record = strtok(NULL, ",");
+      double yaw  = strtod(record, NULL);
+      record = strtok(NULL, ",");
+      double vel  = strtod(record, NULL);
+      record = strtok(NULL, ",");
+      double acc  = strtod(record, NULL);
+      record = strtok(NULL, ",");
+      double jerk = strtod(record, NULL);
+      record = strtok(NULL, ",");
+      double curv = strtod(record, NULL);
+      record = strtok(NULL, ",");
+      double time = strtod(record, NULL);
+      std::vector<double> wheels;
+      while(record != NULL ) {
+        wheels.emplace_back(strtod(record, NULL));
+        record = strtok(NULL, ",");
+      }
+      
+      path.emplace_back(ProfilePoint(ControlVector(Pose(x, y, yaw), vel, acc, jerk), wheels, curv, time));
+      
+      free(tmp);
+      
+      if (line_n != 0) seg_n++;
+      line_n++;
+  }
+  return path;
+}
+
+static std::optional<std::vector<ProfilePoint>> deserialize_pathfinder_segment(FILE* file) {
+  if (file == NULL) {
+      std::cout << "File does not exist!" << std::endl;
+      return std::nullopt;
   }
   
   std::vector<ProfilePoint> path;
@@ -43,7 +100,7 @@ static std::vector<ProfilePoint> deserialize_pathfinder_segment(FILE* file) {
       record = strtok(NULL, ",");
       double y    = strtod(record, NULL);
       record = strtok(NULL, ",");
-      double pos  = strtod(record, NULL);
+      [[maybe_unused]] double pos  = strtod(record, NULL);
       record = strtok(NULL, ",");
       double vel  = strtod(record, NULL);
       record = strtok(NULL, ",");
@@ -82,24 +139,28 @@ std::optional<std::vector<ProfilePoint>> deserialize_pathfinder_path(FILE* left_
   auto left_path = deserialize_pathfinder_segment(left_file);
   auto right_path = deserialize_pathfinder_segment(right_file);
 
-  auto track_width = left_path.begin()->vector.pose.dist(right_path.begin()->vector.pose);
+  if (!left_path || !right_path) {
+    return std::nullopt;
+  }
 
-  std::vector<ProfilePoint> path(left_path.size());
-  for (std::size_t i = 0; i < left_path.size(); ++i) {
-    auto l_v = left_path[i].vector.vel;
-    auto l_a = left_path[i].vector.accel;
-    auto l_j = left_path[i].vector.jerk;
-    auto r_v = right_path[i].vector.vel;
-    auto r_a = right_path[i].vector.accel;
-    auto r_j = right_path[i].vector.jerk;
+  auto track_width = left_path->begin()->vector.pose.dist(right_path->begin()->vector.pose);
 
-    auto pose = wheels_to_pose(right_path[i].vector.pose, track_width);
+  std::vector<ProfilePoint> path(left_path->size());
+  for (std::size_t i = 0; i < left_path->size(); ++i) {
+    auto l_v = left_path.value()[i].vector.vel;
+    auto l_a = left_path.value()[i].vector.accel;
+    auto l_j = left_path.value()[i].vector.jerk;
+    auto r_v = right_path.value()[i].vector.vel;
+    auto r_a = right_path.value()[i].vector.accel;
+    auto r_j = right_path.value()[i].vector.jerk;
+
+    auto pose = wheels_to_pose(right_path.value()[i].vector.pose, track_width);
     auto vel = wheel_vels_to_linear(l_v, r_v);
     auto accel = wheel_vels_to_linear(l_a, r_a);
     auto jerk = wheel_vels_to_linear(l_j, r_j);
     auto curvature = wheel_vels_to_curvature(l_v, r_v, track_width);
 
-    path[i] = ProfilePoint(ControlVector(pose, vel, accel, jerk), {l_v, r_v}, curvature, left_path[i].time);
+    path[i] = ProfilePoint(ControlVector(pose, vel, accel, jerk), {l_v, r_v}, curvature, left_path.value()[i].time);
   }
 
   return path;
