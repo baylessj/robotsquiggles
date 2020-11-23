@@ -60,7 +60,8 @@ struct ProfilePoint {
       wheels += ",";
       wheels += std::to_string(w);
     }
-    return vector.to_csv() + "," + std::to_string(curvature) + "," + std::to_string(time) + wheels;
+    return vector.to_csv() + "," + std::to_string(curvature) + "," +
+           std::to_string(time) + wheels;
   }
 
   ControlVector vector;

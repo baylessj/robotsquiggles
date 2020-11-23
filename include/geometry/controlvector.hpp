@@ -43,7 +43,8 @@ class ControlVector {
   }
 
   std::string to_csv() const {
-    return pose.to_csv() + "," + std::to_string(vel) + "," + std::to_string(accel) + "," + std::to_string(jerk);
+    return pose.to_csv() + "," + std::to_string(vel) + "," +
+           std::to_string(accel) + "," + std::to_string(jerk);
   }
 
   Pose pose;

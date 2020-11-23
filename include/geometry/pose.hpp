@@ -47,7 +47,8 @@ class Pose {
   }
 
   std::string to_csv() const {
-    return std::to_string(x) + "," + std::to_string(y) + "," + std::to_string(yaw);
+    return std::to_string(x) + "," + std::to_string(y) + "," +
+           std::to_string(yaw);
   }
 
   double x;
