@@ -16,12 +16,12 @@ namespace squiggles {
 /**
  * Writes the path data to a CSV file.
  */
-int serialize_path(std::ostream out, std::vector<ProfilePoint> path);
+int serialize_path(std::ostream& out, std::vector<ProfilePoint> path);
 
 /**
  * Converts CSV data into a path.
  */
-std::optional<std::vector<ProfilePoint>> deserialize_path(std::istream in);
+std::optional<std::vector<ProfilePoint>> deserialize_path(std::istream& in);
 
 /**
  * Converts CSV data from the Pathfinder library's format to a Squiggles path.

@@ -47,6 +47,10 @@ class ControlVector {
            std::to_string(accel) + "," + std::to_string(jerk);
   }
 
+  bool operator==(const ControlVector& other) const {
+    return pose == other.pose && nearly_equal(vel, other.vel) && nearly_equal(accel, other.accel) && nearly_equal(jerk, other.jerk);
+  }
+
   Pose pose;
   double vel;
   double accel;

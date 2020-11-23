@@ -11,6 +11,7 @@
 #include <string>
 #include <vector>
 
+#include "math/utils.hpp"
 #include "controlvector.hpp"
 
 namespace squiggles {
@@ -62,6 +63,19 @@ struct ProfilePoint {
     }
     return vector.to_csv() + "," + std::to_string(curvature) + "," +
            std::to_string(time) + wheels;
+  }
+
+  bool operator==(const ProfilePoint& other) const {
+    for (std::size_t i = 0; i < wheel_velocities.size(); ++i) {
+      if (!nearly_equal(wheel_velocities[i], other.wheel_velocities[i])) {
+        return false;
+      }
+    }
+    return vector == other.vector && nearly_equal(curvature, other.curvature)  && nearly_equal(time, other.time);
+  }
+
+  friend std::ostream& operator<<(std::ostream& os, const ProfilePoint& p) {
+    return os << p.to_string();
   }
 
   ControlVector vector;

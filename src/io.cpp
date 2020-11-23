@@ -11,19 +11,19 @@
 #include "io.hpp"
 
 namespace squiggles {
-int serialize_path(std::ostream out, std::vector<ProfilePoint> path) {
+int serialize_path(std::ostream& out, std::vector<ProfilePoint> path) {
   if (!out || path.size() == 0) {
     return -1;
   }
 
-  out << "x, y, yaw, vel, accel, jerk, curvature, time, wheels";
+  out << "x, y, yaw, vel, accel, jerk, curvature, time, wheels\n";
   for (auto p : path) {
-    out << p.to_csv();
+    out << p.to_csv() << "\n";
   }
   return 0;
 }
 
-std::optional<std::vector<ProfilePoint>> deserialize_path(std::istream in) {
+std::optional<std::vector<ProfilePoint>> deserialize_path(std::istream& in) {
   if (!in) {
     std::cout << "File does not exist!" << std::endl;
     return std::nullopt;
@@ -31,7 +31,13 @@ std::optional<std::vector<ProfilePoint>> deserialize_path(std::istream in) {
 
   std::vector<ProfilePoint> path;
   std::string line;
+  bool header_found = false;
   while (std::getline(in, line)) {
+    if (!header_found) {
+      // skip the first line with the field declarations
+      header_found = true;
+      continue;
+    }
     // vector contents are [x, y, yaw, vel, acc, jerk, curv, time, wheels...]
     std::vector<double> contents;
     std::string token;
@@ -55,7 +61,9 @@ std::optional<std::vector<ProfilePoint>> deserialize_path(std::istream in) {
     double time = contents[7];
     // put the remaining items into the wheel velocities vector
     std::vector<double> wheels;
-    std::copy(contents.begin() + 7, contents.end(), wheels.begin());
+    if (contents.size() > 8) {
+      wheels = std::vector<double>(contents.begin() + 8, contents.end());
+    }
 
     path.emplace_back(ProfilePoint(
       ControlVector(Pose(x, y, yaw), vel, acc, jerk), wheels, curv, time));

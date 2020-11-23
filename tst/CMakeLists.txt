@@ -1,6 +1,13 @@
 set(BINARY ${CMAKE_PROJECT_NAME}_tst)
 
-file(GLOB_RECURSE TEST_SOURCES LIST_DIRECTORIES false *.hpp *.cpp)
+# file(GLOB_RECURSE TEST_SOURCES LIST_DIRECTORIES false *.hpp *.cpp)
+set(TEST_SOURCES 
+    impose-limits-test.cpp
+    io-test.cpp
+    main.cpp
+    model-constraints-test.cpp
+    plan-path-test.cpp
+    shared.hpp)
 
 include_directories(.)
 
