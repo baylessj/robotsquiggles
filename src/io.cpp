@@ -72,55 +72,46 @@ std::optional<std::vector<ProfilePoint>> deserialize_path(std::istream& in) {
 }
 
 static std::optional<std::vector<ProfilePoint>>
-deserialize_pathfinder_segment(FILE* file) {
-  if (file == NULL) {
+deserialize_pathfinder_segment(std::istream& in) {
+  if (!in) {
     std::cout << "File does not exist!" << std::endl;
     return std::nullopt;
   }
 
   std::vector<ProfilePoint> path;
-  char line[1024];
-  int line_n = 0;
-  int seg_n = 0;
-  while (fgets(line, 1024, file)) {
-    char* tmp = strdup(line);
-    if (tmp == NULL) {
-      std::cout << "strdup returned null. Have you run out of RAM, Heap Space, "
-                   "or have been hit by a cosmic ray?"
-                << std::endl;
-      return {};
+  std::string line;
+  bool header_found = false;
+  while (std::getline(in, line)) {
+    if (!header_found) {
+      // skip the first line with the field declarations
+      header_found = true;
+      continue;
     }
-    if (line_n == 0) {
-    } // Do nothing, first line specifies the headers
+    // vector contents are [dt, x, y, pos, vel, acc, jerk, yaw]
+    std::vector<double> contents;
+    std::string token;
+    std::istringstream line_stream(line);
+    while (std::getline(line_stream, token, ',')) {
+      contents.emplace_back(stod(token));
+    }
 
-    char* record;
-    record = strtok(tmp, ",");
-    double dt = strtod(record, NULL);
-    record = strtok(NULL, ",");
-    double x = strtod(record, NULL);
-    record = strtok(NULL, ",");
-    double y = strtod(record, NULL);
-    record = strtok(NULL, ",");
-    [[maybe_unused]] double pos = strtod(record, NULL);
-    record = strtok(NULL, ",");
-    double vel = strtod(record, NULL);
-    record = strtok(NULL, ",");
-    double acc = strtod(record, NULL);
-    record = strtok(NULL, ",");
-    double jerk = strtod(record, NULL);
-    record = strtok(NULL, ",");
-    double head = strtod(record, NULL);
+    if (contents.size() < 8) {
+      std::cout << "Error parsing Squiggles path: malformed CSV content";
+      return std::nullopt;
+    }
 
-    path.emplace_back(
-      ProfilePoint(ControlVector(Pose(x, y, head), vel, acc, jerk), {}, 0, dt));
+    double dt = contents[0];
+    double x = contents[1];
+    double y = contents[2];
+    // ignoring the path position in position 3
+    double vel = contents[4];
+    double acc = contents[5];
+    double jerk = contents[6];
+    double yaw = contents[7];
 
-    free(tmp);
-
-    if (line_n != 0)
-      seg_n++;
-    line_n++;
+    path.emplace_back(ProfilePoint(
+      ControlVector(Pose(x, y, yaw), vel, acc, jerk), {}, 0, dt));
   }
-
   return path;
 }
 
@@ -140,9 +131,9 @@ wheel_vels_to_curvature(double left, double right, double track_width) {
 }
 
 std::optional<std::vector<ProfilePoint>>
-deserialize_pathfinder_path(FILE* left_file, FILE* right_file) {
-  auto left_path = deserialize_pathfinder_segment(left_file);
-  auto right_path = deserialize_pathfinder_segment(right_file);
+deserialize_pathfinder_path(std::istream& left, std::istream& right) {
+  auto left_path = deserialize_pathfinder_segment(left);
+  auto right_path = deserialize_pathfinder_segment(right);
 
   if (!left_path || !right_path) {
     return std::nullopt;

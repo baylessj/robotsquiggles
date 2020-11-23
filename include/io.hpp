@@ -31,7 +31,7 @@ std::optional<std::vector<ProfilePoint>> deserialize_path(std::istream& in);
  * https://github.com/JaciBrunning/Pathfinder/blob/master/Pathfinder-Core/src/io.c
  */
 std::optional<std::vector<ProfilePoint>>
-deserialize_pathfinder_path(FILE* left_file, FILE* right_file);
+deserialize_pathfinder_path(std::istream& left, std::istream& right);
 } // namespace squiggles
 
 #endif
