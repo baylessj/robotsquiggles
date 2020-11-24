@@ -48,7 +48,8 @@ class ControlVector {
   }
 
   bool operator==(const ControlVector& other) const {
-    return pose == other.pose && nearly_equal(vel, other.vel) && nearly_equal(accel, other.accel) && nearly_equal(jerk, other.jerk);
+    return pose == other.pose && nearly_equal(vel, other.vel) &&
+           nearly_equal(accel, other.accel) && nearly_equal(jerk, other.jerk);
   }
 
   Pose pose;

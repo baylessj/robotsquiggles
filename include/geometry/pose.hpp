@@ -54,7 +54,8 @@ class Pose {
   }
 
   bool operator==(const Pose& other) const {
-    return nearly_equal(x, other.x) && nearly_equal(y, other.y) && nearly_equal(yaw, other.yaw);
+    return nearly_equal(x, other.x) && nearly_equal(y, other.y) &&
+           nearly_equal(yaw, other.yaw);
   }
 
   double x;

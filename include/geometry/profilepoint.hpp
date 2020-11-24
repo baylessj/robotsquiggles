@@ -11,8 +11,8 @@
 #include <string>
 #include <vector>
 
-#include "math/utils.hpp"
 #include "controlvector.hpp"
+#include "math/utils.hpp"
 
 namespace squiggles {
 struct ProfilePoint {
@@ -71,11 +71,22 @@ struct ProfilePoint {
         return false;
       }
     }
-    return vector == other.vector && nearly_equal(curvature, other.curvature)  && nearly_equal(time, other.time);
+    return vector == other.vector && nearly_equal(curvature, other.curvature) &&
+           nearly_equal(time, other.time);
   }
 
   friend std::ostream& operator<<(std::ostream& os, const ProfilePoint& p) {
-    return os << "ProfilePoint(ControlVector(Pose(" + std::to_string(p.vector.pose.x) + "," + std::to_string(p.vector.pose.y) + "," + std::to_string(p.vector.pose.yaw) + ")," + std::to_string(p.vector.vel) + "," + std::to_string(p.vector.accel) + "," + std::to_string(p.vector.jerk) + "),{" + std::to_string(p.wheel_velocities[0]) + "," + std::to_string(p.wheel_velocities[1]) + "}," + std::to_string(p.curvature) + "," + std::to_string(p.time) + "),";
+    return os << "ProfilePoint(ControlVector(Pose(" +
+                   std::to_string(p.vector.pose.x) + "," +
+                   std::to_string(p.vector.pose.y) + "," +
+                   std::to_string(p.vector.pose.yaw) + ")," +
+                   std::to_string(p.vector.vel) + "," +
+                   std::to_string(p.vector.accel) + "," +
+                   std::to_string(p.vector.jerk) + "),{" +
+                   std::to_string(p.wheel_velocities[0]) + "," +
+                   std::to_string(p.wheel_velocities[1]) + "}," +
+                   std::to_string(p.curvature) + "," + std::to_string(p.time) +
+                   "),";
     // return os << p.to_string();
   }
 

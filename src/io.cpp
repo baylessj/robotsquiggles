@@ -109,8 +109,8 @@ deserialize_pathfinder_segment(std::istream& in) {
     double jerk = contents[6];
     double yaw = contents[7];
 
-    path.emplace_back(ProfilePoint(
-      ControlVector(Pose(x, y, yaw), vel, acc, jerk), {}, 0, dt));
+    path.emplace_back(
+      ProfilePoint(ControlVector(Pose(x, y, yaw), vel, acc, jerk), {}, 0, dt));
   }
   return path;
 }

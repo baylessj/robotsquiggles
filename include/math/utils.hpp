@@ -20,7 +20,8 @@ template <class T> inline int sgn(T v) {
   return (v > T(0)) - (v < T(0));
 }
 
-inline bool nearly_equal(const double& a, const double& b, double epsilon = 1e-5) {
+inline bool
+nearly_equal(const double& a, const double& b, double epsilon = 1e-5) {
   return std::fabs(a - b) < epsilon;
 }
 } // namespace squiggles
