@@ -10,6 +10,8 @@
 #include <cmath>
 #include <string>
 
+#include "math/utils.hpp"
+
 namespace squiggles {
 class Pose {
   public:
@@ -44,6 +46,16 @@ class Pose {
   std::string to_string() const {
     return "Pose: {x: " + std::to_string(x) + ", y: " + std::to_string(y) +
            ", yaw: " + std::to_string(yaw) + "}";
+  }
+
+  std::string to_csv() const {
+    return std::to_string(x) + "," + std::to_string(y) + "," +
+           std::to_string(yaw);
+  }
+
+  bool operator==(const Pose& other) const {
+    return nearly_equal(x, other.x) && nearly_equal(y, other.y) &&
+           nearly_equal(yaw, other.yaw);
   }
 
   double x;
