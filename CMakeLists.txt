@@ -4,7 +4,7 @@ project(squiggles)
 option(SQUIGGLES_TEST "determines if we're gonna pull googletest" OFF)
 option(INSTALL_SQUIGGLES "Enables installation of the squiggles library" ON)
 
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++2a -Wall -Wextra -Wshadow -Wnull-dereference -Wno-psabi -Wno-unused-function -pthread -g -O0 -fprofile-arcs -ftest-coverage --coverage -D THREADS_STD")
 
 set(SQUIGGLES_SOURCES include/constraints.hpp
