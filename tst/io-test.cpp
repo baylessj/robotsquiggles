@@ -1595,7 +1595,7 @@ TEST(io_test, wheel_vels) {
   std::string serialized_path;
   std::stringstream stream(serialized_path);
   int rtn = serialize_path(stream, path);
-  std::cout << stream.str() << std::endl;
+  ASSERT_EQ(rtn, 0);
   std::optional<std::vector<ProfilePoint>> parsed_path =
     deserialize_path(stream);
   for (std::size_t i = 0; i < path.size(); ++i) {
