@@ -37,8 +37,6 @@ class SplineGenerator {
   /**
    * Creates a motion profiled path between the given waypoints.
    *
-   * @note currently only two waypoints are supported for a given path.
-   *
    * @param iwaypoints The list of poses that the robot should reach along the
    *                   path.
    *
@@ -49,8 +47,6 @@ class SplineGenerator {
 
   /**
    * Creates a motion profiled path between the given waypoints.
-   *
-   * NOTE: currently only two waypoints are supported for a given path.
    *
    * @param iwaypoints The list of vectors that the robot should reach along the
    *                   path.
