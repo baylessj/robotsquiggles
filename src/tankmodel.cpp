@@ -13,15 +13,17 @@ namespace squiggles {
 TankModel::TankModel(double itrack_width, Constraints ilinear_constraints)
   : track_width(itrack_width), linear_constraints(ilinear_constraints) {}
 
-Constraints
-TankModel::constraints([[maybe_unused]] const Pose pose, double curvature, double vel) {
+Constraints TankModel::constraints([[maybe_unused]] const Pose pose,
+                                   double curvature,
+                                   double vel) {
   auto max_vel = vel_constraint(pose, curvature, vel);
   auto [min_accel, max_accel] = accel_constraint(pose, curvature, vel);
   return Constraints(max_vel, max_accel, 0.0, min_accel);
 }
 
-double
-TankModel::vel_constraint([[maybe_unused]] const Pose pose, double curvature, double vel) {
+double TankModel::vel_constraint([[maybe_unused]] const Pose pose,
+                                 double curvature,
+                                 double vel) {
   auto wheels = linear_to_wheel_vels(vel, curvature);
   auto left = wheels[0];
   auto right = wheels[1];
@@ -36,9 +38,10 @@ TankModel::vel_constraint([[maybe_unused]] const Pose pose, double curvature, do
   return ((left + right) / 2.0);
 }
 
-std::tuple<double, double> TankModel::accel_constraint([[maybe_unused]] const Pose pose,
-                                                       double curvature,
-                                                       double vel) const {
+std::tuple<double, double>
+TankModel::accel_constraint([[maybe_unused]] const Pose pose,
+                            double curvature,
+                            double vel) const {
   // auto [left, right] = linear_to_wheel_vels(vel, curvature);
   // auto max_wheel_speed = std::max(left, right);
   // auto min_wheel_speed = std::min(left, right);

@@ -17,13 +17,15 @@ class PassthroughModel : public PhysicalModel {
    */
   PassthroughModel() = default;
 
-  Constraints
-  constraints([[maybe_unused]] const Pose pose, [[maybe_unused]] double curvature, double vel) override {
+  Constraints constraints([[maybe_unused]] const Pose pose,
+                          [[maybe_unused]] double curvature,
+                          double vel) override {
     return Constraints(vel);
   };
 
-  std::vector<double> linear_to_wheel_vels([[maybe_unused]] double lin_vel,
-                                           [[maybe_unused]] double curvature) override {
+  std::vector<double>
+  linear_to_wheel_vels([[maybe_unused]] double lin_vel,
+                       [[maybe_unused]] double curvature) override {
     return std::vector<double>{};
   }
 
