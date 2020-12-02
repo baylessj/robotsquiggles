@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.10)
 project(squiggles)
 
+set(SQUIGGLES_VERSION 0.1.0)
+
 option(SQUIGGLES_TEST "determines if we're gonna pull googletest" OFF)
 option(INSTALL_SQUIGGLES "Enables installation of the squiggles library" ON)
 
@@ -68,8 +70,6 @@ endif()
 add_subdirectory(vis)
 
 #-------------------------------------------------------------------------------
-
-set(SQUIGGLES_VERSION 0.1.0)
 
 if (CMAKE_VERSION VERSION_LESS 3.0)
   project(squiggles CXX C)
