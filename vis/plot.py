@@ -221,3 +221,6 @@ def main():
 
     path(time, x, y, yaw, lx, ly, rx, ry, lv, rv)
     # kinematics(time, v, a)
+
+if __name__ == "__main__":
+    main()

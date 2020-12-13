@@ -1,0 +1,5 @@
+[please]
+version = 15.10.0
+
+[python]
+moduledir = third_party.python
