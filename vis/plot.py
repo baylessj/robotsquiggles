@@ -1,12 +1,14 @@
 from ctypes import *
 import math
+import os
 
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 
 
-clib = CDLL("./build/libRobotSquiggles.so")
+# clib = CDLL("./build/libRobotSquiggles.so")
+clib = CDLL(os.path.join(os.getcwd(), "plz-out/bin/lib/libsquigglesviscompat.so"))
 
 
 class VisDataPoint(Structure):

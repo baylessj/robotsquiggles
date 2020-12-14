@@ -1,19 +1,5 @@
 package(default_visibility = ["PUBLIC"])
 
-# pip_library(
-#     name = "numpy",
-#     version = "1.18.4",
-#     zip_safe = False, # This is because NumPy has shared object files which can't be linked to them when zipped up
-# )
-
-# pip_library(
-#     name = "matplotlib",
-#     version = "3.3.3",
-#     deps = [
-#         ":pyparsing",
-#     ],
-# )
-
 pip_library(
     name = "alabaster",
     version = "0.7.12",
@@ -88,8 +74,8 @@ pip_library(
         ":breathe",
         ":bs4",
         ":lxml",
-        ":sphinx",
         ":six",
+        ":sphinx",
     ],
 )
 
@@ -130,20 +116,20 @@ pip_library(
     name = "matplotlib",
     version = "3.3.2",
     deps = [
-        ":pillow",
-        ":python-dateutil",
-        ":pyparsing",
         ":certifi",
-        ":numpy",
         ":cycler",
         ":kiwisolver",
+        ":numpy",
+        ":pillow",
+        ":pyparsing",
+        ":python-dateutil",
     ],
 )
 
 pip_library(
     name = "numpy",
     version = "1.19.2",
-    zip_safe = False, # This is because NumPy has shared object files which can't be linked to them when zipped up
+    zip_safe = False,  # This is because NumPy has shared object files which can't be linked to them when zipped up
 )
 
 pip_library(
@@ -187,9 +173,9 @@ pip_library(
     name = "requests",
     version = "2.24.0",
     deps = [
-        ":idna",
         ":certifi",
         ":chardet",
+        ":idna",
         ":urllib3",
     ],
 )
@@ -213,22 +199,22 @@ pip_library(
     name = "sphinx",
     version = "3.2.1",
     deps = [
-        ":sphinxcontrib-qthelp",
-        ":imagesize",
-        ":sphinxcontrib-devhelp",
-        ":snowballstemmer",
-        ":babel",
         ":alabaster",
-        ":sphinxcontrib-serializinghtml",
-        ":packaging",
-        ":docutils",
-        ":pygments",
-        ":jinja2",
+        ":babel",
         ":colorama",
+        ":docutils",
+        ":imagesize",
+        ":jinja2",
+        ":packaging",
+        ":pygments",
         ":requests",
+        ":snowballstemmer",
         ":sphinxcontrib-applehelp",
+        ":sphinxcontrib-devhelp",
         ":sphinxcontrib-htmlhelp",
         ":sphinxcontrib-jsmath",
+        ":sphinxcontrib-qthelp",
+        ":sphinxcontrib-serializinghtml",
     ],
 )
 
@@ -274,4 +260,3 @@ pip_library(
     name = "urllib3",
     version = "1.25.11",
 )
-
