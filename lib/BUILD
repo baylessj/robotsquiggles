@@ -42,3 +42,23 @@ cc_binary(
     srcs = ["src/main.cpp"],
     deps = [":squiggles"]
 )
+
+# genrule(
+#     name = "docs",
+#     cmd = "$TOOLS_sphinx-build",
+#     tools = {
+#         "sphinx-build": ["//docs:sphinx_build"]
+#     }
+# )
+
+# genrule(
+#     name = "docs",
+#     srcs = glob(["./docs/*"]),
+#     outs = glob(["./docs/_build/*"]),
+#     cmd = "sphinx-build -M html $SRC $OUT",
+#     deps = [
+#         "//third_party/python:sphinx",
+#         "//third_party/python:sphinx-rtd-theme",
+#     ],
+    
+# )
