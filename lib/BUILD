@@ -43,22 +43,38 @@ cc_binary(
     deps = [":squiggles"]
 )
 
+sh_cmd(
+    name = "emsdk",
+    cmd = "./third_party/cpp/emscripten/emsdk",
+    deps = ["//third_party/cpp:emscripten"],
+)
+
+genrule(
+    name = "squiggles_emcc",
+    srcs = ['src/main.cpp'],
+    deps = [":squiggles"],
+    cmd = ["echo $TOOL"],
+    tools = ["//tools:emcc"]
+)
+
 # genrule(
-#     name = "docs",
-#     cmd = "$TOOLS_sphinx-build",
-#     tools = {
-#         "sphinx-build": ["//docs:sphinx_build"]
-#     }
+#     name = "install_emscripten",
+#     outs = glob(["third_party/cpp/emscripten/*"]),
+#     cmd = [
+#         "cd third_party/cpp/emscripten",
+#         "./emsdk install latest",
+#         "./emsdk activate latest",
+#         "source ./emsdk_env.sh",
+#         # 'emsdk list > "$OUT"',
+#     ],
+#     deps = ["//third_party/cpp:emscripten"],
 # )
 
 # genrule(
-#     name = "docs",
-#     srcs = glob(["./docs/*"]),
-#     outs = glob(["./docs/_build/*"]),
-#     cmd = "sphinx-build -M html $SRC $OUT",
-#     deps = [
-#         "//third_party/python:sphinx",
-#         "//third_party/python:sphinx-rtd-theme",
-#     ],
-    
+#     name = "wasm",
+#     srcs = [],
+#     cmd = "$TOOLS_EMCC $SRCS",
+#     tools = {
+#         "emcc": [":install_emscripten"],
+#     }
 # )

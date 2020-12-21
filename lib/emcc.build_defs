@@ -1,0 +1,2 @@
+def emcc(name: str, srcs: list, deps: list = []): 
+  pass
