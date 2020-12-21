@@ -15,20 +15,20 @@ jobs:
           cd lcov
           sudo make install
           sudo ln -sf /usr/bin/gcov-9 /usr/bin/gcov
-      - name: Init CMake
-        env:
-          CC: gcc-9
-          CXX: g++-9
-        run: |
-          mkdir -p ./build
-          ./run_cmake_unix.sh
+      # - name: Init CMake
+      #   env:
+      #     CC: gcc-9
+      #     CXX: g++-9
+      #   run: |
+      #     mkdir -p ./build
+      #     ./run_cmake_unix.sh
       - name: Build
         env:
           CC: gcc-9
           CXX: g++-9
-        run: cd build && make && cd ..
+        run: ./pleasew build
       - name: Test
-        run: ./build/tst/squiggles_tst
+        run: ./pleasew test
       - name: Collect Coverage
         run: |
           lcov --directory ./build/src/CMakeFiles/squiggles_lib.dir/ --capture --output-file coverage.info

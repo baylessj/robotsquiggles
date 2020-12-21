@@ -10,6 +10,8 @@ cc_library(
     includes = [
         "include/",
     ],
+    compiler_flags = ["-fprofile-arcs", "-ftest-coverage", "-coverage"],
+    linker_flags = ["-lgcov"],
 )
 
 cc_static_library(
@@ -31,10 +33,24 @@ cc_test(
     name = 'squiggles_test',
     srcs = glob(["test/*.cpp"]),
     hdrs = ["test/shared.hpp"],
+    test_outputs = ['../../tmp/lib/_squiggles#src_io_cpp._build/io.gcda'],
     deps = [
         ":squiggles",
         "//third_party/cpp:gtest",
-    ]
+    ],
+    compiler_flags = ["-fprofile-arcs", "-ftest-coverage", "-coverage"],
+    linker_flags = ["-lgcov"],
+    visibility = ["PUBLIC"]
+)
+
+gentest(
+    name = "squiggles_coverage",
+    outs = {
+        "io": "io.gcda"
+    },
+    test_cmd = "cp ../../_squiggles#src_io_cpp._build/io.gcda $OUTS_IO",
+    # test_cmd = "cp . .",
+    deps = [":squiggles_test"]
 )
 
 cc_binary(
@@ -43,38 +59,3 @@ cc_binary(
     deps = [":squiggles"]
 )
 
-sh_cmd(
-    name = "emsdk",
-    cmd = "./third_party/cpp/emscripten/emsdk",
-    deps = ["//third_party/cpp:emscripten"],
-)
-
-genrule(
-    name = "squiggles_emcc",
-    srcs = ['src/main.cpp'],
-    deps = [":squiggles"],
-    cmd = ["echo $TOOL"],
-    tools = ["//tools:emcc"]
-)
-
-# genrule(
-#     name = "install_emscripten",
-#     outs = glob(["third_party/cpp/emscripten/*"]),
-#     cmd = [
-#         "cd third_party/cpp/emscripten",
-#         "./emsdk install latest",
-#         "./emsdk activate latest",
-#         "source ./emsdk_env.sh",
-#         # 'emsdk list > "$OUT"',
-#     ],
-#     deps = ["//third_party/cpp:emscripten"],
-# )
-
-# genrule(
-#     name = "wasm",
-#     srcs = [],
-#     cmd = "$TOOLS_EMCC $SRCS",
-#     tools = {
-#         "emcc": [":install_emscripten"],
-#     }
-# )
