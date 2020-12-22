@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<head>
+  <meta content="text/html;charset=utf-8" http-equiv="Content-Type" />
+  <meta content="utf-8" http-equiv="encoding" />
+
+  <script src="./two.min.js"></script>
+  <script src="./a.out.js"></script>
+  <script>
+    Module.onRuntimeInitialized = async (_) => {
+      const api = {
+        version: Module.cwrap("version", "number", []),
+      };
+      console.log(api.version());
+    };
+  </script>
+</head>
+<body>
+  <div id="draw-animation" />
+</body>
+<footer>
+  <script>
+    function rand_gray() {
+      var value = Math.random() * 0xf + 0x50;
+      var grayscale = (value << 16) | (value << 8) | value;
+      return "#" + grayscale.toString(16);
+    }
+
+    function field_tiles(two, bg, tile_width, spacer) {
+      for (var i = 0; i < 6; i++) {
+        var x = tile_width * (i + 0.5) + spacer;
+        for (var j = 0; j < 6; j++) {
+          var y = tile_width * (j + 0.5) + spacer;
+          var rec = two.makeRectangle(x, y, tile_width, tile_width);
+          rec.fill = rand_gray();
+          bg.add(rec);
+        }
+      }
+    }
+
+    var elem = document.getElementById("draw-animation");
+    var two = new Two({ fullscreen: true, autostart: true }).appendTo(elem);
+
+    const tile_width = Math.ceil((two.width - 100) / 6);
+    const spacer = (two.width - tile_width * 6) / 2;
+    const field_center = spacer + tile_width * 3;
+    const field_top = spacer;
+    const field_bot = tile_width * 6 + spacer;
+
+    const goal_radius = tile_width / 5;
+    const goal_linewidth = 15;
+    const goal_fill = "none";
+    const goal_stroke = "rgb(0, 0, 0)";
+
+    var background = two.makeGroup();
+    field_tiles(two, background, tile_width, spacer);
+
+    var left_autonline = two.makeLine(
+      field_center - 10,
+      field_top,
+      field_center - 10,
+      field_bot
+    );
+
+    var right_autonline = two.makeLine(
+      field_center + 10,
+      field_top,
+      field_center + 10,
+      field_bot
+    );
+
+    var left_line = two.makeLine(
+      spacer + tile_width + 2.5,
+      field_top,
+      spacer + tile_width + 2.5,
+      field_bot
+    );
+
+    var right_line = two.makeLine(
+      tile_width * 5.5 - spacer - 2.5,
+      field_top,
+      tile_width * 5.5 - spacer - 2.5,
+      field_bot
+    );
+
+    var leftdoubletop_line = two.makeLine(
+      spacer,
+      field_center - 10,
+      spacer + tile_width,
+      field_center - 10
+    );
+
+    var leftdoublebot_line = two.makeLine(
+      spacer,
+      field_center + 10,
+      spacer + tile_width,
+      field_center + 10
+    );
+
+    var rightdoubletop_line = two.makeLine(
+      tile_width * 6.5 - spacer,
+      field_center - 10,
+      tile_width * 5.5 - spacer,
+      field_center - 10
+    );
+
+    var rightdoublebot_line = two.makeLine(
+      tile_width * 6.5 - spacer,
+      field_center + 10,
+      tile_width * 5.5 - spacer,
+      field_center + 10
+    );
+
+    var lines = two.makeGroup(
+      left_autonline,
+      right_autonline,
+      left_line,
+      right_line,
+      leftdoubletop_line,
+      leftdoublebot_line,
+      rightdoublebot_line,
+      rightdoubletop_line
+    );
+    lines.linewidth = 5;
+    lines.stroke = "#fff";
+
+    var topcenter_goal = two.makeCircle(
+      two.width / 2,
+      spacer + goal_radius + goal_linewidth / 2,
+      goal_radius
+    );
+
+    var topleft_goal = two.makeCircle(
+      spacer + goal_radius + goal_linewidth / 2,
+      spacer + goal_radius + goal_linewidth / 2,
+      goal_radius
+    );
+
+    var topright_goal = two.makeCircle(
+      two.width - spacer - goal_radius - goal_linewidth / 2,
+      spacer + goal_radius + goal_linewidth / 2,
+      goal_radius
+    );
+
+    var leftcenter_goal = two.makeCircle(
+      spacer + goal_radius + goal_linewidth / 2,
+      field_center,
+      goal_radius
+    );
+
+    var center_goal = two.makeCircle(two.width / 2, field_center, goal_radius);
+
+    var rightcenter_goal = two.makeCircle(
+      two.width - spacer - goal_radius - goal_linewidth / 2,
+      field_center,
+      goal_radius
+    );
+
+    var botleft_goal = two.makeCircle(
+      spacer + goal_radius + goal_linewidth / 2,
+      two.height - spacer - goal_radius * 2,
+      goal_radius
+    );
+
+    var botcenter_goal = two.makeCircle(
+      two.width / 2,
+      two.height - spacer - goal_radius * 2,
+      goal_radius
+    );
+
+    var botright_goal = two.makeCircle(
+      two.width - spacer - goal_radius - goal_linewidth / 2,
+      two.height - spacer - goal_radius * 2,
+      goal_radius
+    );
+
+    var goals = two.makeGroup(
+      topleft_goal,
+      topcenter_goal,
+      topright_goal,
+      leftcenter_goal,
+      center_goal,
+      rightcenter_goal,
+      botleft_goal,
+      botcenter_goal,
+      botright_goal
+    );
+    goals.fill = goal_fill;
+    goals.stroke = goal_stroke;
+    goals.linewidth = goal_linewidth;
+
+    // var circle = two.makeCircle(-70, 0, 50);
+    // var rect = two.makeRectangle(70, 0, 100, 100);
+    // circle.fill = "#FF8000";
+    // rect.fill = "rgba(0, 200, 255, 0.75)";
+
+    // var group = two.makeGroup(circle, rect);
+    // group.translation.set(two.width / 2, two.height / 2);
+    // group.scale = 0;
+    // group.noStroke();
+
+    // // Bind a function to scale and rotate the group
+    // // to the animation loop.
+    // two
+    //   .bind("update", function (frameCount) {
+    //     // This code is called everytime two.update() is called.
+    //     // Effectively 60 times per second.
+    //     if (group.scale > 0.9999) {
+    //       group.scale = group.rotation = 0;
+    //     }
+    //     var t = (1 - group.scale) * 0.125;
+    //     group.scale += t;
+    //     group.rotation += t * 4 * Math.PI;
+    //   })
+    //   .play();
+  </script>
+</footer>
