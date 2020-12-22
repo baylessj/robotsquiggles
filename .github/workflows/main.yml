@@ -9,9 +9,9 @@ jobs:
         with:
           submodules: true
       - name: Prep please dependencies
-        run: pip3 install setuptools
+        run: pip3 install setuptools |
+          sudo apt-get install -y python3-setuptools
       - name: Install LCOV dependency
-        # run: sudo apt-get install lcov
         run: |
           git clone https://github.com/linux-test-project/lcov.git
           cd lcov

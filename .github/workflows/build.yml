@@ -8,15 +8,8 @@ jobs:
       - uses: actions/checkout@v2
         with:
           submodules: true
-      - name: Init CMake
-        env:
-          CC: gcc-9
-          CXX: g++-9
-        run: |
-          mkdir -p ./build
-          ./run_cmake_unix.sh
       - name: Build
         env:
           CC: gcc-9
           CXX: g++-9
-        run: cd build && make all && cd ..
+        run: ./pleasew build //lib:squiggles //lib:squigglesviscompat //lib:squiggles_test //lib:squiggles_memcheck
