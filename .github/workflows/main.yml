@@ -28,16 +28,17 @@ jobs:
           CXX: g++-9
         run: ./pleasew build
       - name: Test
-        run: ./pleasew test
-      - name: Collect Coverage
-        run: |
-          lcov --directory ./build/src/CMakeFiles/squiggles_lib.dir/ --capture --output-file coverage.info
-          lcov --remove coverage.info '/usr/*' --output-file coverage.info
-          lcov --remove coverage.info '*/gtest/*' --output-file coverage.info
-          lcov --remove coverage.info '*/googletest/*' --output-file coverage.info
-          lcov --remove coverage.info '*-test*' --output-file coverage.info
-          lcov --list coverage.info
+        run: ./pleasew cover
+      # - name: Collect Coverage
+      #   run: |
+      #     lcov --directory ./build/src/CMakeFiles/squiggles_lib.dir/ --capture --output-file coverage.info
+      #     lcov --remove coverage.info '/usr/*' --output-file coverage.info
+      #     lcov --remove coverage.info '*/gtest/*' --output-file coverage.info
+      #     lcov --remove coverage.info '*/googletest/*' --output-file coverage.info
+      #     lcov --remove coverage.info '*-test*' --output-file coverage.info
+      #     lcov --list coverage.info
       - uses: codecov/codecov-action@v1.0.5
         with:
           token: ${{secrets.CODECOV_TOKEN}}
-          file: ./coverage.info
+          # file: ./coverage.info
+          file: ./plz-out/bin/lib/.test_coverage_squiggles_test

@@ -1,3 +1,5 @@
+subinclude("//build_defs:custom_cc_test")
+
 cc_library(
     name = "squiggles",
     srcs = glob(
@@ -33,7 +35,6 @@ cc_test(
     name = 'squiggles_test',
     srcs = glob(["test/*.cpp"]),
     hdrs = ["test/shared.hpp"],
-    test_outputs = ['../../tmp/lib/_squiggles#src_io_cpp._build/io.gcda'],
     deps = [
         ":squiggles",
         "//third_party/cpp:gtest",
@@ -43,15 +44,12 @@ cc_test(
     visibility = ["PUBLIC"]
 )
 
-gentest(
-    name = "squiggles_coverage",
-    outs = {
-        "io": "io.gcda"
-    },
-    test_cmd = "cp ../../_squiggles#src_io_cpp._build/io.gcda $OUTS_IO",
-    # test_cmd = "cp . .",
-    deps = [":squiggles_test"]
-)
+# gentest(
+#     name = "squiggles_coverage",
+#     test_cmd = "cp ../../_squiggles#src_io_cpp._build/io.gcda $OUTS_IO",
+#     # test_cmd = "cp . .",
+#     deps = [":squiggles_test"]
+# )
 
 cc_binary(
     name = "squiggles_memcheck",
