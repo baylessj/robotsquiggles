@@ -8,6 +8,8 @@ jobs:
       - uses: actions/checkout@v2
         with:
           submodules: true
+      - name: Prep please dependencies
+        run: pip3 install setuptools
       - name: Install LCOV dependency
         # run: sudo apt-get install lcov
         run: |
