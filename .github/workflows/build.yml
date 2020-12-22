@@ -12,4 +12,4 @@ jobs:
         env:
           CC: gcc-9
           CXX: g++-9
-        run: ./pleasew build //lib:squiggles //lib:squigglesviscompat //lib:squiggles_test //lib:squiggles_memcheck
+        run: ./pleasew build //main:squiggles //main:squigglesviscompat //main:squiggles_test //main:squiggles_memcheck

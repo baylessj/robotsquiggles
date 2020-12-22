@@ -17,13 +17,6 @@ jobs:
           cd lcov
           sudo make install
           sudo ln -sf /usr/bin/gcov-9 /usr/bin/gcov
-      # - name: Init CMake
-      #   env:
-      #     CC: gcc-9
-      #     CXX: g++-9
-      #   run: |
-      #     mkdir -p ./build
-      #     ./run_cmake_unix.sh
       - name: Build
         env:
           CC: gcc-9
@@ -43,4 +36,4 @@ jobs:
         with:
           token: ${{secrets.CODECOV_TOKEN}}
           # file: ./coverage.info
-          file: ./plz-out/bin/lib/.test_coverage_squiggles_test
+          file: ./plz-out/bin/main/.test_coverage_squiggles_test

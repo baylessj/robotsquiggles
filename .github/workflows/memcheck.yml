@@ -17,6 +17,6 @@ jobs:
         env:
           CC: gcc-9
           CXX: g++-9
-        run: ./pleasew build //lib:squiggles_memcheck
+        run: ./pleasew build //main:squiggles_memcheck
       - name: check for leaks
-        run: valgrind --tool=memcheck --leak-check=full --leak-resolution=med --show-leak-kinds=all --undef-value-errors=yes --track-origins=yes  --error-exitcode=1 --show-reachable=no ./plz-out/bin/lib/squiggles_memcheck
+        run: valgrind --tool=memcheck --leak-check=full --leak-resolution=med --show-leak-kinds=all --undef-value-errors=yes --track-origins=yes  --error-exitcode=1 --show-reachable=no ./plz-out/bin/main/squiggles_memcheck
