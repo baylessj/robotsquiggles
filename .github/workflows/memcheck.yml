@@ -3,26 +3,20 @@ on: push
 jobs:
   memcheck:
     name: memcheck
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
         with:
           submodules: true
       - name: Install Valgrind dependency
-        run: sudo apt-get install valgrind
-      - name: Init CMake
-        env:
-          CC: gcc-9
-          CXX: g++-9
-        run: |
-          mkdir -p ./build
-          ./run_cmake_unix.sh
+        # run: sudo snap install --classic valgrind
+        run: sudo apt-get install -y libc6-dbg valgrind
+      - name: tree
+        run: sudo apt install -y tree
       - name: Build
-        working-directory: build
         env:
           CC: gcc-9
           CXX: g++-9
-        run: make all
+        run: ./pleasew build //lib:squiggles_memcheck
       - name: check for leaks
-        working-directory: build
-        run: valgrind --tool=memcheck --leak-check=full --leak-resolution=med --show-leak-kinds=all --undef-value-errors=yes --track-origins=yes  --error-exitcode=1 --show-reachable=no ./src/squiggles_run
+        run: valgrind --tool=memcheck --leak-check=full --leak-resolution=med --show-leak-kinds=all --undef-value-errors=yes --track-origins=yes  --error-exitcode=1 --show-reachable=no ./plz-out/bin/lib/squiggles_memcheck

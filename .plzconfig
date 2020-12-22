@@ -1,0 +1,11 @@
+[please]
+version = 15.10.0
+
+[cpp]
+Coverage = true
+TestMain = ///third_party/cpp/gtest//:gtest_main
+DefaultOptCppflags = --std=gnu++17 -Wall -Wextra -Wshadow -Wnull-dereference -Wno-psabi -Wno-unused-function -pthread -g -O3 -D THREADS_STD
+DefaultDbgCppFlags = --std=gnu++17 -Wall -Wextra -Wshadow -Wnull-dereference -Wno-psabi -Wno-unused-function -pthread -g -O3 -D THREADS_STD -fprofile-arcs -ftest-coverage --coverage
+
+[python]
+moduledir = third_party.python
