@@ -1,6 +1,6 @@
 filegroup(
   name = "static",
-  srcs = ["cu_comp_field.png", "two.min.js", "field.js", "squiggles.html"]
+  srcs = ["url.js", "jquery-3.5.1.min.js", "two.min.js", "field.js", "squiggles.html"]
 )
 
 genrule(

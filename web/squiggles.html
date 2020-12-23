@@ -3,6 +3,8 @@
   <meta content="text/html;charset=utf-8" http-equiv="Content-Type" />
   <meta content="utf-8" http-equiv="encoding" />
 
+  <script src="url.js"></script>
+  <script src="./jquery-3.5.1.min.js"></script>
   <script src="./two.min.js"></script>
   <script src="./a.out.js"></script>
   <script>
@@ -13,9 +15,41 @@
       console.log(api.version());
     };
   </script>
+  <style>
+    .assets {
+      display: none;
+    }
+  </style>
 </head>
 <body>
   <div id="draw-animation" />
+  <div class="assets">
+    <!-- letter "C" made in Adobe Illustrator CS5 -->
+    <svg
+      version="1.1"
+      xmlns="http://www.w3.org/2000/svg"
+      xmlns:xlink="http://www.w3.org/1999/xlink"
+      xmlns:a="http://ns.adobe.com/AdobeSVGViewerExtensions/3.0/"
+      x="0px"
+      y="0px"
+      width="202px"
+      height="264px"
+      overflow="visible"
+      enable-background="new -0.469 -0.136 202 264"
+      xml:space="preserve"
+    >
+      <path
+        fill="none"
+        stroke="#000000"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        stroke-miterlimit="10"
+        d="M200.5,204.792
+        c0,0-35.703,58.341-99.988,58.341C36.223,263.132,0.5,210.862,0.5,131.531C0.5,52.204,38.584,0.5,100.5,0.5
+        c61.924,0,85.354,51.704,85.354,51.704"
+      />
+    </svg>
+  </div>
 </body>
 <footer>
   <script>
@@ -188,29 +222,177 @@
     goals.stroke = goal_stroke;
     goals.linewidth = goal_linewidth;
 
-    // var circle = two.makeCircle(-70, 0, 50);
-    // var rect = two.makeRectangle(70, 0, 100, 100);
-    // circle.fill = "#FF8000";
-    // rect.fill = "rgba(0, 200, 255, 0.75)";
+    $(function () {
+      var $window = $(window);
+      var radius = 40,
+        editColor = "rgb(79, 128, 255)";
+      var two = new Two({
+        fullscreen: true,
+        autostart: true,
+      }).appendTo(document.body);
 
-    // var group = two.makeGroup(circle, rect);
-    // group.translation.set(two.width / 2, two.height / 2);
-    // group.scale = 0;
-    // group.noStroke();
+      // var letter = two.interpret(document.querySelector(".assets svg"));
+      // console.log(letter.children[0].vertices);
 
-    // // Bind a function to scale and rotate the group
-    // // to the animation loop.
-    // two
-    //   .bind("update", function (frameCount) {
-    //     // This code is called everytime two.update() is called.
-    //     // Effectively 60 times per second.
-    //     if (group.scale > 0.9999) {
-    //       group.scale = group.rotation = 0;
-    //     }
-    //     var t = (1 - group.scale) * 0.125;
-    //     group.scale += t;
-    //     group.rotation += t * 4 * Math.PI;
-    //   })
-    //   .play();
+      var polygon = new Two.Path(
+        [
+          new Two.Anchor(100, 72.975, 0, 0, 0, 0, "M"),
+          new Two.Anchor(0, 131.315, 64, 0, -64, 0, "C"),
+          new Two.Anchor(-100, 0, 0, 80, 0, -80, "C"),
+          new Two.Anchor(0, -131, -62, 0, 62, 0, "C"),
+          new Two.Anchor(85, -79, 0, 0, 0, 0, "C"),
+        ],
+        false,
+        true,
+        true
+      );
+      polygon.linewidth = radius;
+      polygon.cap = polygon.join = "round";
+      polygon.noFill().stroke = "#333";
+
+      var resize = function () {
+        var cx = two.width / 2;
+        var cy = two.height / 2;
+        var rect = polygon.getBoundingClientRect();
+        polygon.translation.set(cx - rect.width / 2, cy - rect.height / 2);
+      };
+      two.bind("resize", resize);
+      resize();
+
+      var path = two.makeGroup();
+      path.add(polygon);
+
+      polygon.vertices.forEach(function (anchor) {
+        // TODO: only set one control point and make the other control point the
+        // same magnitude in the opposite direction from the point
+
+        // TODO: figure out an interface for adding/removing points
+        var p = two.makeCircle(0, 0, radius / 4);
+        var l = two.makeCircle(0, 0, radius / 4);
+        var r = two.makeCircle(0, 0, radius / 4);
+
+        console.log(anchor);
+
+        p.translation.copy(anchor);
+        l.translation.copy(anchor.controls.left).addSelf(anchor);
+        r.translation.copy(anchor.controls.right).addSelf(anchor);
+        p.noStroke().fill = l.noStroke().fill = r.noStroke().fill = editColor;
+
+        var ll = new Two.Path([
+          new Two.Anchor().copy(p.translation),
+          new Two.Anchor().copy(l.translation),
+        ]);
+        var rl = new Two.Path([
+          new Two.Anchor().copy(p.translation),
+          new Two.Anchor().copy(r.translation),
+        ]);
+        rl.noFill().stroke = ll.noFill().stroke = editColor;
+
+        var g = two.makeGroup(rl, ll, p, l, r);
+        g.translation.addSelf(polygon.translation);
+        // letter.add(g);
+        path.add(g);
+
+        p.translation.bind(Two.Events.change, function () {
+          anchor.copy(this);
+          l.translation.copy(anchor.controls.left).addSelf(this);
+          r.translation.copy(anchor.controls.right).addSelf(this);
+          ll.vertices[0].copy(this);
+          rl.vertices[0].copy(this);
+          ll.vertices[1].copy(l.translation);
+          rl.vertices[1].copy(r.translation);
+        });
+        l.translation.bind(Two.Events.change, function () {
+          anchor.controls.left.copy(this).subSelf(anchor);
+          ll.vertices[1].copy(this);
+        });
+        r.translation.bind(Two.Events.change, function () {
+          anchor.controls.right.copy(this).subSelf(anchor);
+          rl.vertices[1].copy(this);
+        });
+
+        // Update the renderer in order to generate the actual elements.
+        two.update();
+
+        // Add Interactivity
+        addInteractivity(p);
+        addInteractivity(l);
+        addInteractivity(r);
+      });
+      // });
+
+      function addInteractivity(shape) {
+        var offset = Two.Vector.add(
+          shape.parent.parent.translation,
+          shape.parent.translation
+        );
+
+        var drag = function (e) {
+          e.preventDefault();
+          var x = e.clientX - offset.x;
+          var y = e.clientY - offset.y;
+          shape.translation.set(x, y);
+        };
+        var touchDrag = function (e) {
+          e.preventDefault();
+          var touch = e.originalEvent.changedTouches[0];
+          drag({
+            preventDefault: function () {},
+            clientX: touch.pageX,
+            clientY: touch.pageY,
+          });
+          return false;
+        };
+        var dragEnd = function (e) {
+          e.preventDefault();
+          $window.unbind("mousemove", drag).unbind("mouseup", dragEnd);
+        };
+        var touchEnd = function (e) {
+          e.preventDefault();
+          $(window).unbind("touchmove", touchDrag).unbind("touchend", touchEnd);
+          return false;
+        };
+
+        $(shape._renderer.elem)
+          .css({
+            cursor: "pointer",
+          })
+          .bind("mousedown", function (e) {
+            e.preventDefault();
+            $window.bind("mousemove", drag).bind("mouseup", dragEnd);
+          })
+          .bind("touchstart", function (e) {
+            e.preventDefault();
+            $(window).bind("touchmove", touchDrag).bind("touchend", touchEnd);
+            return false;
+          });
+      }
+    });
+
+    // function addBackdrop(d) {
+    //   var dimensions = d || 50;
+    //   var two = new Two({
+    //     type: Two.Types.canvas,
+    //     width: dimensions,
+    //     height: dimensions,
+    //   });
+
+    //   var r = dimensions / 10;
+    //   var center = dimensions / 2;
+
+    //   var a = two.makeLine(center - r, center, center + r, center);
+    //   var b = two.makeLine(center, center - r, center, center + r);
+
+    //   a.stroke = b.stroke = "#aaa";
+    //   a.linewidth = b.linewidth = 0.25;
+
+    //   two.update();
+
+    //   var style = document.body.style;
+    //   style.backgroundImage =
+    //     "url(" + two.renderer.domElement.toDataURL() + ")";
+    //   style.backgroundRepeat = "repeat";
+    //   style.backgroundSize = dimensions + "px " + dimensions + "px";
+    // }
   </script>
 </footer>
