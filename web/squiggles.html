@@ -191,19 +191,19 @@
 
     var botleft_goal = two.makeCircle(
       spacer + goal_radius + goal_linewidth / 2,
-      two.height - spacer - goal_radius * 2,
+      field_bot - goal_radius - goal_linewidth / 2,
       goal_radius
     );
 
     var botcenter_goal = two.makeCircle(
       two.width / 2,
-      two.height - spacer - goal_radius * 2,
+      field_bot - goal_radius - goal_linewidth / 2,
       goal_radius
     );
 
     var botright_goal = two.makeCircle(
       two.width - spacer - goal_radius - goal_linewidth / 2,
-      two.height - spacer - goal_radius * 2,
+      field_bot - goal_radius - goal_linewidth / 2,
       goal_radius
     );
 
@@ -230,9 +230,6 @@
         fullscreen: true,
         autostart: true,
       }).appendTo(document.body);
-
-      // var letter = two.interpret(document.querySelector(".assets svg"));
-      // console.log(letter.children[0].vertices);
 
       var polygon = new Two.Path(
         [
