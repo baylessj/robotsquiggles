@@ -263,52 +263,45 @@
       path.add(polygon);
 
       polygon.vertices.forEach(function (anchor) {
-        // TODO: only set one control point and make the other control point the
-        // same magnitude in the opposite direction from the point
-
         // TODO: figure out an interface for adding/removing points
         var p = two.makeCircle(0, 0, radius / 4);
-        var l = two.makeCircle(0, 0, radius / 4);
-        var r = two.makeCircle(0, 0, radius / 4);
-
-        console.log(anchor);
+        var r = two.makePolygon(0, 0, radius / 4);
+        r.rotation =
+          Math.atan2(anchor.controls.right.y, anchor.controls.right.x) +
+          Math.PI / 2;
 
         p.translation.copy(anchor);
-        l.translation.copy(anchor.controls.left).addSelf(anchor);
         r.translation.copy(anchor.controls.right).addSelf(anchor);
-        p.noStroke().fill = l.noStroke().fill = r.noStroke().fill = editColor;
+        p.noStroke().fill = r.noStroke().fill = editColor;
 
-        var ll = new Two.Path([
-          new Two.Anchor().copy(p.translation),
-          new Two.Anchor().copy(l.translation),
-        ]);
         var rl = new Two.Path([
           new Two.Anchor().copy(p.translation),
           new Two.Anchor().copy(r.translation),
         ]);
-        rl.noFill().stroke = ll.noFill().stroke = editColor;
+        rl.noFill().stroke = editColor;
 
-        var g = two.makeGroup(rl, ll, p, l, r);
+        var g = two.makeGroup(rl, p, r);
         g.translation.addSelf(polygon.translation);
-        // letter.add(g);
         path.add(g);
 
         p.translation.bind(Two.Events.change, function () {
           anchor.copy(this);
-          l.translation.copy(anchor.controls.left).addSelf(this);
           r.translation.copy(anchor.controls.right).addSelf(this);
-          ll.vertices[0].copy(this);
           rl.vertices[0].copy(this);
-          ll.vertices[1].copy(l.translation);
           rl.vertices[1].copy(r.translation);
-        });
-        l.translation.bind(Two.Events.change, function () {
-          anchor.controls.left.copy(this).subSelf(anchor);
-          ll.vertices[1].copy(this);
         });
         r.translation.bind(Two.Events.change, function () {
           anchor.controls.right.copy(this).subSelf(anchor);
           rl.vertices[1].copy(this);
+
+          var x = -1 * (anchor.controls.right.x - anchor.x);
+          var y = -1 * (anchor.controls.right.y - anchor.y);
+          var opp = new Two.Vector(x, y);
+          anchor.controls.left.copy(opp).subSelf(anchor);
+
+          r.rotation =
+            Math.atan2(anchor.controls.right.y, anchor.controls.right.x) +
+            Math.PI / 2;
         });
 
         // Update the renderer in order to generate the actual elements.
@@ -316,7 +309,6 @@
 
         // Add Interactivity
         addInteractivity(p);
-        addInteractivity(l);
         addInteractivity(r);
       });
       // });
