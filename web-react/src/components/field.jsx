@@ -23,7 +23,6 @@ export const Field = (props) => {
   const mount = useRef(null);
 
   useEffect(() => {
-    // var elem = document.getElementById("draw-animation");
     const two = new Two({ fullscreen: true, autostart: true }).appendTo(
       mount.current
     );

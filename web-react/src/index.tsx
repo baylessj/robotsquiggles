@@ -1,15 +1,12 @@
 import React from "react";
 import ReactDOM from "react-dom";
 import "./index.css";
-import { App } from "./three/spline-example";
-import { Field, Path } from "./components";
+import { App } from "./app";
 import reportWebVitals from "./reportWebVitals";
 
 ReactDOM.render(
   <React.StrictMode>
-    {/* <App /> */}
-    <Field />
-    <Path />
+    <App />
   </React.StrictMode>,
   document.getElementById("root")
 );
