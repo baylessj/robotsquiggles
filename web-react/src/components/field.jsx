@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import Two from "twojs-ts";
+import Two from "two.js";
 
 const rand_gray = () => {
   var value = Math.random() * 0xf + 0x50;
@@ -20,12 +20,12 @@ const field_tiles = (two, bg, tile_width, spacer) => {
 };
 
 export const Field = (props) => {
-  const two = useRef(null);
+  const mount = useRef(null);
 
   useEffect(() => {
-    var elem = document.getElementById("draw-animation");
-    two.current = new Two({ fullscreen: true, autostart: true }).appendTo(
-      elem ?? new HTMLElement()
+    // var elem = document.getElementById("draw-animation");
+    const two = new Two({ fullscreen: true, autostart: true }).appendTo(
+      mount.current
     );
 
     const tile_width = Math.ceil((two.width - 100) / 6);
@@ -177,5 +177,5 @@ export const Field = (props) => {
     goals.linewidth = goal_linewidth;
   });
 
-  return <div id="draw-animation"></div>;
+  return <div ref={mount} id="draw-animation"></div>;
 };

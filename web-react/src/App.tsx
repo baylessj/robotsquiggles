@@ -1,5 +1,4 @@
 import React from "react";
-import Two from "twojs-ts";
 
 import logo from "./logo.svg";
 import "./App.css";
