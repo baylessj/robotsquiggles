@@ -6,6 +6,7 @@ import {
   Theme,
   createStyles,
 } from "@material-ui/core/styles";
+import { ButtonGroup, Button } from "@material-ui/core";
 import Drawer from "@material-ui/core/Drawer";
 import CssBaseline from "@material-ui/core/CssBaseline";
 import AppBar from "@material-ui/core/AppBar";
@@ -143,6 +144,12 @@ export const App = (props: any) => {
         </div>
         <Divider />
         <List>
+          <ListItem key={"mode"}>
+            <ButtonGroup>
+              <Button>one</Button>
+              <Button>two</Button>
+            </ButtonGroup>
+          </ListItem>
           {["Inbox", "Starred", "Send email", "Drafts"].map((text, index) => (
             <ListItem button key={text}>
               <ListItemIcon>
@@ -170,7 +177,7 @@ export const App = (props: any) => {
         })}
       >
         <div className={classes.drawerHeader} />
-        <DrawNewPath />
+        <DrawNewPath drawerWidth={240} open={open} />
       </main>
     </div>
   );

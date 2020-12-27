@@ -9,16 +9,19 @@ export const DrawNewPath = (props) => {
   const group = useRef(null);
   const editColor = "rgb(79, 128, 255)";
   const startWidth = useRef(null);
+  const savedBoundingRect = useRef(null);
+  const savedLeft = useRef(null);
 
   useEffect(() => {
     const getCursorPosition = (e) => {
       let x = e.clientX;
       let y = e.clientY;
-      let left = mount.current.getBoundingClientRect().left;
-      let top = mount.current.getBoundingClientRect().top;
+      // relying on savedLeft to tell us if the drawer is open
+      let left = savedBoundingRect.current.left + savedLeft.current ?? 0;
+      let top = savedBoundingRect.current.top;
       return {
-        x: two.current.scene.scale * (x - left),
-        y: two.current.scene.scale * (y - top),
+        x: (x - left) / two.current.scene.scale,
+        y: (y - top) / two.current.scene.scale,
       };
     };
 
@@ -343,8 +346,8 @@ export const DrawNewPath = (props) => {
 
     startWidth.current = mount.current.getBoundingClientRect().width;
     two.current = new Two({
-      width: mount.current.getBoundingClientRect().width,
-      height: mount.current.getBoundingClientRect().width,
+      width: startWidth.current,
+      height: startWidth.current,
       autostart: true,
     }).appendTo(mount.current);
     two.current.makeGroup();
@@ -352,14 +355,33 @@ export const DrawNewPath = (props) => {
     mount.current.addEventListener("click", placePoints, true);
     field();
 
-    var resize = function () {
-      const newWidth = mount.current.getBoundingClientRect().width;
-      two.current.scene.scale = newWidth / startWidth.current;
-      two.current.renderer.setSize(newWidth, newWidth);
-    };
-    window.addEventListener("resize", resize);
-    resize();
+    window.addEventListener("resize", () => {
+      savedBoundingRect.current = mount.current.getBoundingClientRect();
+      resize(savedBoundingRect.current.width);
+    });
   }, []);
 
-  return <div ref={mount} style={{ width: "auto" }}></div>;
+  const resize = (width) => {
+    two.current.scene.scale = width / startWidth.current;
+    two.current.renderer.setSize(width, width);
+  };
+
+  useEffect(() => {
+    if (savedBoundingRect.current === null) {
+      // we have not yet saved a box size, store it
+      // We're storing the bounding client width because it updates out of
+      // sync with the Material UI drawer
+      savedBoundingRect.current = mount.current.getBoundingClientRect();
+    }
+    const boxWidth = savedBoundingRect.current.width;
+    if (props.open) {
+      savedLeft.current = props.drawerWidth;
+      resize(boxWidth - props.drawerWidth);
+    } else {
+      savedLeft.current = 0;
+      resize(boxWidth);
+    }
+  }, [props.open, props.drawerWidth]);
+
+  return <div ref={mount}></div>;
 };
