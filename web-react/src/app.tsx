@@ -6,7 +6,7 @@ import {
   Theme,
   createStyles,
 } from "@material-ui/core/styles";
-import { ButtonGroup, Button } from "@material-ui/core";
+import { ToggleButtonGroup, ToggleButton } from "@material-ui/lab";
 import Drawer from "@material-ui/core/Drawer";
 import CssBaseline from "@material-ui/core/CssBaseline";
 import AppBar from "@material-ui/core/AppBar";
@@ -19,11 +19,9 @@ import MenuIcon from "@material-ui/icons/Menu";
 import ChevronLeftIcon from "@material-ui/icons/ChevronLeft";
 import ChevronRightIcon from "@material-ui/icons/ChevronRight";
 import ListItem from "@material-ui/core/ListItem";
-import ListItemIcon from "@material-ui/core/ListItemIcon";
-import ListItemText from "@material-ui/core/ListItemText";
-import InboxIcon from "@material-ui/icons/MoveToInbox";
-import MailIcon from "@material-ui/icons/Mail";
+import { TextField } from "@material-ui/core";
 import { DrawNewPath } from "./components";
+import SimpleTabs from "./components/generated";
 
 const drawerWidth = 240;
 
@@ -90,7 +88,9 @@ const useStyles = makeStyles((theme: Theme) =>
 export const App = (props: any) => {
   const classes = useStyles();
   const theme = useTheme();
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(false); // setting this to true breaks the alignment of two.js
+  const [mode, setMode] = useState("PLACE_POINTS");
+  const [field, setField] = useState("NONE");
 
   const handleDrawerOpen = () => {
     setOpen(true);
@@ -120,7 +120,7 @@ export const App = (props: any) => {
             <MenuIcon />
           </IconButton>
           <Typography variant="h6" noWrap>
-            Persistent drawer
+            Squiggles Drawing Board
           </Typography>
         </Toolbar>
       </AppBar>
@@ -144,31 +144,93 @@ export const App = (props: any) => {
         </div>
         <Divider />
         <List>
-          <ListItem key={"mode"}>
-            <ButtonGroup>
-              <Button>one</Button>
-              <Button>two</Button>
-            </ButtonGroup>
+          <ListItem>
+            <Typography variant="subtitle1">Mode</Typography>
           </ListItem>
-          {["Inbox", "Starred", "Send email", "Drafts"].map((text, index) => (
-            <ListItem button key={text}>
-              <ListItemIcon>
-                {index % 2 === 0 ? <InboxIcon /> : <MailIcon />}
-              </ListItemIcon>
-              <ListItemText primary={text} />
-            </ListItem>
-          ))}
+          <ListItem key={"mode"}>
+            <ToggleButtonGroup
+              value={mode}
+              exclusive
+              onChange={(e, newMode) => {
+                if (newMode !== null) {
+                  setMode(newMode);
+                }
+              }}
+              aria-label="path add/edit mode"
+            >
+              <ToggleButton value="PLACE_POINTS" aria-label="left aligned">
+                PLACE POINTS
+              </ToggleButton>
+              <ToggleButton value="EDIT" aria-label="centered">
+                EDIT
+              </ToggleButton>
+            </ToggleButtonGroup>
+          </ListItem>
         </List>
         <Divider />
         <List>
-          {["All mail", "Trash", "Spam"].map((text, index) => (
-            <ListItem button key={text}>
-              <ListItemIcon>
-                {index % 2 === 0 ? <InboxIcon /> : <MailIcon />}
-              </ListItemIcon>
-              <ListItemText primary={text} />
-            </ListItem>
-          ))}
+          <ListItem>
+            <Typography variant="subtitle1">Robot Specs</Typography>
+          </ListItem>
+          <ListItem>
+            <TextField
+              variant="outlined"
+              required
+              label="Track Width (m)"
+              defaultValue="0.5"
+            />
+          </ListItem>
+          <ListItem>
+            <TextField
+              variant="outlined"
+              required
+              label="Max Velocity (m/s)"
+              defaultValue="1.0"
+            />
+          </ListItem>
+          <ListItem>
+            <TextField
+              variant="outlined"
+              label="Max Acceleration (m/s/s)"
+              defaultValue="2.0"
+            />
+          </ListItem>
+          <ListItem>
+            <TextField
+              variant="outlined"
+              label="Max Jerk (m/s/s/s)"
+              defaultValue="10.0"
+            />
+          </ListItem>
+        </List>
+        <Divider />
+        <List>
+          <ListItem>
+            <Typography variant="subtitle1">Field Setup</Typography>
+          </ListItem>
+          <ListItem>TBD: change the comp year?</ListItem>
+          <ListItem>
+            <ToggleButtonGroup
+              value={field}
+              exclusive
+              onChange={(e, newField) => {
+                if (newField !== null) {
+                  setField(newField);
+                }
+              }}
+              aria-label="path add/edit mode"
+            >
+              <ToggleButton value="COMP" aria-label="left aligned">
+                COMP
+              </ToggleButton>
+              <ToggleButton value="SKILLS" aria-label="centered">
+                AUTON
+              </ToggleButton>
+              <ToggleButton value="NONE" aria-label="centered">
+                NONE
+              </ToggleButton>
+            </ToggleButtonGroup>
+          </ListItem>
         </List>
       </Drawer>
       <main
@@ -178,6 +240,8 @@ export const App = (props: any) => {
       >
         <div className={classes.drawerHeader} />
         <DrawNewPath drawerWidth={240} open={open} />
+        {/** Below will be generated code */}
+        <SimpleTabs />
       </main>
     </div>
   );
