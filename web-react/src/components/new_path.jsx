@@ -184,22 +184,19 @@ export const DrawNewPath = (props) => {
   const getCursorPosition = (e) => {
     let x = e.clientX;
     let y = e.clientY;
-    let windowWidth = window.innerWidth;
-    let windowHeight = window.innerHeight;
-    let twoWidth = mount.current.getBoundingClientRect().width;
-    let twoHeight = mount.current.getBoundingClientRect().height;
+    let left = mount.current.getBoundingClientRect().left;
+    let top = mount.current.getBoundingClientRect().top;
     return {
-      x: x * (twoWidth / windowWidth),
-      y: y * (twoHeight / windowHeight),
+      x: x - left,
+      y: y - top,
     };
   };
 
   const placePoints = (e) => {
     e.preventDefault();
 
-    // const cursor = getCursorPosition(e);
-    // const point = two.current.makeCircle(cursor.x, cursor.y, 10);
-    var point = two.current.makeCircle(e.clientX, e.clientY, 10);
+    const cursor = getCursorPosition(e);
+    const point = two.current.makeCircle(cursor.x, cursor.y, 10);
     point.fill = editColor;
     points.current.push(point);
 
@@ -317,19 +314,13 @@ export const DrawNewPath = (props) => {
   });
 
   function addInteractivity(shape) {
-    console.log(mount.current.getBoundingClientRect());
     const offset = group.current.translation;
-    console.log(offset);
-    // const offset = shape.parent.translation;
-    // var offset = Two.Vector.add(
-    //   shape.parent.parent.translation,
-    //   shape.parent.translation
-    // );
 
     var drag = function (e) {
       e.preventDefault();
-      var x = e.clientX - offset.x;
-      var y = e.clientY - offset.y;
+      const cursor = getCursorPosition(e);
+      var x = cursor.x - offset.x;
+      var y = cursor.y - offset.y;
       shape.translation.set(x, y);
     };
     var touchDrag = function (e) {
@@ -354,7 +345,6 @@ export const DrawNewPath = (props) => {
       return false;
     };
 
-    console.log(shape._renderer.elem);
     shape._renderer.elem.addEventListener("mousedown", function (e) {
       e.preventDefault();
       window.addEventListener("mousemove", drag);
