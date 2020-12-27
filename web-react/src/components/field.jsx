@@ -23,9 +23,12 @@ export const Field = (props) => {
   const mount = useRef(null);
 
   useEffect(() => {
-    const two = new Two({ fullscreen: true, autostart: true }).appendTo(
-      mount.current
-    );
+    console.log(mount.current.getBoundingClientRect());
+    const two = new Two({
+      width: mount.current.getBoundingClientRect().width,
+      height: mount.current.getBoundingClientRect().height,
+      autostart: true,
+    }).appendTo(mount.current);
 
     const tile_width = Math.ceil((two.width - 100) / 6);
     const spacer = (two.width - tile_width * 6) / 2;
@@ -176,5 +179,9 @@ export const Field = (props) => {
     goals.linewidth = goal_linewidth;
   });
 
-  return <div ref={mount} id="draw-animation"></div>;
+  return (
+    <div ref={mount}>
+      <svg />
+    </div>
+  );
 };
