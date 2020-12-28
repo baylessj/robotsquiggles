@@ -5,6 +5,7 @@ import Tabs from "@material-ui/core/Tabs";
 import Tab from "@material-ui/core/Tab";
 import Typography from "@material-ui/core/Typography";
 import Box from "@material-ui/core/Box";
+import { CopyBlock, atomOneDark } from "react-code-blocks";
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -23,11 +24,7 @@ function TabPanel(props: TabPanelProps) {
       aria-labelledby={`simple-tab-${index}`}
       {...other}
     >
-      {value === index && (
-        <Box p={3}>
-          <Typography>{children}</Typography>
-        </Box>
-      )}
+      {value === index && <Box pt={1}>{children}</Box>}
     </div>
   );
 }
@@ -73,11 +70,18 @@ export default function SimpleTabs(props: SimpleTabsProps) {
         </Tabs>
       </AppBar>
       <TabPanel value={value} index={0}>
-        {Array.from(props.paths)
+        <CopyBlock
+          text={"int i = 0;\nint i = 0;\n"}
+          language={"cpp"}
+          showLineNumbers={true}
+          theme={atomOneDark}
+          codeBlock
+        />
+        {/* {Array.from(props.paths)
           .slice(0, -1)
           .map(([key, value]) => (
             <p>{`${key}: ${value.vectors}`}</p>
-          ))}
+          ))} */}
       </TabPanel>
       <TabPanel value={value} index={1}>
         Item Two
