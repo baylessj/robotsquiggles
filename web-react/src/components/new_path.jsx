@@ -1,132 +1,250 @@
 import React, { useEffect, useRef } from "react";
+import { useTheme } from "@material-ui/core";
 import Two from "two.js";
 
 export const DrawNewPath = (props) => {
   const mount = useRef(null);
-  const points = useRef([]);
   const two = useRef(null);
-  const path = useRef(null);
   const group = useRef(null);
-  const editColor = "rgb(79, 128, 255)";
+
+  const points = useRef(new Map());
+  const path = useRef(null);
+
   const startWidth = useRef(null);
   const savedBoundingRect = useRef(null);
   const savedLeft = useRef(null);
+
+  const vectors = useRef([]);
+  const prevMode = useRef(null);
+  const listeners = useRef([]);
+
+  const theme = useTheme();
+  const editColor = theme.palette.primary.light;
+
+  /**
+   * Modifies the mouse event to fit with the Two canvas coordinates.
+   *
+   * @param e The mouse event
+   *
+   * @returns {x: number, y: number}
+   */
+  const getCursorPosition = (e) => {
+    let x = e.clientX;
+    let y = e.clientY;
+    // relying on savedLeft to tell us if the drawer is open
+    let left = savedBoundingRect.current.left + savedLeft.current ?? 0;
+    let top = savedBoundingRect.current.top;
+    return {
+      x: (x - left) / two.current.scene.scale,
+      y: (y - top) / two.current.scene.scale,
+    };
+  };
+
+  const addInteractivity = (shape) => {
+    const offset = group.current.translation;
+
+    var drag = function (e) {
+      e.preventDefault();
+      const cursor = getCursorPosition(e);
+      var x = cursor.x - offset.x;
+      var y = cursor.y - offset.y;
+      shape.translation.set(x, y);
+    };
+    var touchDrag = function (e) {
+      e.preventDefault();
+      var touch = e.originalEvent.changedTouches[0];
+      drag({
+        preventDefault: function () {},
+        clientX: touch.pageX,
+        clientY: touch.pageY,
+      });
+      return false;
+    };
+    var dragEnd = function (e) {
+      e.preventDefault();
+      window.removeEventListener("mousemove", drag);
+      window.removeEventListener("mouseup", dragEnd);
+    };
+    var touchEnd = function (e) {
+      e.preventDefault();
+      window.removeEventListener("touchmove", touchDrag);
+      window.removeEventListener("touchend", touchEnd);
+      return false;
+    };
+
+    shape._renderer.elem.addEventListener("mousedown", function (e) {
+      e.preventDefault();
+      console.log("mouse");
+      window.addEventListener("mousemove", drag);
+      window.addEventListener("mouseup", dragEnd);
+    });
+    shape._renderer.elem.addEventListener("touchstart", function (e) {
+      e.preventDefault();
+      window.addEventListener("touchmove", touchDrag);
+      window.addEventListener("touchend", touchEnd);
+      return false;
+    });
+  };
+
+  const createPath = (waypoints) => {
+    const anchors = [];
+    for (let i = 0; i < waypoints.length; i++) {
+      const p = waypoints[i];
+      let anchor;
+      if (i === 0) {
+        anchor = new Two.Anchor(
+          p.translation.x,
+          p.translation.y,
+          0,
+          100,
+          0,
+          -100,
+          "M"
+        );
+        anchors.push(anchor);
+      } else {
+        anchor = new Two.Anchor(
+          p.translation.x,
+          p.translation.y,
+          0,
+          100,
+          0,
+          -100,
+          "C"
+        );
+        anchors.push(anchor);
+      }
+      two.current.remove(p);
+      two.current.update(); // render the elements before adding interactivity
+    }
+    group.current = two.current.makeGroup();
+    path.current = new Two.Path(anchors, false, true, true);
+    path.current.cap = path.current.join = "round";
+    path.current.noFill().stroke = "#333";
+    path.current.linewidth = 5;
+    group.current.add(path.current);
+
+    path.current.vertices.forEach(function (anchor) {
+      const p = two.current.makeCircle(0, 0, 10);
+      const r = two.current.makePolygon(0, 0, 10);
+      r.rotation =
+        Math.atan2(anchor.controls.right.y, anchor.controls.right.x) +
+        Math.PI / 2;
+
+      p.translation.copy(anchor);
+      r.translation.copy(anchor.controls.right).addSelf(anchor);
+      p.noStroke().fill = r.noStroke().fill = editColor;
+
+      const rl = new Two.Path([
+        new Two.Anchor().copy(p.translation),
+        new Two.Anchor().copy(r.translation),
+      ]);
+      rl.noFill().stroke = editColor;
+
+      const g = two.current.makeGroup(rl, p, r);
+      g.translation.addSelf(path.current.translation);
+      group.current.add(g);
+
+      p.translation.bind(Two.Events.change, function () {
+        anchor.copy(this);
+        r.translation.copy(anchor.controls.right).addSelf(this);
+        rl.vertices[0].copy(this);
+        rl.vertices[1].copy(r.translation);
+      });
+      r.translation.bind(Two.Events.change, function () {
+        anchor.controls.right.copy(this).subSelf(anchor);
+        rl.vertices[1].copy(this);
+
+        const x = -1 * (anchor.controls.right.x - anchor.x);
+        const y = -1 * (anchor.controls.right.y - anchor.y);
+        const opp = new Two.Vector(x, y);
+        anchor.controls.left.copy(opp).subSelf(anchor);
+
+        r.rotation =
+          Math.atan2(anchor.controls.right.y, anchor.controls.right.x) +
+          Math.PI / 2;
+      });
+
+      // Update the renderer in order to generate the actual elements.
+      two.current.update();
+
+      vectors.current.push({ p: p, r: r });
+    });
+  };
+
+  const nextChar = (str) => {
+    return (
+      str.substring(0, str.length - 1) +
+      String.fromCharCode(str.charCodeAt(str.length - 1) + 1)
+    );
+  };
+
+  const curPath = () => {
+    let curKey = "A";
+    for (const k of points.current.keys()) {
+      console.log(k.charCodeAt(0));
+      if (k.charCodeAt(0) > curKey.charCodeAt(0)) {
+        curKey = k;
+      }
+    }
+    return curKey;
+  };
+
+  const placePoints = (e) => {
+    e.preventDefault();
+
+    const cursor = getCursorPosition(e);
+    const point = two.current.makeCircle(cursor.x, cursor.y, 10);
+    point.fill = editColor;
+    if (points.current.size === 0) {
+      points.current.set("A", []);
+    }
+    const pathKey = curPath();
+    console.log(points.current.get(pathKey));
+    points.current.get(pathKey).push(point);
+
+    if (points.current.get(pathKey).length > 1) {
+      createPath(points.current.get(pathKey));
+      points.current.set(nextChar(pathKey), []); // create the next path's array
+      props.setMode("EDIT");
+    }
+  };
+
+  const addMidpoint = () => {
+    // const midpoint = path.current.getPointAt(0.5);
+    // console.log(midpoint);
+    // two.current.makeCircle(midpoint.x, midpoint.y, 10);
+    // const r2 = two.current.makePolygon(0, 0, 10);
+    // r2.rotation =
+    //   Math.atan2(midpoint.controls.right.y, midpoint.controls.right.x) +
+    //   Math.PI / 2;
+    // r2.translation.copy(midpoint.controls.right).addSelf(midpoint);
+  };
+
+  const addNewEventListener = (node, event, handler) => {
+    const listener = { node: node, event: event, handler: handler };
+    for (let i = 0; i < listeners.current.length; ++i) {
+      if (listeners.current[i] === listener) {
+        // the new event is already defined, don't define it again
+        return;
+      }
+    }
+    node.addEventListener(event, handler);
+    listeners.current.push(listener);
+  };
+
+  const removeAllEventListeners = () => {
+    for (let i = 0; i < listeners.current.length; ++i) {
+      const x = listeners.current[i];
+      x.node.removeEventListener(x.event, x.handler);
+    }
+    listeners.current = [];
+  };
 
   /**
    * Sets up the field when the component is mounted.
    */
   useEffect(() => {
-    const getCursorPosition = (e) => {
-      let x = e.clientX;
-      let y = e.clientY;
-      // relying on savedLeft to tell us if the drawer is open
-      let left = savedBoundingRect.current.left + savedLeft.current ?? 0;
-      let top = savedBoundingRect.current.top;
-      return {
-        x: (x - left) / two.current.scene.scale,
-        y: (y - top) / two.current.scene.scale,
-      };
-    };
-
-    const placePoints = (e) => {
-      e.preventDefault();
-
-      const cursor = getCursorPosition(e);
-      const point = two.current.makeCircle(cursor.x, cursor.y, 10);
-      point.fill = editColor;
-      points.current.push(point);
-
-      if (points.current.length > 1) {
-        const anchors = [];
-        for (let i = 0; i < points.current.length; i++) {
-          const p = points.current[i];
-          let anchor;
-          if (i === 0) {
-            anchor = new Two.Anchor(
-              p.translation.x,
-              p.translation.y,
-              0,
-              100,
-              0,
-              -100,
-              "M"
-            );
-            anchors.push(anchor);
-          } else {
-            anchor = new Two.Anchor(
-              p.translation.x,
-              p.translation.y,
-              0,
-              100,
-              0,
-              -100,
-              "C"
-            );
-            anchors.push(anchor);
-          }
-          two.current.remove(p);
-          two.current.update(); // render the elements before adding interactivity
-        }
-        group.current = two.current.makeGroup();
-        path.current = new Two.Path(anchors, false, true, true);
-        path.current.cap = path.current.join = "round";
-        path.current.noFill().stroke = "#333";
-        path.current.linewidth = 5;
-        group.current.add(path.current);
-
-        path.current.vertices.forEach(function (anchor) {
-          const p = two.current.makeCircle(0, 0, 10);
-          const r = two.current.makePolygon(0, 0, 10);
-          r.rotation =
-            Math.atan2(anchor.controls.right.y, anchor.controls.right.x) +
-            Math.PI / 2;
-
-          p.translation.copy(anchor);
-          r.translation.copy(anchor.controls.right).addSelf(anchor);
-          p.noStroke().fill = r.noStroke().fill = editColor;
-
-          const rl = new Two.Path([
-            new Two.Anchor().copy(p.translation),
-            new Two.Anchor().copy(r.translation),
-          ]);
-          rl.noFill().stroke = editColor;
-
-          const g = two.current.makeGroup(rl, p, r);
-          g.translation.addSelf(path.current.translation);
-          group.current.add(g);
-
-          p.translation.bind(Two.Events.change, function () {
-            anchor.copy(this);
-            r.translation.copy(anchor.controls.right).addSelf(this);
-            rl.vertices[0].copy(this);
-            rl.vertices[1].copy(r.translation);
-          });
-          r.translation.bind(Two.Events.change, function () {
-            anchor.controls.right.copy(this).subSelf(anchor);
-            rl.vertices[1].copy(this);
-
-            const x = -1 * (anchor.controls.right.x - anchor.x);
-            const y = -1 * (anchor.controls.right.y - anchor.y);
-            const opp = new Two.Vector(x, y);
-            anchor.controls.left.copy(opp).subSelf(anchor);
-
-            r.rotation =
-              Math.atan2(anchor.controls.right.y, anchor.controls.right.x) +
-              Math.PI / 2;
-          });
-
-          // Update the renderer in order to generate the actual elements.
-          two.current.update();
-
-          // Add Interactivity
-          addInteractivity(p);
-          addInteractivity(r);
-        });
-
-        mount.current.removeEventListener("click", placePoints, true);
-      }
-    };
-
     const rand_gray = () => {
       var value = Math.random() * 0xf + 0x50;
       var grayscale = (value << 16) | (value << 8) | value;
@@ -302,51 +420,6 @@ export const DrawNewPath = (props) => {
       goals.linewidth = goal_linewidth;
     };
 
-    const addInteractivity = (shape) => {
-      const offset = group.current.translation;
-
-      var drag = function (e) {
-        e.preventDefault();
-        const cursor = getCursorPosition(e);
-        var x = cursor.x - offset.x;
-        var y = cursor.y - offset.y;
-        shape.translation.set(x, y);
-      };
-      var touchDrag = function (e) {
-        e.preventDefault();
-        var touch = e.originalEvent.changedTouches[0];
-        drag({
-          preventDefault: function () {},
-          clientX: touch.pageX,
-          clientY: touch.pageY,
-        });
-        return false;
-      };
-      var dragEnd = function (e) {
-        e.preventDefault();
-        window.removeEventListener("mousemove", drag);
-        window.removeEventListener("mouseup", dragEnd);
-      };
-      var touchEnd = function (e) {
-        e.preventDefault();
-        window.removeEventListener("touchmove", touchDrag);
-        window.removeEventListener("touchend", touchEnd);
-        return false;
-      };
-
-      shape._renderer.elem.addEventListener("mousedown", function (e) {
-        e.preventDefault();
-        window.addEventListener("mousemove", drag);
-        window.addEventListener("mouseup", dragEnd);
-      });
-      shape._renderer.elem.addEventListener("touchstart", function (e) {
-        e.preventDefault();
-        window.addEventListener("touchmove", touchDrag);
-        window.addEventListener("touchend", touchEnd);
-        return false;
-      });
-    };
-
     startWidth.current = mount.current.getBoundingClientRect().width;
     two.current = new Two({
       width: startWidth.current,
@@ -355,7 +428,6 @@ export const DrawNewPath = (props) => {
     }).appendTo(mount.current);
     two.current.makeGroup();
 
-    mount.current.addEventListener("click", placePoints, true);
     field();
 
     window.addEventListener("resize", () => {
@@ -388,6 +460,39 @@ export const DrawNewPath = (props) => {
       resize(boxWidth);
     }
   }, [props.open, props.drawerWidth]);
+
+  /**
+   * Handles the State Machine for the edit modes.
+   */
+  useEffect(() => {
+    if (props.mode === prevMode.current) {
+      // The below state machine only operates on the state transitions
+      return;
+    }
+
+    console.log(props.mode);
+    switch (props.mode) {
+      case "ADD_PATH":
+        removeAllEventListeners();
+        addNewEventListener(mount.current, "click", placePoints);
+        break;
+      case "EDIT":
+        removeAllEventListeners();
+
+        vectors.current.forEach((v) => {
+          addInteractivity(v.p);
+          addInteractivity(v.r);
+        });
+        break;
+      case "ADD_POINTS":
+        break;
+      case "REMOVE_POINTS":
+        break;
+      default:
+        break;
+    }
+    prevMode.current = props.mode;
+  });
 
   return <div ref={mount}></div>;
 };
