@@ -495,7 +495,6 @@ export const DrawNewPath = (props) => {
    * Handles the State Machine for the edit modes.
    */
   useEffect(() => {
-    console.log(props.paths);
     if (props.mode === prevMode.current) {
       // The below state machine only operates on the state transitions
       return;

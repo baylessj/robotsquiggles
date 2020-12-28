@@ -102,8 +102,6 @@ export const App = (props: any) => {
     setOpen(false);
   };
 
-  console.log(paths);
-
   return (
     <ThemeProvider theme={theme}>
       <div className={classes.root}>
