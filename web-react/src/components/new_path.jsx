@@ -7,14 +7,10 @@ export const DrawNewPath = (props) => {
   const two = useRef(null);
   const group = useRef(null);
 
-  const points = useRef(new Map());
-  const path = useRef(null);
-
   const startWidth = useRef(null);
   const savedBoundingRect = useRef(null);
   const savedLeft = useRef(null);
 
-  const vectors = useRef([]);
   const prevMode = useRef(null);
   const listeners = useRef([]);
 
@@ -74,7 +70,6 @@ export const DrawNewPath = (props) => {
 
     shape._renderer.elem.addEventListener("mousedown", function (e) {
       e.preventDefault();
-      console.log("mouse");
       window.addEventListener("mousemove", drag);
       window.addEventListener("mouseup", dragEnd);
     });
@@ -86,12 +81,14 @@ export const DrawNewPath = (props) => {
     });
   };
 
-  const createPath = (waypoints) => {
+  const createPath = (pathKey) => {
     const anchors = [];
-    for (let i = 0; i < waypoints.length; i++) {
-      const p = waypoints[i];
+    const lastPoint = props.paths.get(pathKey)["waypoints"].length - 1;
+    for (let i = lastPoint; i >= 0; --i) {
+      // iterate backwards through points so we are driving the right direction
+      const p = props.paths.get(pathKey).waypoints[i];
       let anchor;
-      if (i === 0) {
+      if (i === lastPoint) {
         anchor = new Two.Anchor(
           p.translation.x,
           p.translation.y,
@@ -117,14 +114,16 @@ export const DrawNewPath = (props) => {
       two.current.remove(p);
       two.current.update(); // render the elements before adding interactivity
     }
-    group.current = two.current.makeGroup();
-    path.current = new Two.Path(anchors, false, true, true);
-    path.current.cap = path.current.join = "round";
-    path.current.noFill().stroke = "#333";
-    path.current.linewidth = 5;
-    group.current.add(path.current);
 
-    path.current.vertices.forEach(function (anchor) {
+    group.current = two.current.makeGroup();
+
+    const newPath = new Two.Path(anchors, false, true, true);
+    newPath.cap = newPath.join = "round";
+    newPath.noFill().stroke = "#333";
+    newPath.linewidth = 5;
+    group.current.add(newPath);
+
+    newPath.vertices.forEach(function (anchor) {
       const p = two.current.makeCircle(0, 0, 10);
       const r = two.current.makePolygon(0, 0, 10);
       r.rotation =
@@ -142,7 +141,7 @@ export const DrawNewPath = (props) => {
       rl.noFill().stroke = editColor;
 
       const g = two.current.makeGroup(rl, p, r);
-      g.translation.addSelf(path.current.translation);
+      g.translation.addSelf(newPath.translation);
       group.current.add(g);
 
       p.translation.bind(Two.Events.change, function () {
@@ -168,7 +167,15 @@ export const DrawNewPath = (props) => {
       // Update the renderer in order to generate the actual elements.
       two.current.update();
 
-      vectors.current.push({ p: p, r: r });
+      props.setPaths(
+        new Map(
+          props.paths.set(pathKey, {
+            waypoints: props.paths.get(pathKey).waypoints,
+            vectors: [{ p: p, r: r }, ...props.paths.get(pathKey).vectors],
+            path: newPath,
+          })
+        )
+      );
     });
   };
 
@@ -181,8 +188,7 @@ export const DrawNewPath = (props) => {
 
   const curPath = () => {
     let curKey = "A";
-    for (const k of points.current.keys()) {
-      console.log(k.charCodeAt(0));
+    for (const k of props.paths.keys()) {
       if (k.charCodeAt(0) > curKey.charCodeAt(0)) {
         curKey = k;
       }
@@ -196,16 +202,40 @@ export const DrawNewPath = (props) => {
     const cursor = getCursorPosition(e);
     const point = two.current.makeCircle(cursor.x, cursor.y, 10);
     point.fill = editColor;
-    if (points.current.size === 0) {
-      points.current.set("A", []);
+    if (props.paths.size === 0) {
+      props.setPaths(
+        new Map(
+          props.paths.set("A", {
+            waypoints: [],
+            vectors: [],
+            path: null,
+          })
+        )
+      );
     }
     const pathKey = curPath();
-    console.log(points.current.get(pathKey));
-    points.current.get(pathKey).push(point);
+    props.setPaths(
+      new Map(
+        props.paths.set(pathKey, {
+          waypoints: [point, ...props.paths.get(pathKey).waypoints],
+          vectors: props.paths.get(pathKey).vectors,
+          path: props.paths.get(pathKey).path,
+        })
+      )
+    );
 
-    if (points.current.get(pathKey).length > 1) {
-      createPath(points.current.get(pathKey));
-      points.current.set(nextChar(pathKey), []); // create the next path's array
+    if (props.paths.get(pathKey)["waypoints"].length > 1) {
+      createPath(pathKey);
+      // create the next path's array
+      props.setPaths(
+        new Map(
+          props.paths.set(nextChar(pathKey), {
+            waypoints: [],
+            vectors: [],
+            path: null,
+          })
+        )
+      );
       props.setMode("EDIT");
     }
   };
@@ -465,12 +495,12 @@ export const DrawNewPath = (props) => {
    * Handles the State Machine for the edit modes.
    */
   useEffect(() => {
+    console.log(props.paths);
     if (props.mode === prevMode.current) {
       // The below state machine only operates on the state transitions
       return;
     }
 
-    console.log(props.mode);
     switch (props.mode) {
       case "ADD_PATH":
         removeAllEventListeners();
@@ -479,9 +509,11 @@ export const DrawNewPath = (props) => {
       case "EDIT":
         removeAllEventListeners();
 
-        vectors.current.forEach((v) => {
-          addInteractivity(v.p);
-          addInteractivity(v.r);
+        props.paths.forEach((p) => {
+          p.vectors.forEach((v) => {
+            addInteractivity(v.p);
+            addInteractivity(v.r);
+          });
         });
         break;
       case "ADD_POINTS":

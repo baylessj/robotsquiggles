@@ -81,6 +81,18 @@ export const App = (props: any) => {
   const [open, setOpen] = useState(false); // setting this to true breaks the alignment of two.js
   const [mode, setMode] = useState("ADD_PATH");
   const [field, setField] = useState("NONE");
+  /**
+   * Map of the data associated with each Squiggles path.
+   *
+   * Of the form:
+   *
+   * "A": {
+   *   "waypoints": <Two.Circle>[],
+   *   "vectors": <Two.Vector>[],
+   *   "path": Two.Path
+   * }
+   */
+  const [paths, setPaths] = useState(new Map());
 
   const handleDrawerOpen = () => {
     setOpen(true);
@@ -89,6 +101,8 @@ export const App = (props: any) => {
   const handleDrawerClose = () => {
     setOpen(false);
   };
+
+  console.log(paths);
 
   return (
     <ThemeProvider theme={theme}>
@@ -143,9 +157,11 @@ export const App = (props: any) => {
             open={open}
             mode={mode}
             setMode={setMode}
+            paths={paths}
+            setPaths={setPaths}
           />
           {/** Below will be generated code */}
-          <SimpleTabs />
+          <SimpleTabs paths={paths} />
         </main>
       </div>
     </ThemeProvider>

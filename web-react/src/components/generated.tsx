@@ -46,13 +46,19 @@ const useStyles = makeStyles((theme: Theme) => ({
   },
 }));
 
-export default function SimpleTabs() {
+export interface SimpleTabsProps {
+  paths: Map<string, any>;
+}
+
+export default function SimpleTabs(props: SimpleTabsProps) {
   const classes = useStyles();
   const [value, setValue] = React.useState(0);
 
   const handleChange = (event: React.ChangeEvent<{}>, newValue: number) => {
     setValue(newValue);
   };
+
+  console.log(props.paths);
 
   return (
     <div className={classes.root}>
@@ -62,19 +68,19 @@ export default function SimpleTabs() {
           onChange={handleChange}
           aria-label="simple tabs example"
         >
-          <Tab label="Item One" {...a11yProps(0)} />
-          <Tab label="Item Two" {...a11yProps(1)} />
-          <Tab label="Item Three" {...a11yProps(2)} />
+          <Tab label="Squiggles" {...a11yProps(0)} />
+          <Tab label="Okapi" {...a11yProps(1)} />
         </Tabs>
       </AppBar>
       <TabPanel value={value} index={0}>
-        Item One
+        {Array.from(props.paths)
+          .slice(0, -1)
+          .map(([key, value]) => (
+            <p>{`${key}: ${value.vectors}`}</p>
+          ))}
       </TabPanel>
       <TabPanel value={value} index={1}>
         Item Two
-      </TabPanel>
-      <TabPanel value={value} index={2}>
-        Item Three
       </TabPanel>
     </div>
   );
