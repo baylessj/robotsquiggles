@@ -12,6 +12,9 @@ export const DrawNewPath = (props) => {
   const savedBoundingRect = useRef(null);
   const savedLeft = useRef(null);
 
+  /**
+   * Sets up the field when the component is mounted.
+   */
   useEffect(() => {
     const getCursorPosition = (e) => {
       let x = e.clientX;
@@ -366,6 +369,9 @@ export const DrawNewPath = (props) => {
     two.current.renderer.setSize(width, width);
   };
 
+  /**
+   * Resizes the Two.js canvas each time the component updates.
+   */
   useEffect(() => {
     if (savedBoundingRect.current === null) {
       // we have not yet saved a box size, store it
