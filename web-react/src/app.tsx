@@ -81,6 +81,11 @@ export const App = (props: any) => {
   const [open, setOpen] = useState(false); // setting this to true breaks the alignment of two.js
   const [mode, setMode] = useState("ADD_PATH");
   const [field, setField] = useState("NONE");
+  const [trackWidth, setTrackWidth] = useState("0.5");
+  const [maxVel, setMaxVel] = useState("1.0");
+  const [maxAccel, setMaxAccel] = useState("2.0");
+  const [maxJerk, setMaxJerk] = useState("10.0");
+
   /**
    * Map of the data associated with each Squiggles path.
    *
@@ -142,6 +147,14 @@ export const App = (props: any) => {
             setMode={setMode}
             field={field}
             setField={setField}
+            trackWidth={trackWidth}
+            setTrackWidth={setTrackWidth}
+            maxVel={maxVel}
+            setMaxVel={setMaxVel}
+            maxAccel={maxAccel}
+            setMaxAccel={setMaxAccel}
+            maxJerk={maxJerk}
+            setMaxJerk={setMaxJerk}
           />
         </Drawer>
         <main
@@ -159,7 +172,13 @@ export const App = (props: any) => {
             setPaths={setPaths}
           />
           {/** Below will be generated code */}
-          <SimpleTabs paths={paths} />
+          <SimpleTabs
+            paths={paths}
+            trackWidth={trackWidth}
+            maxVel={maxVel}
+            maxAccel={maxAccel}
+            maxJerk={maxJerk}
+          />
         </main>
       </div>
     </ThemeProvider>

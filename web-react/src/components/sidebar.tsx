@@ -32,6 +32,14 @@ export interface SidebarContentProps {
   setMode: (mode: string) => void;
   field: string;
   setField: (field: string) => void;
+  trackWidth: string;
+  setTrackWidth: (trackWidth: string) => void;
+  maxVel: string;
+  setMaxVel: (maxVel: string) => void;
+  maxAccel: string;
+  setMaxAccel: (maxAccel: string) => void;
+  maxJerk: string;
+  setMaxJerk: (maxJerk: string) => void;
 }
 
 export const SidebarContent = (props: SidebarContentProps) => {
@@ -80,11 +88,13 @@ export const SidebarContent = (props: SidebarContentProps) => {
           <Typography variant="subtitle1">Robot Specs</Typography>
         </ListItem>
         <ListItem>
+          {/* TODO: validate that these values are floats */}
           <TextField
             variant="outlined"
             required
             label="Track Width (m)"
-            defaultValue="0.5"
+            value={props.trackWidth}
+            onChange={(e) => props.setTrackWidth(e.target.value)}
           />
         </ListItem>
         <ListItem>
@@ -92,21 +102,24 @@ export const SidebarContent = (props: SidebarContentProps) => {
             variant="outlined"
             required
             label="Max Velocity (m/s)"
-            defaultValue="1.0"
+            value={props.maxVel}
+            onChange={(e) => props.setMaxVel(e.target.value)}
           />
         </ListItem>
         <ListItem>
           <TextField
             variant="outlined"
             label="Max Acceleration (m/s/s)"
-            defaultValue="2.0"
+            value={props.maxAccel}
+            onChange={(e) => props.setMaxAccel(e.target.value)}
           />
         </ListItem>
         <ListItem>
           <TextField
             variant="outlined"
             label="Max Jerk (m/s/s/s)"
-            defaultValue="10.0"
+            value={props.maxJerk}
+            onChange={(e) => props.setMaxJerk(e.target.value)}
           />
         </ListItem>
       </List>

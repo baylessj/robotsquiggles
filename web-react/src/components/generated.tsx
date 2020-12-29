@@ -3,7 +3,6 @@ import { makeStyles, Theme } from "@material-ui/core/styles";
 import AppBar from "@material-ui/core/AppBar";
 import Tabs from "@material-ui/core/Tabs";
 import Tab from "@material-ui/core/Tab";
-import Typography from "@material-ui/core/Typography";
 import Box from "@material-ui/core/Box";
 import { CopyBlock, atomOneDark } from "react-code-blocks";
 
@@ -24,7 +23,15 @@ function TabPanel(props: TabPanelProps) {
       aria-labelledby={`simple-tab-${index}`}
       {...other}
     >
-      {value === index && <Box pt={1}>{children}</Box>}
+      {value === index && (
+        <Box
+          pt={2}
+          p={1}
+          style={{ backgroundColor: "#282c34" /* match the OneDark bg */ }}
+        >
+          {children}
+        </Box>
+      )}
     </div>
   );
 }
@@ -45,6 +52,10 @@ const useStyles = makeStyles((theme: Theme) => ({
 
 export interface SimpleTabsProps {
   paths: Map<string, any>;
+  trackWidth: string;
+  maxVel: string;
+  maxAccel: string;
+  maxJerk: string;
 }
 
 export default function SimpleTabs(props: SimpleTabsProps) {
@@ -56,13 +67,16 @@ export default function SimpleTabs(props: SimpleTabsProps) {
   };
 
   const squigglesCode = () => {
-    let out =
-      "auto constraints = squiggles::Constraints(2.0, 2.0, 1.0, 1.0);\n";
+    let out = "#define PATH_DT             (0.01)\n";
+    out += `#define PATH_MAX_VEL        (${props.maxVel})\n`;
+    out += `#define PATH_MAX_ACCEL      (${props.maxAccel})\n`;
+    out += `#define PATH_MAX_JERK       (${props.maxJerk})\n`;
+    out += `#define CHASSIS_TRACK_WIDTH (${props.trackWidth})\n\n`;
     out +=
-      "auto model = std::make_shared<squiggles::TankModel>(0.4, constraints);\n";
-    out += "const dt = 0.01;\n";
+      "auto constraints = squiggles::Constraints(PATH_MAX_VEL, PATH_MAX_ACCEL, PATH_MAX_JERK);\n";
+    out += `auto model = std::make_shared<squiggles::TankModel>(CHASSIS_TRACK_WIDTH, constraints);\n`;
     out +=
-      "auto generator = squiggles::SplineGenerator(constraints, model, dt);\n\n";
+      "auto generator = squiggles::SplineGenerator(constraints, model, PATH_DT);\n\n";
     out += Array.from(props.paths)
       .slice(0, -1)
       .map(([k, v]) => {
@@ -91,33 +105,43 @@ export default function SimpleTabs(props: SimpleTabsProps) {
   };
 
   const okapiCode = () => {
-    let out = "auto chassis = okapi::ChassisControllerBuilder()\n";
+    let out = "// TODO: Fill in the info below for your robot\n";
+    out += "#define LEFT_CHASSIS_MOTOR_PORTS ({1, 2})\n";
+    out += "#define RIGHT_CHASSIS_MOTOR_PORTS ({3, 4})\n";
+    out += "#define WHEEL_DIAMETER (4_in)\n";
     out +=
-      "\t.withMotors({1, 2}, {-3, -4} /* TODO: Add your motor ports here */)\n";
+      "#define CHASSIS_MOTOR_CARTRIDGE (okapi::AbstractMotor::gearset::green)\n";
     out +=
-      "\t.withDimensions(okapi::AbstractMotor::gearset::green, {{4_in, 11.5_in}, imev5GreenTPR})\n";
-    out += "\t.build();\n\n";
+      "#define CHASSIS_CARTRIDGE_TICKS (imev5GreenTPR) // Should match above\n\n";
+    out += `#define PATH_MAX_VEL        (${props.maxVel})\n`;
+    out += `#define PATH_MAX_ACCEL      (${props.maxAccel})\n`;
+    out += `#define PATH_MAX_JERK       (${props.maxJerk})\n`;
+    out += `#define CHASSIS_TRACK_WIDTH (${props.trackWidth}_m)\n\n`;
+    out += "auto chassis = okapi::ChassisControllerBuilder()\n";
+    out +=
+      "\t.withMotors(LEFT_CHASSIS_MOTOR_PORTS, RIGHT_CHASSIS_MOTOR_PORTS)\n";
+    out += "\t.withDimensions(\n";
+    out += "\t\tCHASSIS_MOTOR_CARTRIDGE,\n";
+    out +=
+      "\t\t{{WHEEL_DIAMETER, CHASSIS_TRACK_WIDTH}, CHASSIS_CARTRIDGE_TICKS})\n";
+    out += "\t.build();\n";
+    out +=
+      "auto profileController = okapi::AsyncMotionProfileControllerBuilder()\n";
+    out += "\t.withLimits({PATH_MAX_VEL, PATH_MAX_ACCEL, PATH_MAX_JERK})\n";
+    out += "\t.withOutput(chassis)\n";
+    out += "\t.buildMotionProfileController();\n\n";
     out += Array.from(props.paths)
       .slice(0, -1)
       .map(([k, v]) => {
-        let path = `auto path${k} = generator.generate({\n`;
+        let path = "profileController->generatePath({\n";
         for (let i = 0; i < v.vectors.length; ++i) {
           const vec = v.vectors[i];
           const x = vec.p.translation.x;
           const y = vec.p.translation.y;
           const yaw = vec.r.rotation;
-          const vel = Math.sqrt(
-            Math.pow(vec.r.translation.y - y, 2) +
-              Math.pow(vec.r.translation.x - x, 2)
-          );
-          path += `\tsquiggles::ControlVector(squiggles::Pose(${x}, ${y}, ${yaw}), ${vel})`;
-          if (i < v.vectors.length - 1) {
-            path += ",\n";
-          } else {
-            path += "\n";
-          }
+          path += `\t{${x}, ${y}, ${yaw}},\n`;
         }
-        path += "});\n";
+        path += `\t"${k}"\n});\n`;
         return path;
       })
       .join("");
