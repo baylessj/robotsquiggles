@@ -149,6 +149,17 @@ export const DrawNewPath = (props) => {
         r.translation.copy(anchor.controls.right).addSelf(this);
         rl.vertices[0].copy(this);
         rl.vertices[1].copy(r.translation);
+        props.setPaths(
+          new Map(
+            props.paths.set(pathKey, {
+              waypoints: props.paths.get(pathKey).waypoints,
+              vectors: props.paths
+                .get(pathKey)
+                .vectors.map((v) => (v.p.id === p.id ? { p: p, r: v.r } : v)),
+              path: props.paths.get(pathKey).path,
+            })
+          )
+        );
       });
       r.translation.bind(Two.Events.change, function () {
         anchor.controls.right.copy(this).subSelf(anchor);
@@ -162,6 +173,17 @@ export const DrawNewPath = (props) => {
         r.rotation =
           Math.atan2(anchor.controls.right.y, anchor.controls.right.x) +
           Math.PI / 2;
+        props.setPaths(
+          new Map(
+            props.paths.set(pathKey, {
+              waypoints: props.paths.get(pathKey).waypoints,
+              vectors: props.paths
+                .get(pathKey)
+                .vectors.map((v) => (v.r.id === r.id ? { p: v.p, r: r } : v)),
+              path: props.paths.get(pathKey).path,
+            })
+          )
+        );
       });
 
       // Update the renderer in order to generate the actual elements.
@@ -469,6 +491,7 @@ export const DrawNewPath = (props) => {
   const resize = (width) => {
     two.current.scene.scale = width / startWidth.current;
     two.current.renderer.setSize(width, width);
+    props.setCanvasDims({ x: startWidth.current, y: startWidth.current });
   };
 
   /**

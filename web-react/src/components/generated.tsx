@@ -50,21 +50,43 @@ const useStyles = makeStyles((theme: Theme) => ({
   },
 }));
 
+export interface CanvasDims {
+  x: number;
+  y: number;
+}
 export interface SimpleTabsProps {
   paths: Map<string, any>;
   trackWidth: string;
   maxVel: string;
   maxAccel: string;
   maxJerk: string;
+  canvasDims: CanvasDims;
 }
 
 export default function SimpleTabs(props: SimpleTabsProps) {
   const classes = useStyles();
   const [value, setValue] = React.useState(0);
+  const FIELD_METERS = 3.6576;
 
   const handleChange = (event: React.ChangeEvent<{}>, newValue: number) => {
     setValue(newValue);
   };
+
+  const squigglesCoords = (x: number, y: number, yaw: number) => ({
+    // TODO: check if the starting position is top left
+    // Make (0, 0) be the bottom left, then X is up and Y is right for Okapi
+    x: (x / props.canvasDims.x) * FIELD_METERS,
+    y: (1 - y / props.canvasDims.y) * FIELD_METERS,
+    yaw: -1 * (yaw + Math.PI / 2),
+  });
+
+  const okapiCoords = (x: number, y: number, yaw: number) => ({
+    // TODO: check if the starting position is top left
+    // Make (0, 0) be the bottom left, then X is up and Y is right for Okapi
+    x: (1 - y / props.canvasDims.y) * FIELD_METERS,
+    y: (x / props.canvasDims.x) * FIELD_METERS,
+    yaw: yaw,
+  });
 
   const squigglesCode = () => {
     let out = "#define PATH_DT             (0.01)\n";
@@ -81,16 +103,25 @@ export default function SimpleTabs(props: SimpleTabsProps) {
       .slice(0, -1)
       .map(([k, v]) => {
         let path = `auto path${k} = generator.generate({\n`;
-        for (let i = 0; i < v.vectors.length; ++i) {
+        for (let i = v.vectors.length - 1; i >= 0; --i) {
           const vec = v.vectors[i];
-          const x = vec.p.translation.x;
-          const y = vec.p.translation.y;
-          const yaw = vec.r.rotation;
-          const vel = Math.sqrt(
-            Math.pow(vec.r.translation.y - y, 2) +
-              Math.pow(vec.r.translation.x - x, 2)
+          let yaw = vec.r.rotation;
+          const coords = squigglesCoords(
+            vec.p.translation.x,
+            vec.p.translation.y,
+            yaw
           );
-          path += `\tsquiggles::ControlVector(squiggles::Pose(${x}, ${y}, ${yaw}), ${vel})`;
+          const x = coords.x;
+          const y = coords.y;
+          yaw = coords.yaw;
+          // TODO: should this be added to affect the path shape?
+          // const vel = Math.sqrt(
+          //   Math.pow(vec.r.translation.y - y, 2) +
+          //     Math.pow(vec.r.translation.x - x, 2)
+          // );
+          path += `\tsquiggles::ControlVector(squiggles::Pose(${x.toFixed(
+            3
+          )}, ${y.toFixed(3)}, ${yaw.toFixed(3)})})`;
           if (i < v.vectors.length - 1) {
             path += ",\n";
           } else {
@@ -130,16 +161,32 @@ export default function SimpleTabs(props: SimpleTabsProps) {
     out += "\t.withLimits({PATH_MAX_VEL, PATH_MAX_ACCEL, PATH_MAX_JERK})\n";
     out += "\t.withOutput(chassis)\n";
     out += "\t.buildMotionProfileController();\n\n";
+    out += "/**\n";
+    out += " * The Coordinate System for Okapi Points is:\n";
+    out += " * ^\n";
+    out += " * | x\n";
+    out += " * |    ↷ yaw\n";
+    out += " * |   y\n";
+    out += " * ------>\n";
+    out += " */\n";
     out += Array.from(props.paths)
       .slice(0, -1)
       .map(([k, v]) => {
         let path = "profileController->generatePath({\n";
-        for (let i = 0; i < v.vectors.length; ++i) {
+        for (let i = v.vectors.length - 1; i >= 0; --i) {
           const vec = v.vectors[i];
-          const x = vec.p.translation.x;
-          const y = vec.p.translation.y;
-          const yaw = vec.r.rotation;
-          path += `\t{${x}, ${y}, ${yaw}},\n`;
+          let yaw = vec.r.rotation;
+          const coords = okapiCoords(
+            vec.p.translation.x,
+            vec.p.translation.y,
+            yaw
+          );
+          const x = coords.x;
+          const y = coords.y;
+          yaw = coords.yaw;
+          path += `\t{${x.toFixed(3)}_m, ${y.toFixed(3)}_m, ${yaw.toFixed(
+            3
+          )}_rad},\n`;
         }
         path += `\t"${k}"\n});\n`;
         return path;

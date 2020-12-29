@@ -85,6 +85,10 @@ export const App = (props: any) => {
   const [maxVel, setMaxVel] = useState("1.0");
   const [maxAccel, setMaxAccel] = useState("2.0");
   const [maxJerk, setMaxJerk] = useState("10.0");
+  const [canvasDims, setCanvasDims] = useState({
+    x: window.innerWidth,
+    y: window.innerHeight,
+  });
 
   /**
    * Map of the data associated with each Squiggles path.
@@ -170,14 +174,15 @@ export const App = (props: any) => {
             setMode={setMode}
             paths={paths}
             setPaths={setPaths}
+            setCanvasDims={setCanvasDims}
           />
-          {/** Below will be generated code */}
           <SimpleTabs
             paths={paths}
             trackWidth={trackWidth}
             maxVel={maxVel}
             maxAccel={maxAccel}
             maxJerk={maxJerk}
+            canvasDims={canvasDims}
           />
         </main>
       </div>
