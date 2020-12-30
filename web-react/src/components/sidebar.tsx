@@ -8,6 +8,8 @@ import {
   TextField,
   useTheme,
   MenuItem,
+  Checkbox,
+  FormControlLabel,
 } from "@material-ui/core";
 import { ToggleButtonGroup, ToggleButton } from "@material-ui/lab";
 import ChevronLeftIcon from "@material-ui/icons/ChevronLeft";
@@ -41,6 +43,8 @@ export interface SidebarContentProps {
   setMaxAccel: (maxAccel: string) => void;
   maxJerk: string;
   setMaxJerk: (maxJerk: string) => void;
+  latch: boolean;
+  setLatch: (latch: boolean) => void;
 }
 
 export const SidebarContent = (props: SidebarContentProps) => {
@@ -86,6 +90,19 @@ export const SidebarContent = (props: SidebarContentProps) => {
               ADD POINTS
             </ToggleButton>
           </ToggleButtonGroup>
+        </ListItem>
+        <ListItem>
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={props.latch}
+                onChange={(e) => props.setLatch(e.target.checked)}
+                name="Latch"
+                color="primary"
+              />
+            }
+            label={"Latch to Cardinal Directions"}
+          />
         </ListItem>
       </List>
       <Divider />

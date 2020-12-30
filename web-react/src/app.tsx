@@ -80,6 +80,7 @@ export const App = (props: any) => {
   const classes = useStyles();
   const [open, setOpen] = useState(false); // setting this to true breaks the alignment of two.js
   const [mode, setMode] = useState("ADD_PATH");
+  const [latch, setLatch] = useState(true);
   const [field, setField] = useState("NONE");
   const [trackWidth, setTrackWidth] = useState("0.5");
   const [maxVel, setMaxVel] = useState("1.0");
@@ -159,6 +160,8 @@ export const App = (props: any) => {
             setMaxAccel={setMaxAccel}
             maxJerk={maxJerk}
             setMaxJerk={setMaxJerk}
+            latch={latch}
+            setLatch={setLatch}
           />
         </Drawer>
         <main
@@ -176,6 +179,7 @@ export const App = (props: any) => {
             paths={paths}
             setPaths={setPaths}
             setCanvasDims={setCanvasDims}
+            latch={latch}
           />
           <SimpleTabs
             paths={paths}

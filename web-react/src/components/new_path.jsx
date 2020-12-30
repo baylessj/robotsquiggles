@@ -12,6 +12,7 @@ export const DrawNewPath = (props) => {
   const savedLeft = useRef(null);
 
   const prevMode = useRef(null);
+  const prevLatch = useRef(null);
   const prevField = useRef(null);
   const listeners = useRef([]);
 
@@ -64,6 +65,28 @@ export const DrawNewPath = (props) => {
     };
     var dragEnd = function (e) {
       e.preventDefault();
+
+      if (props.latch) {
+        props.paths.forEach((p) => {
+          p.vectors.forEach((v) => {
+            if (v.r.id === shape.id) {
+              // This shape is a vector head, latch the vector angle using its point
+              if (
+                Math.abs(shape.rotation) < 0.1 ||
+                Math.abs(shape.rotation - Math.PI) < 0.1
+              ) {
+                shape.translation.set(v.p.translation.x, shape.translation.y);
+              } else if (
+                Math.abs(Math.abs(shape.rotation) - Math.PI / 2) < 0.1 ||
+                Math.abs(shape.rotation - (3 * Math.PI) / 2) < 0.1
+              ) {
+                shape.translation.set(shape.translation.x, v.p.translation.y);
+              }
+            }
+          });
+        });
+      }
+
       window.removeEventListener("mousemove", drag);
       window.removeEventListener("mouseup", dragEnd);
     };
@@ -828,7 +851,7 @@ export const DrawNewPath = (props) => {
    * Handles the State Machine for the edit modes.
    */
   useEffect(() => {
-    if (props.mode === prevMode.current) {
+    if (props.mode === prevMode.current && props.latch === prevLatch.current) {
       // The below state machine only operates on the state transitions
       return;
     }
