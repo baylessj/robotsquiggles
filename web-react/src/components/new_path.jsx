@@ -293,6 +293,10 @@ export const DrawNewPath = (props) => {
     listeners.current = [];
   };
 
+  const capSize = (newWidth) => {
+    return Math.max(100, Math.min(newWidth, 800));
+  };
+
   /**
    * Sets up the field when the component is mounted.
    */
@@ -472,7 +476,8 @@ export const DrawNewPath = (props) => {
       goals.linewidth = goal_linewidth;
     };
 
-    startWidth.current = mount.current.getBoundingClientRect().width;
+    const newWidth = mount.current.getBoundingClientRect().width;
+    startWidth.current = capSize(newWidth);
     two.current = new Two({
       width: startWidth.current,
       height: startWidth.current,
@@ -484,11 +489,13 @@ export const DrawNewPath = (props) => {
 
     window.addEventListener("resize", () => {
       savedBoundingRect.current = mount.current.getBoundingClientRect();
-      resize(savedBoundingRect.current.width);
+      const newWidth = savedBoundingRect.current.width;
+      resize(newWidth);
     });
   }, []);
 
   const resize = (width) => {
+    width = capSize(width);
     two.current.scene.scale = width / startWidth.current;
     two.current.renderer.setSize(width, width);
     props.setCanvasDims({ x: startWidth.current, y: startWidth.current });
