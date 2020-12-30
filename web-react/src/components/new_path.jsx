@@ -16,7 +16,8 @@ export const DrawNewPath = (props) => {
   const listeners = useRef([]);
 
   const theme = useTheme();
-  const editColor = theme.palette.primary.light;
+  const neutralColor = "#333";
+  const editColor = theme.palette.primary.main;
   const blue = "rgb(70, 70, 255)";
   const red = "rgb(255, 40, 40)";
   const blueBalls = useRef(null);
@@ -166,7 +167,7 @@ export const DrawNewPath = (props) => {
   const drawLine = (anchors) => {
     const newPath = new Two.Path(anchors, false, true, true);
     newPath.cap = newPath.join = "round";
-    newPath.noFill().stroke = "#333";
+    newPath.noFill().stroke = neutralColor;
     newPath.linewidth = 5;
     group.current.add(newPath);
     return newPath;
@@ -835,15 +836,28 @@ export const DrawNewPath = (props) => {
     switch (props.mode) {
       case "ADD_PATH":
         removeAllEventListeners();
+        props.paths.forEach((p) => {
+          if (!p.path) return;
+          p.path.stroke = neutralColor;
+          p.vectors.forEach((v) => {
+            v.p.fill = neutralColor;
+            v.r.fill = neutralColor;
+          });
+        });
         addNewEventListener(mount.current, "click", placePoints);
         break;
       case "EDIT":
         removeAllEventListeners();
 
         props.paths.forEach((p) => {
+          if (!p.path) return;
+          p.path.stroke = neutralColor;
           p.vectors.forEach((v) => {
             addInteractivity(v.p);
             addInteractivity(v.r);
+
+            v.p.fill = editColor;
+            v.r.fill = editColor;
           });
         });
         break;
@@ -851,8 +865,14 @@ export const DrawNewPath = (props) => {
         removeAllEventListeners();
 
         props.paths.forEach((p, key, map) => {
-          console.log(p);
           if (!p.path) return;
+
+          p.vectors.forEach((v) => {
+            v.p.fill = neutralColor;
+            v.r.fill = neutralColor;
+          });
+          p.path.stroke = editColor;
+
           addNewEventListener(p.path._renderer.elem, "click", (e) => {
             const newVec = addMidpoint(p);
             const anchor = new Two.Anchor(
