@@ -77,10 +77,13 @@ export const SidebarContent = (props: SidebarContentProps) => {
             aria-label="path add/edit mode"
           >
             <ToggleButton value="ADD_PATH" aria-label="left aligned">
-              PLACE POINTS
+              ADD PATH
             </ToggleButton>
             <ToggleButton value="EDIT" aria-label="centered">
               EDIT
+            </ToggleButton>
+            <ToggleButton value="ADD_POINTS" aria-label="centered">
+              ADD POINTS
             </ToggleButton>
           </ToggleButtonGroup>
         </ListItem>

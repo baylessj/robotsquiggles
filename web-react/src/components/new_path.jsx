@@ -1,7 +1,6 @@
 import React, { useEffect, useRef } from "react";
 import { useTheme } from "@material-ui/core";
 import Two from "two.js";
-import { blue } from "@material-ui/core/colors";
 
 export const DrawNewPath = (props) => {
   const mount = useRef(null);
@@ -74,17 +73,103 @@ export const DrawNewPath = (props) => {
       return false;
     };
 
-    shape._renderer.elem.addEventListener("mousedown", function (e) {
+    addNewEventListener(shape._renderer.elem, "mousedown", function (e) {
       e.preventDefault();
       window.addEventListener("mousemove", drag);
       window.addEventListener("mouseup", dragEnd);
     });
-    shape._renderer.elem.addEventListener("touchstart", function (e) {
+    addNewEventListener(shape._renderer.elem, "touchstart", function (e) {
       e.preventDefault();
       window.addEventListener("touchmove", touchDrag);
       window.addEventListener("touchend", touchEnd);
       return false;
     });
+  };
+
+  const createAnchorPoint = (anchor, newPath, pathKey) => {
+    const p = two.current.makeCircle(0, 0, 10);
+    const r = two.current.makePolygon(0, 0, 10);
+    r.rotation =
+      Math.atan2(anchor.controls.right.y, anchor.controls.right.x) +
+      Math.PI / 2;
+
+    p.translation.copy(anchor);
+    r.translation.copy(anchor.controls.right).addSelf(anchor);
+    p.noStroke().fill = r.noStroke().fill = editColor;
+
+    const rl = new Two.Path([
+      new Two.Anchor().copy(p.translation),
+      new Two.Anchor().copy(r.translation),
+    ]);
+    rl.noFill().stroke = editColor;
+
+    const g = two.current.makeGroup(rl, p, r);
+    g.translation.addSelf(newPath.translation);
+    group.current.add(g);
+
+    p.translation.bind(Two.Events.change, function () {
+      anchor.copy(this);
+      r.translation.copy(anchor.controls.right).addSelf(this);
+      rl.vertices[0].copy(this);
+      rl.vertices[1].copy(r.translation);
+      props.setPaths(
+        new Map(
+          props.paths.set(pathKey, {
+            waypoints: props.paths.get(pathKey).waypoints,
+            vectors: props.paths
+              .get(pathKey)
+              .vectors.map((v) => (v.p.id === p.id ? { p: p, r: v.r } : v)),
+            path: props.paths.get(pathKey).path,
+          })
+        )
+      );
+    });
+    r.translation.bind(Two.Events.change, function () {
+      anchor.controls.right.copy(this).subSelf(anchor);
+      rl.vertices[1].copy(this);
+
+      const x = -1 * (anchor.controls.right.x - anchor.x);
+      const y = -1 * (anchor.controls.right.y - anchor.y);
+      const opp = new Two.Vector(x, y);
+      anchor.controls.left.copy(opp).subSelf(anchor);
+
+      r.rotation =
+        Math.atan2(anchor.controls.right.y, anchor.controls.right.x) +
+        Math.PI / 2;
+      props.setPaths(
+        new Map(
+          props.paths.set(pathKey, {
+            waypoints: props.paths.get(pathKey).waypoints,
+            vectors: props.paths
+              .get(pathKey)
+              .vectors.map((v) => (v.r.id === r.id ? { p: v.p, r: r } : v)),
+            path: props.paths.get(pathKey).path,
+          })
+        )
+      );
+    });
+
+    // Update the renderer in order to generate the actual elements.
+    two.current.update();
+
+    props.setPaths(
+      new Map(
+        props.paths.set(pathKey, {
+          waypoints: props.paths.get(pathKey).waypoints,
+          vectors: [{ p: p, r: r }, ...props.paths.get(pathKey).vectors],
+          path: newPath,
+        })
+      )
+    );
+  };
+
+  const drawLine = (anchors) => {
+    const newPath = new Two.Path(anchors, false, true, true);
+    newPath.cap = newPath.join = "round";
+    newPath.noFill().stroke = "#333";
+    newPath.linewidth = 5;
+    group.current.add(newPath);
+    return newPath;
   };
 
   const createPath = (pathKey) => {
@@ -122,88 +207,10 @@ export const DrawNewPath = (props) => {
     }
 
     group.current = two.current.makeGroup();
-
-    const newPath = new Two.Path(anchors, false, true, true);
-    newPath.cap = newPath.join = "round";
-    newPath.noFill().stroke = "#333";
-    newPath.linewidth = 5;
-    group.current.add(newPath);
+    const newPath = drawLine(anchors);
 
     newPath.vertices.forEach(function (anchor) {
-      const p = two.current.makeCircle(0, 0, 10);
-      const r = two.current.makePolygon(0, 0, 10);
-      r.rotation =
-        Math.atan2(anchor.controls.right.y, anchor.controls.right.x) +
-        Math.PI / 2;
-
-      p.translation.copy(anchor);
-      r.translation.copy(anchor.controls.right).addSelf(anchor);
-      p.noStroke().fill = r.noStroke().fill = editColor;
-
-      const rl = new Two.Path([
-        new Two.Anchor().copy(p.translation),
-        new Two.Anchor().copy(r.translation),
-      ]);
-      rl.noFill().stroke = editColor;
-
-      const g = two.current.makeGroup(rl, p, r);
-      g.translation.addSelf(newPath.translation);
-      group.current.add(g);
-
-      p.translation.bind(Two.Events.change, function () {
-        anchor.copy(this);
-        r.translation.copy(anchor.controls.right).addSelf(this);
-        rl.vertices[0].copy(this);
-        rl.vertices[1].copy(r.translation);
-        props.setPaths(
-          new Map(
-            props.paths.set(pathKey, {
-              waypoints: props.paths.get(pathKey).waypoints,
-              vectors: props.paths
-                .get(pathKey)
-                .vectors.map((v) => (v.p.id === p.id ? { p: p, r: v.r } : v)),
-              path: props.paths.get(pathKey).path,
-            })
-          )
-        );
-      });
-      r.translation.bind(Two.Events.change, function () {
-        anchor.controls.right.copy(this).subSelf(anchor);
-        rl.vertices[1].copy(this);
-
-        const x = -1 * (anchor.controls.right.x - anchor.x);
-        const y = -1 * (anchor.controls.right.y - anchor.y);
-        const opp = new Two.Vector(x, y);
-        anchor.controls.left.copy(opp).subSelf(anchor);
-
-        r.rotation =
-          Math.atan2(anchor.controls.right.y, anchor.controls.right.x) +
-          Math.PI / 2;
-        props.setPaths(
-          new Map(
-            props.paths.set(pathKey, {
-              waypoints: props.paths.get(pathKey).waypoints,
-              vectors: props.paths
-                .get(pathKey)
-                .vectors.map((v) => (v.r.id === r.id ? { p: v.p, r: r } : v)),
-              path: props.paths.get(pathKey).path,
-            })
-          )
-        );
-      });
-
-      // Update the renderer in order to generate the actual elements.
-      two.current.update();
-
-      props.setPaths(
-        new Map(
-          props.paths.set(pathKey, {
-            waypoints: props.paths.get(pathKey).waypoints,
-            vectors: [{ p: p, r: r }, ...props.paths.get(pathKey).vectors],
-            path: newPath,
-          })
-        )
-      );
+      createAnchorPoint(anchor, newPath, pathKey);
     });
   };
 
@@ -268,15 +275,15 @@ export const DrawNewPath = (props) => {
     }
   };
 
-  const addMidpoint = () => {
-    // const midpoint = path.current.getPointAt(0.5);
-    // console.log(midpoint);
-    // two.current.makeCircle(midpoint.x, midpoint.y, 10);
-    // const r2 = two.current.makePolygon(0, 0, 10);
-    // r2.rotation =
-    //   Math.atan2(midpoint.controls.right.y, midpoint.controls.right.x) +
-    //   Math.PI / 2;
-    // r2.translation.copy(midpoint.controls.right).addSelf(midpoint);
+  const addMidpoint = (path) => {
+    const midpoint = path.path.getPointAt(0.5);
+    const p = two.current.makeCircle(midpoint.x, midpoint.y, 10);
+    const r2 = two.current.makePolygon(0, 0, 10);
+    r2.rotation =
+      Math.atan2(midpoint.controls.right.y, midpoint.controls.right.x) +
+      Math.PI / 2;
+    r2.translation.copy(midpoint.controls.right).addSelf(midpoint);
+    return { p: p, r: r2 };
   };
 
   const addNewEventListener = (node, event, handler) => {
@@ -841,6 +848,32 @@ export const DrawNewPath = (props) => {
         });
         break;
       case "ADD_POINTS":
+        removeAllEventListeners();
+
+        props.paths.forEach((p, key, map) => {
+          console.log(p);
+          if (!p.path) return;
+          addNewEventListener(p.path._renderer.elem, "click", (e) => {
+            const newVec = addMidpoint(p);
+            const anchor = new Two.Anchor(
+              newVec.p.translation.x,
+              newVec.p.translation.y,
+              100 * Math.cos(newVec.r.rotation + Math.PI / 2),
+              100 * Math.sin(newVec.r.rotation + Math.PI / 2),
+              -100 * Math.cos(newVec.r.rotation + Math.PI / 2),
+              -100 * Math.sin(newVec.r.rotation + Math.PI / 2),
+              "C"
+            );
+            const anchors = p.path.vertices;
+            anchors.splice(1, 0, anchor); // insert anchor in the middle
+            const newPath = drawLine(anchors);
+            p.path = newPath;
+
+            two.current.remove(newVec.p, newVec.r);
+            createAnchorPoint(anchor, p.path, key);
+            props.setMode("EDIT");
+          });
+        });
         break;
       case "REMOVE_POINTS":
         break;

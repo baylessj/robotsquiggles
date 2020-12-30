@@ -14,7 +14,7 @@ import { ThemeProvider } from "@material-ui/core";
 import theme from "./theme";
 import { SidebarContent } from "./components/sidebar";
 
-const drawerWidth = 240;
+const drawerWidth = 300;
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -168,7 +168,7 @@ export const App = (props: any) => {
         >
           <div className={classes.drawerHeader} />
           <DrawNewPath
-            drawerWidth={240}
+            drawerWidth={drawerWidth}
             open={open}
             mode={mode}
             setMode={setMode}
