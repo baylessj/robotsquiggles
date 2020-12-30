@@ -172,6 +172,7 @@ export const App = (props: any) => {
             open={open}
             mode={mode}
             setMode={setMode}
+            field={field}
             paths={paths}
             setPaths={setPaths}
             setCanvasDims={setCanvasDims}

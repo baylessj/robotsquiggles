@@ -7,6 +7,7 @@ import {
   Typography,
   TextField,
   useTheme,
+  MenuItem,
 } from "@material-ui/core";
 import { ToggleButtonGroup, ToggleButton } from "@material-ui/lab";
 import ChevronLeftIcon from "@material-ui/icons/ChevronLeft";
@@ -45,6 +46,8 @@ export interface SidebarContentProps {
 export const SidebarContent = (props: SidebarContentProps) => {
   const classes = useStyles();
   const theme = useTheme();
+
+  const seasons = ["2020-2021 Change Up"];
 
   return (
     <>
@@ -128,7 +131,22 @@ export const SidebarContent = (props: SidebarContentProps) => {
         <ListItem>
           <Typography variant="subtitle1">Field Setup</Typography>
         </ListItem>
-        <ListItem>TBD: change the comp year?</ListItem>
+        <ListItem>
+          <TextField
+            variant="outlined"
+            fullWidth
+            id="season-select"
+            select
+            label="Comp Season"
+            defaultValue={seasons[0]}
+          >
+            {seasons.map((s) => (
+              <MenuItem key={s} value={s}>
+                {s}
+              </MenuItem>
+            ))}
+          </TextField>
+        </ListItem>
         <ListItem>
           <ToggleButtonGroup
             value={props.field}

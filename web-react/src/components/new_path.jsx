@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from "react";
 import { useTheme } from "@material-ui/core";
 import Two from "two.js";
+import { blue } from "@material-ui/core/colors";
 
 export const DrawNewPath = (props) => {
   const mount = useRef(null);
@@ -12,10 +13,15 @@ export const DrawNewPath = (props) => {
   const savedLeft = useRef(null);
 
   const prevMode = useRef(null);
+  const prevField = useRef(null);
   const listeners = useRef([]);
 
   const theme = useTheme();
   const editColor = theme.palette.primary.light;
+  const blue = "rgb(70, 70, 255)";
+  const red = "rgb(255, 40, 40)";
+  const blueBalls = useRef(null);
+  const redBalls = useRef(null);
 
   /**
    * Modifies the mouse event to fit with the Two canvas coordinates.
@@ -297,6 +303,293 @@ export const DrawNewPath = (props) => {
     return Math.max(100, Math.min(newWidth, 800));
   };
 
+  const compSetup = () => {
+    const tile_width = startWidth.current / 6;
+    const field_center = tile_width * 3;
+    const field_top = 0;
+    const field_bot = tile_width * 6;
+    const field_right = tile_width * 6;
+
+    const goal_radius = tile_width / 5;
+    const goal_linewidth = tile_width / 8;
+    const ballRadius = goal_radius - goal_linewidth / 2;
+
+    const blueCenterLeft = two.current.makeCircle(
+      field_center - goal_radius - goal_linewidth - ballRadius,
+      field_center,
+      ballRadius
+    );
+    const blueCenterBot = two.current.makeCircle(
+      field_center,
+      field_center + goal_radius + goal_linewidth + ballRadius,
+      ballRadius
+    );
+    const blueBotMidCenter = two.current.makeCircle(
+      field_center,
+      tile_width * 4.5,
+      ballRadius
+    );
+    const blueBotCenter = two.current.makeCircle(
+      field_center,
+      field_bot - goal_linewidth - ballRadius,
+      ballRadius
+    );
+    const blueBotLeft = two.current.makeCircle(
+      goal_linewidth + ballRadius,
+      field_bot - goal_linewidth - ballRadius,
+      ballRadius
+    );
+    const blueLeftCenter = two.current.makeCircle(
+      goal_linewidth + ballRadius,
+      field_center,
+      ballRadius
+    );
+    const blueTopLeft = two.current.makeCircle(
+      goal_linewidth + ballRadius,
+      goal_linewidth + ballRadius,
+      ballRadius
+    );
+    const blueTopRight = two.current.makeCircle(
+      field_right - 2 * goal_linewidth - ballRadius - goal_radius,
+      goal_radius + 2 * goal_linewidth + ballRadius,
+      ballRadius
+    );
+    const blueBotRight = two.current.makeCircle(
+      field_right - 2 * goal_linewidth - ballRadius - goal_radius,
+      field_bot - goal_radius - 2 * goal_linewidth - ballRadius,
+      ballRadius
+    );
+    blueBalls.current = two.current.makeGroup(
+      blueCenterLeft,
+      blueCenterBot,
+      blueBotMidCenter,
+      blueBotCenter,
+      blueBotLeft,
+      blueLeftCenter,
+      blueTopLeft,
+      blueTopRight,
+      blueBotRight
+    );
+    blueBalls.current.fill = blue;
+
+    const redCenterRight = two.current.makeCircle(
+      field_center + goal_radius + goal_linewidth + ballRadius,
+      field_center,
+      ballRadius
+    );
+    const redCenterTop = two.current.makeCircle(
+      field_center,
+      field_center - goal_radius - goal_linewidth - ballRadius,
+      ballRadius
+    );
+    const redTopMidCenter = two.current.makeCircle(
+      field_center,
+      tile_width * 1.5,
+      ballRadius
+    );
+    const redTopCenter = two.current.makeCircle(
+      field_center,
+      field_top + goal_linewidth + ballRadius,
+      ballRadius
+    );
+    const redTopRight = two.current.makeCircle(
+      field_right - goal_linewidth - ballRadius,
+      goal_linewidth + ballRadius,
+      ballRadius
+    );
+    const redRightCenter = two.current.makeCircle(
+      field_right - goal_linewidth - ballRadius,
+      field_center,
+      ballRadius
+    );
+    const redBotRight = two.current.makeCircle(
+      field_right - goal_linewidth - ballRadius,
+      field_bot - goal_linewidth - ballRadius,
+      ballRadius
+    );
+    const redTopLeft = two.current.makeCircle(
+      2 * goal_linewidth + ballRadius + goal_radius,
+      goal_radius + 2 * goal_linewidth + ballRadius,
+      ballRadius
+    );
+    const redBotLeft = two.current.makeCircle(
+      2 * goal_linewidth + ballRadius + goal_radius,
+      field_bot - goal_radius - 2 * goal_linewidth - ballRadius,
+      ballRadius
+    );
+    redBalls.current = two.current.makeGroup(
+      redCenterRight,
+      redCenterTop,
+      redTopMidCenter,
+      redTopCenter,
+      redTopRight,
+      redRightCenter,
+      redTopRight,
+      redBotRight,
+      redTopLeft,
+      redBotLeft
+    );
+    redBalls.current.fill = red;
+  };
+
+  const skillsSetup = () => {
+    const tile_width = startWidth.current / 6;
+    const field_center = tile_width * 3;
+    const field_top = 0;
+    const field_bot = tile_width * 6;
+    const field_right = tile_width * 6;
+
+    const goal_radius = tile_width / 5;
+    const goal_linewidth = tile_width / 8;
+    const ballRadius = goal_radius - goal_linewidth / 2;
+
+    const blueCenter = two.current.makeCircle(
+      field_center,
+      field_center,
+      ballRadius
+    );
+    const blueBotCenter = two.current.makeCircle(
+      field_center,
+      field_bot - goal_linewidth - ballRadius,
+      ballRadius
+    );
+    const blueTopCenter = two.current.makeCircle(
+      field_center,
+      field_top + goal_linewidth + ballRadius,
+      ballRadius
+    );
+    const blueBotLeft = two.current.makeCircle(
+      goal_linewidth + ballRadius,
+      field_bot - goal_linewidth - ballRadius,
+      ballRadius
+    );
+    const blueLeftCenter = two.current.makeCircle(
+      goal_linewidth + ballRadius,
+      field_center,
+      ballRadius
+    );
+    const blueTopLeft = two.current.makeCircle(
+      goal_linewidth + ballRadius,
+      goal_linewidth + ballRadius,
+      ballRadius
+    );
+    const blueTopRight = two.current.makeCircle(
+      field_right - goal_linewidth - ballRadius,
+      goal_linewidth + ballRadius,
+      ballRadius
+    );
+    const blueBotRight = two.current.makeCircle(
+      field_right - goal_linewidth - ballRadius,
+      field_bot - goal_linewidth - ballRadius,
+      ballRadius
+    );
+    const blueRightCenter = two.current.makeCircle(
+      field_right - goal_linewidth - ballRadius,
+      field_center,
+      ballRadius
+    );
+    blueBalls.current = two.current.makeGroup(
+      blueCenter,
+      blueBotCenter,
+      blueTopCenter,
+      blueBotLeft,
+      blueLeftCenter,
+      blueTopLeft,
+      blueTopRight,
+      blueBotRight,
+      blueRightCenter
+    );
+    blueBalls.current.fill = blue;
+
+    const redCenterRight = two.current.makeCircle(
+      tile_width * 4,
+      field_center,
+      ballRadius
+    );
+    const redCenterLeft = two.current.makeCircle(
+      tile_width * 2,
+      field_center,
+      ballRadius
+    );
+    const redCenterTop = two.current.makeCircle(
+      field_center,
+      tile_width * 2,
+      ballRadius
+    );
+    const redTopMidCenter = two.current.makeCircle(
+      field_center,
+      tile_width * 1,
+      ballRadius
+    );
+    const redCenterBot = two.current.makeCircle(
+      field_center,
+      tile_width * 4,
+      ballRadius
+    );
+    const redBotMidCenter = two.current.makeCircle(
+      field_center,
+      tile_width * 5,
+      ballRadius
+    );
+    const redTopLeft = two.current.makeCircle(
+      tile_width * 1.5,
+      ballRadius,
+      ballRadius
+    );
+    const redBotLeft = two.current.makeCircle(
+      tile_width * 1.5,
+      field_bot - ballRadius,
+      ballRadius
+    );
+    const redTopRight = two.current.makeCircle(
+      tile_width * 4.5,
+      ballRadius,
+      ballRadius
+    );
+    const redBotRight = two.current.makeCircle(
+      tile_width * 4.5,
+      field_bot - ballRadius,
+      ballRadius
+    );
+    const redTopCenterLeft = two.current.makeCircle(
+      tile_width,
+      tile_width * 1.5,
+      ballRadius
+    );
+    const redBotCenterLeft = two.current.makeCircle(
+      tile_width,
+      tile_width * 4.5,
+      ballRadius
+    );
+    const redTopCenterRight = two.current.makeCircle(
+      tile_width * 5,
+      tile_width * 1.5,
+      ballRadius
+    );
+    const redBotCenterRight = two.current.makeCircle(
+      tile_width * 5,
+      tile_width * 4.5,
+      ballRadius
+    );
+    redBalls.current = two.current.makeGroup(
+      redCenterRight,
+      redCenterTop,
+      redTopMidCenter,
+      redTopLeft,
+      redBotLeft,
+      redTopRight,
+      redBotRight,
+      redCenterBot,
+      redBotMidCenter,
+      redCenterLeft,
+      redTopCenterLeft,
+      redBotCenterLeft,
+      redTopCenterRight,
+      redBotCenterRight
+    );
+    redBalls.current.fill = red;
+  };
+
   /**
    * Sets up the field when the component is mounted.
    */
@@ -320,7 +613,7 @@ export const DrawNewPath = (props) => {
     };
 
     const field = () => {
-      const tile_width = (two.current.scene.scale * two.current.width) / 6;
+      const tile_width = two.current.width / 6;
       const field_center = tile_width * 3;
       const field_top = 0;
       const field_bot = tile_width * 6;
@@ -352,16 +645,16 @@ export const DrawNewPath = (props) => {
       );
 
       var left_line = two.current.makeLine(
-        tile_width + line_width / 2,
+        tile_width,
         field_top,
-        tile_width + line_width / 2,
+        tile_width,
         field_bot
       );
 
       var right_line = two.current.makeLine(
-        tile_width * 5 - line_width / 2,
+        tile_width * 5,
         field_top,
-        tile_width * 5 - line_width / 2,
+        tile_width * 5,
         field_bot
       );
 
@@ -478,12 +771,14 @@ export const DrawNewPath = (props) => {
 
     const newWidth = mount.current.getBoundingClientRect().width;
     startWidth.current = capSize(newWidth);
-    two.current = new Two({
-      width: startWidth.current,
-      height: startWidth.current,
-      autostart: true,
-    }).appendTo(mount.current);
-    two.current.makeGroup();
+    if (!two.current) {
+      two.current = new Two({
+        width: startWidth.current,
+        height: startWidth.current,
+        autostart: true,
+      }).appendTo(mount.current);
+      two.current.makeGroup();
+    }
 
     field();
 
@@ -553,6 +848,32 @@ export const DrawNewPath = (props) => {
         break;
     }
     prevMode.current = props.mode;
+  });
+
+  /**
+   * Handle the field state
+   */
+  useEffect(() => {
+    if (props.field === prevField.current) {
+      // The below state machine only operates on the state transitions
+      return;
+    }
+
+    blueBalls.current?.remove();
+    redBalls.current?.remove();
+
+    switch (props.field) {
+      case "COMP":
+        compSetup();
+        break;
+      case "SKILLS":
+        skillsSetup();
+        break;
+      case "NONE":
+      default:
+        break;
+    }
+    prevField.current = props.field;
   });
 
   return <div ref={mount}></div>;
