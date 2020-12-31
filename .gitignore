@@ -65,3 +65,5 @@ docs/api
 # Please output directory and local configuration
 plz-out
 .plzconfig.local
+
+**.eslintcache

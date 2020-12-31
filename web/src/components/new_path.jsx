@@ -985,10 +985,6 @@ export const DrawNewPath = (props) => {
               two.current.update();
               props.setPaths(new Map(map.set(key, p)));
             }
-
-            // two.current.remove(newVec.p, newVec.r);
-            // createAnchorPoint(anchor, p.path, key);
-            // props.setMode("EDIT");
           });
         });
         break;
