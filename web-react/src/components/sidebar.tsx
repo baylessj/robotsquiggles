@@ -72,6 +72,7 @@ export const SidebarContent = (props: SidebarContentProps) => {
         <ListItem key={"mode"}>
           <ToggleButtonGroup
             value={props.mode}
+            size="small"
             exclusive
             onChange={(e, newMode) => {
               if (newMode !== null) {
@@ -88,6 +89,9 @@ export const SidebarContent = (props: SidebarContentProps) => {
             </ToggleButton>
             <ToggleButton value="ADD_POINTS" aria-label="centered">
               ADD POINTS
+            </ToggleButton>
+            <ToggleButton value="REMOVE_POINTS" aria-label="centered">
+              REMOVE POINTS
             </ToggleButton>
           </ToggleButtonGroup>
         </ListItem>

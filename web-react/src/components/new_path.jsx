@@ -3,6 +3,7 @@ import { useTheme } from "@material-ui/core";
 import Two from "two.js";
 
 import { FIELD_METERS } from "./units";
+import { keys } from "@material-ui/core/styles/createBreakpoints";
 
 export const DrawNewPath = (props) => {
   const mount = useRef(null);
@@ -113,7 +114,7 @@ export const DrawNewPath = (props) => {
     });
   };
 
-  const createAnchorPoint = (anchor, newPath, pathKey) => {
+  const createAnchorPoint = (anchor, newPath, pathKey, idx) => {
     let robotSquare;
     if (pathKey === "A" && anchor === newPath._collection[0]) {
       // put the robot on the first path's start
@@ -160,7 +161,9 @@ export const DrawNewPath = (props) => {
             waypoints: props.paths.get(pathKey).waypoints,
             vectors: props.paths
               .get(pathKey)
-              .vectors.map((v) => (v.p.id === p.id ? { p: p, r: v.r } : v)),
+              .vectors.map((v) =>
+                v.p.id === p.id ? { s: v.s, g: v.g, p: p, r: v.r } : v
+              ),
             path: props.paths.get(pathKey).path,
           })
         )
@@ -186,7 +189,9 @@ export const DrawNewPath = (props) => {
             waypoints: props.paths.get(pathKey).waypoints,
             vectors: props.paths
               .get(pathKey)
-              .vectors.map((v) => (v.r.id === r.id ? { p: v.p, r: r } : v)),
+              .vectors.map((v) =>
+                v.r.id === r.id ? { s: v.s, g: v.g, p: v.p, r: r } : v
+              ),
             path: props.paths.get(pathKey).path,
           })
         )
@@ -196,11 +201,22 @@ export const DrawNewPath = (props) => {
     // Update the renderer in order to generate the actual elements.
     two.current.update();
 
+    const newVec = { s: robotSquare, g: g, p: p, r: r };
+    let updatedVec;
+    if (idx) {
+      updatedVec = Array.from(props.paths.get(pathKey).vectors);
+      updatedVec.splice(idx, 0, newVec);
+    } else {
+      updatedVec = Array.from(props.paths.get(pathKey).vectors);
+      console.log(updatedVec);
+      updatedVec.push(newVec);
+    }
+    console.log(updatedVec);
     props.setPaths(
       new Map(
         props.paths.set(pathKey, {
           waypoints: props.paths.get(pathKey).waypoints,
-          vectors: [{ p: p, r: r }, ...props.paths.get(pathKey).vectors],
+          vectors: updatedVec,
           path: newPath,
         })
       )
@@ -345,7 +361,7 @@ export const DrawNewPath = (props) => {
   const removeAllEventListeners = () => {
     for (let i = 0; i < listeners.current.length; ++i) {
       const x = listeners.current[i];
-      x.node.removeEventListener(x.event, x.handler);
+      x?.node?.removeEventListener(x.event, x.handler);
     }
     listeners.current = [];
   };
@@ -933,12 +949,48 @@ export const DrawNewPath = (props) => {
             p.path = newPath;
 
             two.current.remove(newVec.p, newVec.r);
-            createAnchorPoint(anchor, p.path, key);
+            createAnchorPoint(anchor, p.path, key, p.vectors.length - 1);
             props.setMode("EDIT");
           });
         });
         break;
       case "REMOVE_POINTS":
+        removeAllEventListeners();
+
+        props.paths.forEach((p, key, map) => {
+          if (!p.path) return;
+
+          p.vectors.forEach((v) => {
+            v.p.fill = neutralColor;
+            v.r.fill = neutralColor;
+          });
+          p.path.stroke = editColor;
+
+          addNewEventListener(p.path._renderer.elem, "click", (e) => {
+            const anchors = p.path.vertices;
+            anchors.pop();
+            if (anchors.length < 2) {
+              p.vectors.forEach((v) => {
+                v.g.remove();
+                if (v.s) group.current.remove(v.s);
+              });
+              two.current.remove(p.path);
+              props.paths.delete(key);
+              props.setPaths(new Map(props.paths));
+            } else {
+              const vec = p.vectors.pop();
+              vec.g.remove();
+              const newPath = drawLine(anchors);
+              p.path = newPath;
+              two.current.update();
+              props.setPaths(new Map(map.set(key, p)));
+            }
+
+            // two.current.remove(newVec.p, newVec.r);
+            // createAnchorPoint(anchor, p.path, key);
+            // props.setMode("EDIT");
+          });
+        });
         break;
       default:
         break;
