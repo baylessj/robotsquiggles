@@ -2,6 +2,8 @@ import React, { useEffect, useRef } from "react";
 import { useTheme } from "@material-ui/core";
 import Two from "two.js";
 
+import { FIELD_METERS } from "./units";
+
 export const DrawNewPath = (props) => {
   const mount = useRef(null);
   const two = useRef(null);
@@ -19,6 +21,7 @@ export const DrawNewPath = (props) => {
   const theme = useTheme();
   const neutralColor = "#333";
   const editColor = theme.palette.primary.main;
+  const robotColor = theme.palette.primary.light;
   const blue = "rgb(70, 70, 255)";
   const red = "rgb(255, 40, 40)";
   const blueBalls = useRef(null);
@@ -111,6 +114,20 @@ export const DrawNewPath = (props) => {
   };
 
   const createAnchorPoint = (anchor, newPath, pathKey) => {
+    let robotSquare;
+    if (pathKey === "A" && anchor === newPath._collection[0]) {
+      // put the robot on the first path's start
+      console.log(props.trackWidth);
+      robotSquare = two.current.makeRectangle(
+        anchor.x,
+        anchor.y,
+        (two.current.width / FIELD_METERS) * props.trackWidth,
+        (two.current.width / FIELD_METERS) * props.trackWidth
+      );
+      robotSquare.noFill().stroke = robotColor;
+      robotSquare.linewidth = 2;
+      group.current.add(robotSquare);
+    }
     const p = two.current.makeCircle(0, 0, 10);
     const r = two.current.makePolygon(0, 0, 10);
     r.rotation =
@@ -136,6 +153,7 @@ export const DrawNewPath = (props) => {
       r.translation.copy(anchor.controls.right).addSelf(this);
       rl.vertices[0].copy(this);
       rl.vertices[1].copy(r.translation);
+      if (robotSquare) robotSquare.translation.copy(this);
       props.setPaths(
         new Map(
           props.paths.set(pathKey, {
@@ -157,9 +175,11 @@ export const DrawNewPath = (props) => {
       const opp = new Two.Vector(x, y);
       anchor.controls.left.copy(opp).subSelf(anchor);
 
-      r.rotation =
+      const rot =
         Math.atan2(anchor.controls.right.y, anchor.controls.right.x) +
         Math.PI / 2;
+      r.rotation = rot;
+      if (robotSquare) robotSquare.rotation = rot;
       props.setPaths(
         new Map(
           props.paths.set(pathKey, {

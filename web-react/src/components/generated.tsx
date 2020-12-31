@@ -6,6 +6,8 @@ import Tab from "@material-ui/core/Tab";
 import Box from "@material-ui/core/Box";
 import { CopyBlock, atomOneDark } from "react-code-blocks";
 
+import { FIELD_METERS } from "./units";
+
 interface TabPanelProps {
   children?: React.ReactNode;
   index: any;
@@ -67,7 +69,6 @@ export interface SimpleTabsProps {
 export default function SimpleTabs(props: SimpleTabsProps) {
   const classes = useStyles();
   const [value, setValue] = React.useState(0);
-  const FIELD_METERS = 3.6576;
 
   const handleChange = (event: React.ChangeEvent<{}>, newValue: number) => {
     setValue(newValue);

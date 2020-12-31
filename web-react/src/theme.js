@@ -5,7 +5,7 @@ const themeColor = "rgb(50, 168, 82)";
 const theme = createMuiTheme({
   palette: {
     primary: {
-      light: themeColor,
+      light: "rgb(102, 204, 129)",
       main: themeColor,
       dark: themeColor,
     },

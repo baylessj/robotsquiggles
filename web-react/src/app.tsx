@@ -82,7 +82,7 @@ export const App = (props: any) => {
   const [mode, setMode] = useState("ADD_PATH");
   const [latch, setLatch] = useState(true);
   const [field, setField] = useState("NONE");
-  const [trackWidth, setTrackWidth] = useState("0.5");
+  const [trackWidth, setTrackWidth] = useState("0.45");
   const [maxVel, setMaxVel] = useState("1.0");
   const [maxAccel, setMaxAccel] = useState("2.0");
   const [maxJerk, setMaxJerk] = useState("10.0");
@@ -180,6 +180,7 @@ export const App = (props: any) => {
             setPaths={setPaths}
             setCanvasDims={setCanvasDims}
             latch={latch}
+            trackWidth={trackWidth}
           />
           <SimpleTabs
             paths={paths}

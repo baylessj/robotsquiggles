@@ -84,7 +84,7 @@ export const SidebarContent = (props: SidebarContentProps) => {
               ADD PATH
             </ToggleButton>
             <ToggleButton value="EDIT" aria-label="centered">
-              EDIT
+              MOVE
             </ToggleButton>
             <ToggleButton value="ADD_POINTS" aria-label="centered">
               ADD POINTS
