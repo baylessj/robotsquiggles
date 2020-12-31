@@ -13,5 +13,5 @@ jobs:
           node-version: "12"
       - run: npm install
         working-directory: web
-      - run: npm run deploy
+      - run: CI=false npm run deploy
         working-directory: web
