@@ -13,7 +13,11 @@ jobs:
           node-version: "12"
       - run: npm install
         working-directory: web
-      - run: git config --global user.email "action@github.com"
-      - run: git config --global user.name "Github Action"
-      - run: CI=false npm run deploy
+      - run: npm run build
         working-directory: web
+      - name: Deploy
+        uses: JamesIves/github-pages-deploy-action@3.7.1
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BRANCH: gh-pages
+          CLEAN: true
