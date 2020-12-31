@@ -13,7 +13,7 @@ jobs:
           node-version: "12"
       - run: npm install
         working-directory: web
-      - run: npm run build
+      - run: CI=false npm run build
         working-directory: web
       - name: Deploy
         uses: JamesIves/github-pages-deploy-action@3.7.1
