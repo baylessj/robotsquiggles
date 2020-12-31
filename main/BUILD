@@ -1,5 +1,20 @@
 subinclude("//build_defs:custom_cc_test")
 
+filegroup(
+    name = "squiggles_srcs",
+    srcs = glob(
+        ["src/*.cpp"],
+        exclude = ["src/main.cpp"],
+    ),
+    visibility = ["PUBLIC"],
+)
+
+filegroup(
+    name = "squiggles_hdrs",
+    srcs = glob(["include/**.hpp"]),
+    visibility = ["PUBLIC"],
+)
+
 cc_library(
     name = "squiggles",
     srcs = glob(
@@ -9,11 +24,16 @@ cc_library(
     hdrs = glob(
         include = ["include/**.hpp"],
     ),
+    compiler_flags = [
+        "-fprofile-arcs",
+        "-ftest-coverage",
+        "-coverage",
+    ],
     includes = [
         "include/",
     ],
-    compiler_flags = ["-fprofile-arcs", "-ftest-coverage", "-coverage"],
     linker_flags = ["-lgcov"],
+    visibility = ["PUBLIC"],
 )
 
 cc_static_library(
@@ -32,16 +52,20 @@ cc_shared_object(
 )
 
 cc_test(
-    name = 'squiggles_test',
+    name = "squiggles_test",
     srcs = glob(["test/*.cpp"]),
     hdrs = ["test/shared.hpp"],
+    compiler_flags = [
+        "-fprofile-arcs",
+        "-ftest-coverage",
+        "-coverage",
+    ],
+    linker_flags = ["-lgcov"],
+    visibility = ["PUBLIC"],
     deps = [
         ":squiggles",
         "//third_party/cpp:gtest",
     ],
-    compiler_flags = ["-fprofile-arcs", "-ftest-coverage", "-coverage"],
-    linker_flags = ["-lgcov"],
-    visibility = ["PUBLIC"]
 )
 
 # gentest(
@@ -54,6 +78,5 @@ cc_test(
 cc_binary(
     name = "squiggles_memcheck",
     srcs = ["src/main.cpp"],
-    deps = [":squiggles"]
+    deps = [":squiggles"],
 )
-

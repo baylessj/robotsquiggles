@@ -8,8 +8,8 @@ github_repo(
 )
 
 github_repo(
-    name = 'emscripten',
+    name = "emscripten",
     bazel_compat = True,
     repo = "emscripten-core/emsdk",
-    revision = "2.0.10"
+    revision = "2.0.10",
 )

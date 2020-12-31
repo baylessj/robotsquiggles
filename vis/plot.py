@@ -8,7 +8,7 @@ import matplotlib.patches as patches
 
 
 # clib = CDLL("./build/libRobotSquiggles.so")
-clib = CDLL(os.path.join(os.getcwd(), "plz-out/bin/lib/libsquigglesviscompat.so"))
+clib = CDLL(os.path.join(os.getcwd(), "plz-out/bin/main/libsquigglesviscompat.so"))
 
 
 class VisDataPoint(Structure):
@@ -128,15 +128,17 @@ def kinematics(time, v, a):
 def main():
     sx = 0.0  # start x position [m]
     sy = 0.0  # start y position [m]
-    syaw = np.deg2rad(10.0)  # start yaw angle [rad]
+    syaw = np.deg2rad(0.0)  # start yaw angle [rad]
     sv = 1.0  # start speed [m/s]
-    sa = 0.1  # start accel [m/ss]
-    gx = 4.0  # goal x position [m]
-    # gx = 0.0
-    gy = 2.0  # goal y position [m]
-    gyaw = np.deg2rad(20.0)  # goal yaw angle [rad]
+    sa = 0.0  # start accel [m/ss]
+
+    # Head to {3, 1, 30} in Okapi
+
+    gx = 3.0  # goal x position [m]
+    gy = -1.0  # goal y position [m]
+    gyaw = np.deg2rad(-30.0)  # goal yaw angle [rad]
     gv = 1.0  # goal speed [m/s]
-    ga = 0.1  # goal accel [m/ss]
+    ga = 0.0  # goal accel [m/ss]
     max_vel = 2.5
     max_accel = 1.0  # max accel [m/ss]
     max_jerk = 0.5  # max jerk [m/sss]
