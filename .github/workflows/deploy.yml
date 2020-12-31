@@ -13,5 +13,7 @@ jobs:
           node-version: "12"
       - run: npm install
         working-directory: web
+      - run: git config --global user.email "action@github.com"
+      - run: git config --global user.name "Github Action"
       - run: CI=false npm run deploy
         working-directory: web
