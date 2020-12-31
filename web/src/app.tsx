@@ -10,7 +10,7 @@ import IconButton from "@material-ui/core/IconButton";
 import MenuIcon from "@material-ui/icons/Menu";
 import { DrawNewPath } from "./components";
 import SimpleTabs from "./components/generated";
-import { ThemeProvider } from "@material-ui/core";
+import { ThemeProvider, Button } from "@material-ui/core";
 import theme from "./theme";
 import { SidebarContent } from "./components/sidebar";
 
@@ -34,6 +34,9 @@ const useStyles = makeStyles((theme: Theme) =>
         easing: theme.transitions.easing.easeOut,
         duration: theme.transitions.duration.enteringScreen,
       }),
+    },
+    title: {
+      flexGrow: 1,
     },
     menuButton: {
       marginRight: theme.spacing(2),
@@ -132,9 +135,12 @@ export const App = (props: any) => {
             >
               <MenuIcon />
             </IconButton>
-            <Typography variant="h6" noWrap>
+            <Typography variant="h6" noWrap className={classes.title}>
               Squiggles Drawing Board
             </Typography>
+            <Button href="https://squiggles.readthedocs.io" color="inherit">
+              DOCS
+            </Button>
           </Toolbar>
         </AppBar>
         <Drawer
