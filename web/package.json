@@ -2,6 +2,7 @@
   "name": "web-react",
   "version": "0.1.0",
   "private": true,
+  "homepage": "https://jonathanbayless.com/robotsquiggles",
   "dependencies": {
     "@material-ui/core": "^4.11.2",
     "@material-ui/icons": "^4.11.2",
@@ -13,6 +14,7 @@
     "@types/node": "^12.19.9",
     "@types/react": "^16.14.2",
     "@types/react-dom": "^16.9.10",
+    "gh-pages": "^3.1.0",
     "react": "^17.0.1",
     "react-code-blocks": "0.0.8",
     "react-dom": "^17.0.1",
@@ -22,6 +24,8 @@
     "web-vitals": "^0.2.4"
   },
   "scripts": {
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build",
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
