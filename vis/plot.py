@@ -128,23 +128,22 @@ def kinematics(time, v, a):
 def main():
     sx = 0.0  # start x position [m]
     sy = 0.0  # start y position [m]
-    syaw = np.deg2rad(0.0)  # start yaw angle [rad]
-    sv = 1.0  # start speed [m/s]
+    # syaw = np.deg2rad(0.0)  # start yaw angle [rad]
+    syaw = 0.0
+    sv = 0.0  # start speed [m/s]
     sa = 0.0  # start accel [m/ss]
 
-    # Head to {3, 1, 30} in Okapi
-
-    gx = 3.0  # goal x position [m]
-    gy = -1.0  # goal y position [m]
-    gyaw = np.deg2rad(-30.0)  # goal yaw angle [rad]
-    gv = 1.0  # goal speed [m/s]
+    gx = 2.0  # goal x position [m]
+    gy = 2.0  # goal y position [m]
+    # gyaw = np.deg2rad(-30.0)  # goal yaw angle [rad]
+    gyaw = 0.0
+    gv = 0.0  # goal speed [m/s]
     ga = 0.0  # goal accel [m/ss]
-    max_vel = 2.5
-    max_accel = 1.0  # max accel [m/ss]
-    max_jerk = 0.5  # max jerk [m/sss]
+    max_vel = 2.0
+    max_accel = 3.0  # max accel [m/ss]
+    max_jerk = 6.0  # max jerk [m/sss]
     dt = 0.1  # time tick [s]
     track_width = 0.4
-    # track_width = 0.0
 
     clib.compute_path.argtypes = [
         c_double,

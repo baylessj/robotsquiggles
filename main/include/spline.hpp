@@ -78,8 +78,8 @@ class SplineGenerator {
    * The minimum and maximum durations for a path to take. A larger range allows
    * for longer possible paths at the expense of a longer path generation time.
    */
-  const int T_MIN = 2;
-  const int T_MAX = 15;
+  const int T_MIN = 5; // 2
+  const int T_MAX = 5; // 15
 
   /**
    * This is factor is used to create a "dummy velocity" in the initial path
@@ -90,13 +90,15 @@ class SplineGenerator {
    *
    * This was 1.2 in the WPILib example but that large of a value seems to
    * create wild paths, 0.12 worked better in testing with VEX-sized paths.
-   */
-  const double K_DEFAULT_VEL = 0.12;
+   */ 
+public:
+  const double K_DEFAULT_VEL = 1.0;
 
   /**
    * The output of the initial, "naive" generation step. We discard the
    * derivative values to replace them with values from a motion profile.
    */
+
   struct GeneratedPoint {
     GeneratedPoint(Pose ipose, double icurvature = 0.0)
       : pose(ipose), curvature(icurvature) {}
@@ -134,6 +136,8 @@ class SplineGenerator {
              ", jerk: " + std::to_string(jerk) + "}";
     }
   };
+
+  std::vector<GeneratedVector> gen_single_raw_path(ControlVector start, ControlVector end, int duration, double start_vel, double end_vel);
 
   /**
    * An intermediate value used in the parameterization step. Adds the
@@ -186,6 +190,7 @@ class SplineGenerator {
   template <class Iter>
   std::vector<ProfilePoint> _generate(Iter start, Iter end);
 
+public:
   /**
    * Performs the "naive" generation step.
    *
