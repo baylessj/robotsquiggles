@@ -20,37 +20,37 @@ SplineGenerator::SplineGenerator(Constraints iconstraints,
   : constraints(iconstraints), model(std::move(imodel)), dt(idt) {}
 
 std::vector<ProfilePoint>
-SplineGenerator::generate(std::vector<Pose> iwaypoints) {
+SplineGenerator::generate(std::vector<Pose> iwaypoints, bool fast) {
   std::vector<Pose> points = iwaypoints;
   std::vector<ControlVector> vectors;
   for (auto p : points) {
     vectors.emplace_back(ControlVector(p));
   }
-  return _generate(vectors.begin(), vectors.end());
+  return _generate(vectors.begin(), vectors.end(), fast);
 }
 
 std::vector<ProfilePoint>
-SplineGenerator::generate(std::initializer_list<Pose> iwaypoints) {
+SplineGenerator::generate(std::initializer_list<Pose> iwaypoints, bool fast) {
   std::vector<Pose> points = iwaypoints;
   std::vector<ControlVector> vectors;
   for (auto p : points) {
     vectors.emplace_back(ControlVector(p));
   }
-  return _generate(vectors.begin(), vectors.end());
+  return _generate(vectors.begin(), vectors.end(), fast);
 }
 
 std::vector<ProfilePoint>
 SplineGenerator::generate(std::vector<ControlVector> iwaypoints) {
-  return _generate(iwaypoints.begin(), iwaypoints.end());
+  return _generate(iwaypoints.begin(), iwaypoints.end(), false);
 }
 
 std::vector<ProfilePoint>
 SplineGenerator::generate(std::initializer_list<ControlVector> iwaypoints) {
-  return _generate(iwaypoints.begin(), iwaypoints.end());
+  return _generate(iwaypoints.begin(), iwaypoints.end(), false);
 }
 
 template <class Iter>
-std::vector<ProfilePoint> SplineGenerator::_generate(Iter start, Iter end) {
+std::vector<ProfilePoint> SplineGenerator::_generate(Iter start, Iter end, bool fast) {
   std::vector<ProfilePoint> path;
   for (auto vec = std::next(start); vec != end; ++vec) {
     // create copies of the values
@@ -61,7 +61,7 @@ std::vector<ProfilePoint> SplineGenerator::_generate(Iter start, Iter end) {
       std::isnan(spline_start.vel) ? 0 : spline_start.vel;
     auto preferred_end_vel = std::isnan(spline_end.vel) ? 0 : spline_end.vel;
 
-    auto raw_path = gen_raw_path(spline_start, spline_end);
+    auto raw_path = gen_raw_path(spline_start, spline_end, fast);
     // TODO: check if the vel or accel constraints are actually hit by the raw
     // path and return the raw path if not?
     auto profiled_path = parameterize(spline_start,
@@ -74,14 +74,19 @@ std::vector<ProfilePoint> SplineGenerator::_generate(Iter start, Iter end) {
   return path;
 }
 
-// TODO: Seek to minimize peak curvature, we will want a curved path so 
-      // we don't want to minimize the total curvature or anything but we'll
-      // definitely want to eliminate peaks
+// TODO: Seek to minimize peak curvature, we will want a curved path so
+// we don't want to minimize the total curvature or anything but we'll
+// definitely want to eliminate peaks
 
-      // Two variables affect the curvature -- the path duration (d) and the
-      // starting/ending velocity (K_DEFAULT_VEL). If we have the freedom to 
-      // mess with the dummy velocities then we can change the 
-std::vector<SplineGenerator::GeneratedVector> SplineGenerator::gen_single_raw_path(ControlVector start, ControlVector end, int duration, double start_vel, double end_vel) {
+// Two variables affect the curvature -- the path duration (d) and the
+// starting/ending velocity (K_DEFAULT_VEL). If we have the freedom to
+// mess with the dummy velocities then we can change the
+std::vector<SplineGenerator::GeneratedVector>
+SplineGenerator::gen_single_raw_path(ControlVector start,
+                                     ControlVector end,
+                                     int duration,
+                                     double start_vel,
+                                     double end_vel) {
   start.vel = start_vel;
   end.vel = end_vel;
   auto x_qp = get_x_spline(start, end, duration);
@@ -118,8 +123,7 @@ std::vector<SplineGenerator::GeneratedVector> SplineGenerator::gen_single_raw_pa
     }
 
     double curvature = (x_v * y_a - x_a * y_v) /
-                        ((x_v * x_v + y_v * y_v) * std::hypot(x_v, y_v));
-    
+                       ((x_v * x_v + y_v * y_v) * std::hypot(x_v, y_v));
 
     vectors.push_back(
       GeneratedVector(GeneratedPoint(Pose(x_p, y_p, yaw), curvature),
@@ -130,76 +134,157 @@ std::vector<SplineGenerator::GeneratedVector> SplineGenerator::gen_single_raw_pa
   return vectors;
 }
 
+static double
+find_max_accel(std::vector<SplineGenerator::GeneratedVector> vectors) {
+  return std::max_element(vectors.begin(),
+                          vectors.end(),
+                          [](const SplineGenerator::GeneratedVector& a,
+                             const SplineGenerator::GeneratedVector& b) {
+                            return a.accel < b.accel;
+                          })
+    ->accel;
+}
+
+static double
+find_max_jerk(std::vector<SplineGenerator::GeneratedVector> vectors) {
+  return std::max_element(vectors.begin(),
+                          vectors.end(),
+                          [](const SplineGenerator::GeneratedVector& a,
+                             const SplineGenerator::GeneratedVector& b) {
+                            return a.jerk < b.jerk;
+                          })
+    ->jerk;
+}
+
+static double
+find_max_curvature(std::vector<SplineGenerator::GeneratedVector> vectors) {
+  return std::max_element(vectors.begin(),
+                          vectors.end(),
+                          [](const SplineGenerator::GeneratedVector& a,
+                             const SplineGenerator::GeneratedVector& b) {
+                            return a.point.curvature < b.point.curvature;
+                          })
+    ->point.curvature;
+}
+
+std::vector<SplineGenerator::GeneratedPoint>
+SplineGenerator::gradient_descent(ControlVector start,
+                                  ControlVector end,
+                                  bool fast) {
+  auto start_vel = 0.2;
+  auto end_vel = 0.2;
+
+  std::vector<GeneratedVector> vectors;
+  double a_max, j_max, k_max;
+
+  auto d = T_MIN;
+  auto prev_lin_cost = 0.0, prev_curv_cost = 0.0;
+  int counter = 0;
+  bool lin_hit_min = false;
+  while (counter++ < 10) {
+    vectors = gen_single_raw_path(start, end, d, start_vel, end_vel);
+
+    a_max = find_max_accel(vectors);
+    j_max = find_max_jerk(vectors);
+    auto lin_cost = std::abs(a_max - constraints.max_accel) +
+                    std::abs(j_max - constraints.max_jerk);
+
+    k_max = find_max_curvature(vectors);
+    auto curv_cost = std::abs(k_max);
+    if (std::isnan(curv_cost)) {
+      // we might get a curvature of NaN with small start/end velocities
+      curv_cost = std::numeric_limits<double>::max();
+    }
+    std::cout << std::to_string(curv_cost) << std::endl;
+
+    if (!prev_lin_cost && !prev_curv_cost) {
+      // we can't calculate a gradient yet
+      prev_lin_cost = lin_cost;
+      prev_curv_cost = curv_cost;
+
+      // our initial guess is to increase path duration and dummy velocity
+      d++;
+      start_vel += 0.2;
+      end_vel += 0.2;
+      continue;
+    }
+
+    auto lin_grad = lin_cost - prev_lin_cost;
+    if (lin_grad >= 0) {
+      // prevents us from continually incrementing the duration as vel changes
+      // minimally change the linear constraints
+      lin_hit_min = true;
+    }
+    if (!lin_hit_min && d < T_MAX) {
+      // we have not yet hit the minima
+      d++;
+    }
+
+    auto curv_grad = curv_cost - prev_curv_cost;
+    if (curv_grad < 0.0) {
+      start_vel += 0.1;
+      end_vel += 0.1;
+    }
+
+    if (fast && a_max < constraints.max_accel && j_max < constraints.max_jerk &&
+        k_max < constraints.max_curvature) {
+      // we've hit all of the constraints
+      break;
+    }
+
+    if (lin_grad + K_EPSILON >= 0 && curv_grad + K_EPSILON >= 0.0) {
+      // we've hit the minima for both
+      break;
+    }
+
+    prev_lin_cost = lin_cost;
+    prev_curv_cost = curv_cost;
+  }
+
+  if (a_max > constraints.max_accel || j_max > constraints.max_jerk ||
+      k_max > constraints.max_curvature) {
+    throw std::runtime_error(
+      "Could not find a valid path with the given constraints");
+  }
+
+  std::vector<GeneratedPoint> out;
+  std::transform(vectors.begin(),
+                 vectors.end(),
+                 std::back_inserter(out),
+                 [](GeneratedVector v) { return v.point; });
+  return out;
+}
+
 /**
  * NOTE: the time value here is meaningless since we'll remap it completely
  * when imposing the constraints
  */
 std::vector<SplineGenerator::GeneratedPoint>
-SplineGenerator::gen_raw_path(ControlVector start, ControlVector end) {
-  // set dummy velocity values if the user has not explicitly set them
-  double start_vel = start.vel;
-  double end_vel = end.vel;
-  bool dummy_vel = false;
-  if (std::isnan(start.vel) ||
-      std::abs(start.vel) < K_EPSILON) {
-    start_vel =
-      K_DEFAULT_VEL * start.pose.dist(end.pose);
-    dummy_vel = true;
+SplineGenerator::gen_raw_path(ControlVector start, ControlVector end, bool fast) {
+  if (std::isnan(start.vel) || std::abs(start.vel) < K_EPSILON ||
+      std::isnan(end.vel) || std::abs(end.vel) < K_EPSILON) {
+    // We don't have user-specified velocities to use.
+    return gradient_descent(start, end, fast);
   }
-  if (std::isnan(end.vel) || std::abs(end.vel) < K_EPSILON) {
-    end_vel = K_DEFAULT_VEL * start.pose.dist(end.pose);
-    dummy_vel = true;
-  }
-
-  int borkcounter = 0;
 
   // iterate through possible path durations until we find one that fits
   // our kinematic constraints
   std::vector<int> durations(T_MAX - T_MIN + 1);
   std::iota(std::begin(durations), std::end(durations), T_MIN);
   for (auto d : durations) {
-__gen_path:
-    std::vector<GeneratedVector> vectors = gen_single_raw_path(start, end, d, start_vel, end_vel);    
+    std::vector<GeneratedVector> vectors =
+      gen_single_raw_path(start, end, d, start.vel, end.vel);
 
-    auto a_max =
-      std::max_element(vectors.begin(),
-                       vectors.end(),
-                       [](const GeneratedVector& a, const GeneratedVector& b) {
-                         return a.accel < b.accel;
-                       })
-        ->accel;
-    auto j_max =
-      std::max_element(vectors.begin(),
-                       vectors.end(),
-                       [](const GeneratedVector& a, const GeneratedVector& b) {
-                         return a.jerk < b.jerk;
-                       })
-        ->jerk;
-    auto k_max = std::max_element(vectors.begin(),
-                       vectors.end(),
-                       [](const GeneratedVector& a, const GeneratedVector& b) {
-                         return a.point.curvature < b.point.curvature;
-                       })->point.curvature;
-    if (std::isnan(k_max)) {
-      std::cout << std::to_string(end_vel) << std::endl;
-      for (auto v : vectors) {
-        std::cout << std::to_string(v.point.curvature) << std::endl;
-      }
-      borkcounter++;
-      if (borkcounter > 3)
-        throw std::runtime_error("");
+    auto a_max = find_max_accel(vectors);
+    auto j_max = find_max_jerk(vectors);
+    auto k_max = find_max_curvature(vectors);
+    if (std::isnan(k_max) || std::abs(k_max) < 0.01) {
       k_max = std::numeric_limits<double>::max();
     }
 
-    std::cout << std::to_string(k_max) << "   |   " << std::to_string(constraints.max_curvature) << std::endl;
-    if (a_max > constraints.max_accel || j_max > constraints.max_jerk || (k_max > constraints.max_curvature && !dummy_vel)) {
+    if (a_max > constraints.max_accel || j_max > constraints.max_jerk ||
+        (k_max > constraints.max_curvature)) {
       continue;
-    } else if (k_max >= constraints.max_curvature) {
-      std::cout << std::to_string(start_vel) << std::endl;
-      start_vel *= 0.8;
-      end_vel *= 0.8;
-      goto __gen_path;
-      // TODO: this is way too simple
     } else {
       // all of the constraints are met
       std::vector<GeneratedPoint> out;
@@ -220,6 +305,7 @@ SplineGenerator::parameterize(const ControlVector start,
                               const std::vector<GeneratedPoint>& raw_path,
                               const double preferred_start_vel,
                               const double preferred_end_vel) {
+  // TODO: handle the start/end velocity somehow for this?
   std::vector<ConstrainedState> constrainedStates(raw_path.size());
 
   // Forward Pass
