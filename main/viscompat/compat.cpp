@@ -32,7 +32,9 @@ VisData compute_path(double sx,
                        dt);
   auto s = Pose(sx, sy, syaw);
   auto g = Pose(gx, gy, gyaw);
-  std::vector<SplineGenerator::GeneratedPoint> path = spline.gen_raw_path(ControlVector(s, sv, sa), ControlVector(g, gv, ga), false);
+  auto scv = ControlVector(s, sv, sa);
+  auto gcv = ControlVector(g, gv, ga);
+  std::vector<SplineGenerator::GeneratedPoint> path = spline.gen_raw_path(scv, gcv, false);
   VisData out;
   out.size = path.size();
   out.points = new VisDataPoint[path.size()];

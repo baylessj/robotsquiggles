@@ -41,19 +41,6 @@ TEST(plan_plath_test, zero_start_end) {
   ASSERT_NEAR(path.back().vector.pose.x, 2, TEST_EPSILON);
   ASSERT_NEAR(path.back().vector.pose.y, 2, TEST_EPSILON);
   ASSERT_NEAR(path.back().vector.pose.yaw, 1, TEST_EPSILON);
-
-  
-
-  // auto planned_path = spline.parameterize(path);
-  // for (auto p : path) {
-  //   std::cout << p.to_string() << std::endl;
-  // }
-  // std::cout << std::endl << std::endl;
-  // std::cout << "------------------" << std::endl;
-  // std::cout << std::endl << std::endl;
-  // for (auto p : planned_path) {
-  //   std::cout << p.to_string() << std::endl;
-  // }
 }
 
 TEST(plan_path_test, three_points_nonzero) {
