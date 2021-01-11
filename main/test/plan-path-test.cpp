@@ -37,18 +37,10 @@ TEST(plan_plath_test, zero_end) {
 
 TEST(plan_plath_test, zero_start_end) {
   auto spline = SplineGenerator(Constraints(2.0, 2.0, 10.0));
-  auto path = spline.gen_raw_path(Pose(0, 0, 1), Pose(2, 2, 1), false);
-  // auto path = spline.generate({Pose(0, 0, 1), Pose(2, 2, 1)});
-  for (auto p: path) {
-    std::cout << p.to_string() << std::endl;
-  }
-  auto ppath = spline.parameterize(Pose(0, 0, 1), Pose(2, 2, 1), path, 0.0, 0.0);
-  for (auto p: ppath) {
-    std::cout << p.to_string()<< std::endl;
-  }
-  // ASSERT_NEAR(path.back().vector.pose.x, 2, TEST_EPSILON);
-  // ASSERT_NEAR(path.back().vector.pose.y, 2, TEST_EPSILON);
-  // ASSERT_NEAR(path.back().vector.pose.yaw, 1, TEST_EPSILON);
+  auto path = spline.generate({Pose(0, 0, 1), Pose(2, 2, 1)});
+  ASSERT_NEAR(path.back().vector.pose.x, 2, TEST_EPSILON);
+  ASSERT_NEAR(path.back().vector.pose.y, 2, TEST_EPSILON);
+  ASSERT_NEAR(path.back().vector.pose.yaw, 1, TEST_EPSILON);
 
   
 

@@ -168,8 +168,8 @@ find_max_curvature(std::vector<SplineGenerator::GeneratedVector> vectors) {
 }
 
 std::vector<SplineGenerator::GeneratedPoint>
-SplineGenerator::gradient_descent(ControlVector start,
-                                  ControlVector end,
+SplineGenerator::gradient_descent(ControlVector& start,
+                                  ControlVector& end,
                                   bool fast) {
   auto start_vel = 0.2;
   auto end_vel = 0.2;
@@ -195,7 +195,6 @@ SplineGenerator::gradient_descent(ControlVector start,
       // we might get a curvature of NaN with small start/end velocities
       curv_cost = std::numeric_limits<double>::max();
     }
-    std::cout << std::to_string(curv_cost) << std::endl;
 
     if (!prev_lin_cost && !prev_curv_cost) {
       // we can't calculate a gradient yet
@@ -247,6 +246,8 @@ SplineGenerator::gradient_descent(ControlVector start,
       "Could not find a valid path with the given constraints");
   }
 
+  start.vel = start_vel;
+  end.vel = end_vel;
   std::vector<GeneratedPoint> out;
   std::transform(vectors.begin(),
                  vectors.end(),
@@ -260,7 +261,7 @@ SplineGenerator::gradient_descent(ControlVector start,
  * when imposing the constraints
  */
 std::vector<SplineGenerator::GeneratedPoint>
-SplineGenerator::gen_raw_path(ControlVector start, ControlVector end, bool fast) {
+SplineGenerator::gen_raw_path(ControlVector& start, ControlVector& end, bool fast) {
   if (std::isnan(start.vel) || std::abs(start.vel) < K_EPSILON ||
       std::isnan(end.vel) || std::abs(end.vel) < K_EPSILON) {
     // We don't have user-specified velocities to use.
@@ -305,7 +306,6 @@ SplineGenerator::parameterize(const ControlVector start,
                               const std::vector<GeneratedPoint>& raw_path,
                               const double preferred_start_vel,
                               const double preferred_end_vel) {
-  // TODO: handle the start/end velocity somehow for this?
   std::vector<ConstrainedState> constrainedStates(raw_path.size());
 
   // Forward Pass

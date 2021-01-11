@@ -155,7 +155,7 @@ class SplineGenerator {
    * path.
    */
   std::vector<GeneratedPoint>
-  gradient_descent(ControlVector start, ControlVector end, bool fast);
+  gradient_descent(ControlVector& start, ControlVector& end, bool fast);
 
   /**
    * An intermediate value used in the parameterization step. Adds the
@@ -216,8 +216,8 @@ class SplineGenerator {
    * SplineGenerator's acceleration and jerk constraints and returns the points
    * that form the curve.
    */
-  std::vector<GeneratedPoint> gen_raw_path(ControlVector start,
-                                           ControlVector end, bool fast);
+  std::vector<GeneratedPoint> gen_raw_path(ControlVector& start,
+                                           ControlVector& end, bool fast);
 
   /**
    * Imposes a linear motion profile on the raw path.
