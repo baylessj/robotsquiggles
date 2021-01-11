@@ -50,7 +50,8 @@ SplineGenerator::generate(std::initializer_list<ControlVector> iwaypoints) {
 }
 
 template <class Iter>
-std::vector<ProfilePoint> SplineGenerator::_generate(Iter start, Iter end, bool fast) {
+std::vector<ProfilePoint>
+SplineGenerator::_generate(Iter start, Iter end, bool fast) {
   std::vector<ProfilePoint> path;
   for (auto vec = std::next(start); vec != end; ++vec) {
     // create copies of the values
@@ -261,7 +262,9 @@ SplineGenerator::gradient_descent(ControlVector& start,
  * when imposing the constraints
  */
 std::vector<SplineGenerator::GeneratedPoint>
-SplineGenerator::gen_raw_path(ControlVector& start, ControlVector& end, bool fast) {
+SplineGenerator::gen_raw_path(ControlVector& start,
+                              ControlVector& end,
+                              bool fast) {
   if (std::isnan(start.vel) || std::abs(start.vel) < K_EPSILON ||
       std::isnan(end.vel) || std::abs(end.vel) < K_EPSILON) {
     // We don't have user-specified velocities to use.
