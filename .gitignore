@@ -67,3 +67,4 @@ plz-out
 .plzconfig.local
 
 **.eslintcache
+coverage.info
