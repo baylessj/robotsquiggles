@@ -34,21 +34,21 @@ VisData compute_path(double sx,
   auto g = Pose(gx, gy, gyaw);
   auto scv = ControlVector(s, sv, sa);
   auto gcv = ControlVector(g, gv, ga);
-  std::vector<SplineGenerator::GeneratedPoint> path = spline.gen_raw_path(scv, gcv, false);
+  std::vector<squiggles::ProfilePoint> path = spline.generate({scv, gcv});
   VisData out;
   out.size = path.size();
   out.points = new VisDataPoint[path.size()];
   for (std::size_t i = 0; i < path.size(); ++i) {
     out.points[i].time = i;
-    out.points[i].x = path[i].pose.x;
-    out.points[i].y = path[i].pose.y;
-    out.points[i].yaw = path[i].pose.yaw;
+    out.points[i].x = path[i].vector.pose.x;
+    out.points[i].y = path[i].vector.pose.y;
+    out.points[i].yaw = path[i].vector.pose.yaw;
     out.points[i].k = path[i].curvature;
     // out.points[i].v = path[i].vel;
     // out.points[i].a = path[i].accel;
     // out.points[i].j = path[i].jerk;
-      out.points[i].lv = 0.0;
-      out.points[i].rv = 0.0;
+      out.points[i].lv = path[i].wheel_velocities[0];
+      out.points[i].rv = path[i].wheel_velocities[1];
   }
   return out;
 }

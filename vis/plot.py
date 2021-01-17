@@ -8,7 +8,6 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 
 
-# clib = CDLL("./build/libRobotSquiggles.so")
 clib = CDLL(os.path.join(os.getcwd(), "plz-out/bin/main/libsquigglesviscompat.so"))
 
 
@@ -62,7 +61,7 @@ def plot_arrow(x, y, yaw, length=0.50, width=0.2, fc="r", ec="k"):  # pragma: no
 
 def path(time, x, y, yaw, lx, ly, rx, ry, lv, rv, k):
     plt.subplot(2, 1, 1)
-    plt.plot(time, k)
+    plt.plot(time, lv)
     plt.subplot(2, 1, 2)
     for i, _ in enumerate(time):
         plt.cla()
@@ -93,86 +92,21 @@ def kinematics(time, v, a):
     plt.plot(time, a, "-r")
     plt.show()
 
-def curvature(time, k):
-    plt.plot([2.608734,
-8.804689,
-6.313003,
-4.473813,
-3.168407,
-2.333540,
-1.904486,
-1.755177,
-1.841129,
-2.138203,
-2.641492,
-3.420464,
-4.508526,
-6.058863,
-8.074039,
-11.334217,
-15.529036,
-20.676159,
-# 27.407547,
-# 40.030730,
-# 57.531534,
-# 81.077786,
-# 111.602350,
-# 149.402947,
-# 193.660325,
-# 242.040581,
-# 290.634659,
-# 334.451847,
-# 368.457311,
-# 388.816325,
-# 393.822958,
-# 384.130797,
-# 362.276930,
-# 331.813354,
-# 296.436382,
-# 259.369402,
-# 223.064186,
-# 189.157811,
-# 158.580213,
-# 131.721233,
-# 108.598872,
-# 89.000555,
-# 72.589177,
-# 58.976226,
-# 47.768436,
-# 38.595021,
-# 31.121606,
-# 25.055603,
-# 20.146392,
-# 16.182637,
-# 12.988199,
-# 10.417575,
-# 8.351391,
-# 6.692226,
-# 5.360904,
-# 4.293287,
-# 3.437553,
-# 2.751915,
-# 2.202732,
-# 1.762953,
-# 1.410854,
-])
-    plt.show()
-
 def main():
     sx = 0.0  # start x position [m]
     sy = 0.0  # start y position [m]
-    syaw = 1.0
+    syaw = 0.0
     sv = 0.0  # start speed [m/s]
     sa = 0.0  # start accel [m/ss]
 
-    gx = 2.0  # goal x position [m]
-    gy = 2.0  # goal y position [m]
-    gyaw = 1.0
+    gx = 0.5  # goal x position [m]
+    gy = 0.5  # goal y position [m]
+    gyaw = 0.0
     gv = 0.0  # goal speed [m/s]
     ga = 0.0  # goal accel [m/ss]
-    max_vel = 2.0
-    max_accel = 2.0  # max accel [m/ss]
-    max_jerk = 10.0  # max jerk [m/sss]
+    max_vel = 1.5
+    max_accel = 0.5  # max accel [m/ss]
+    max_jerk = 6.0  # max jerk [m/sss]
     dt = 0.1  # time tick [s]
     track_width = 0.4
 
@@ -255,9 +189,8 @@ def main():
         lv.append(visdata.points[i].lv)
         rv.append(visdata.points[i].rv)
 
-    path(time, x, y, yaw, lx, ly, rx, ry, lv, rv, k)
+    path(time, x, y, yaw, lx, ly, rx, ry, v, rv, k)
     # kinematics(time, v, a)
-    # curvature(time, k)
 
 if __name__ == "__main__":
     main()

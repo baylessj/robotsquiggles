@@ -182,7 +182,7 @@ SplineGenerator::gradient_descent(ControlVector& start,
   auto prev_lin_cost = 0.0, prev_curv_cost = 0.0;
   int counter = 0;
   bool lin_hit_min = false;
-  while (counter++ < 10) {
+  while (counter++ < MAX_GRAD_DESCENT_ITERATIONS) {
     vectors = gen_single_raw_path(start, end, d, start_vel, end_vel);
 
     a_max = find_max_accel(vectors);
@@ -241,12 +241,14 @@ SplineGenerator::gradient_descent(ControlVector& start,
     prev_curv_cost = curv_cost;
   }
 
-  if (a_max > constraints.max_accel || j_max > constraints.max_jerk ||
-      k_max > constraints.max_curvature) {
+  if (counter == MAX_GRAD_DESCENT_ITERATIONS &&
+      (a_max > constraints.max_accel || j_max > constraints.max_jerk ||
+       k_max > constraints.max_curvature)) {
     throw std::runtime_error(
       "Could not find a valid path with the given constraints");
   }
 
+  // We need to update the control vectors for the parameterization step
   start.vel = start_vel;
   end.vel = end_vel;
   std::vector<GeneratedPoint> out;

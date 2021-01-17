@@ -85,6 +85,7 @@ class SplineGenerator {
    */
   const int T_MIN = 2;
   const int T_MAX = 15;
+  const int MAX_GRAD_DESCENT_ITERATIONS = 10;
 
   /**
    * This is factor is used to create a "dummy velocity" in the initial path
