@@ -1,7 +1,7 @@
 async function test({ msg, payload }) {
   console.log("testfn");
   const lib = await squiggles();
-  console.log(lib.ccall("asdfghjkl"));
+  console.log(lib.ccall("linvels"));
   console.log("testfn");
   postMessage({ msg, payload: payload });
 }
