@@ -1,19 +1,22 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import squiggles from "../services/squiggles";
 
 import clsx from "clsx";
 import { makeStyles, createStyles } from "@material-ui/core/styles";
 import Drawer from "@material-ui/core/Drawer";
-import CssBaseline from "@material-ui/core/CssBaseline";
 import AppBar from "@material-ui/core/AppBar";
 import Toolbar from "@material-ui/core/Toolbar";
 import Typography from "@material-ui/core/Typography";
 import IconButton from "@material-ui/core/IconButton";
 import MenuIcon from "@material-ui/icons/Menu";
 import { Button } from "@material-ui/core";
+import NoSSR from "react-no-ssr";
 
-import { DrawNewPath } from "../components";
+import DrawNewPath from "../components/new_path";
+// const DrawNewPath = dynamic(() => import("../components/new_path"), {
+//   ssr: false,
+// });
 import SimpleTabs from "../components/generated";
 import { SidebarContent } from "../components/sidebar";
 
@@ -93,9 +96,14 @@ export default function Page() {
   const [maxAccel, setMaxAccel] = useState("2.0");
   const [maxJerk, setMaxJerk] = useState("10.0");
   const [canvasDims, setCanvasDims] = useState({
-    x: 0, // window.innerWidth,
-    y: 0, // window.innerHeight,
+    x: 0,
+    y: 0,
   });
+
+  useEffect(() => {
+    // we can't use the window properties outside of a react effect
+    setCanvasDims({ x: window.innerWidth, y: window.innerWidth });
+  }, []);
 
   /**
    * Map of the data associated with each Squiggles path.
@@ -131,96 +139,98 @@ export default function Page() {
 
   return (
     <div className={classes.root}>
-      <AppBar
-        position="fixed"
-        className={clsx(classes.appBar, {
-          [classes.appBarShift]: open,
-        })}
-      >
-        <Toolbar>
-          <IconButton
-            color="inherit"
-            aria-label="open drawer"
-            onClick={handleDrawerOpen}
-            edge="start"
-            className={clsx(classes.menuButton, open && classes.hide)}
-          >
-            <MenuIcon />
-          </IconButton>
-          <Typography variant="h6" noWrap className={classes.title}>
-            Squiggles Drawing Board
-          </Typography>
-          <Button href="https://squiggles.readthedocs.io" color="inherit">
-            DOCS
-          </Button>
-        </Toolbar>
-      </AppBar>
-      <Drawer
-        className={classes.drawer}
-        variant="persistent"
-        anchor="left"
-        open={open}
-        classes={{
-          paper: classes.drawerPaper,
-        }}
-      >
-        <SidebarContent
-          handleDrawerClose={handleDrawerClose}
-          mode={mode}
-          setMode={setMode}
-          field={field}
-          setField={setField}
-          trackWidth={trackWidth}
-          setTrackWidth={setTrackWidth}
-          maxVel={maxVel}
-          setMaxVel={setMaxVel}
-          maxAccel={maxAccel}
-          setMaxAccel={setMaxAccel}
-          maxJerk={maxJerk}
-          setMaxJerk={setMaxJerk}
-          latch={latch}
-          setLatch={setLatch}
-        />
-      </Drawer>
-      <main
-        className={clsx(classes.content, {
-          [classes.contentShift]: open,
-        })}
-      >
-        <div className={classes.drawerHeader} />
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            flexDirection: "column",
+      <NoSSR onSSR={<div>Loading...</div>}>
+        <AppBar
+          position="fixed"
+          className={clsx(classes.appBar, {
+            [classes.appBarShift]: open,
+          })}
+        >
+          <Toolbar>
+            <IconButton
+              color="inherit"
+              aria-label="open drawer"
+              onClick={handleDrawerOpen}
+              edge="start"
+              className={clsx(classes.menuButton, open && classes.hide)}
+            >
+              <MenuIcon />
+            </IconButton>
+            <Typography variant="h6" noWrap className={classes.title}>
+              Squiggles Drawing Board
+            </Typography>
+            <Button href="https://squiggles.readthedocs.io" color="inherit">
+              DOCS
+            </Button>
+          </Toolbar>
+        </AppBar>
+        <Drawer
+          className={classes.drawer}
+          variant="persistent"
+          anchor="left"
+          open={open}
+          classes={{
+            paper: classes.drawerPaper,
           }}
         >
-          <button style={{ width: 200, padding: 10 }} onClick={onClick}>
-            {"Take a photo"}
-          </button>
-        </div>
-        <DrawNewPath
-          drawerWidth={drawerWidth}
-          open={open}
-          mode={mode}
-          setMode={setMode}
-          field={field}
-          paths={paths}
-          setPaths={setPaths}
-          setCanvasDims={setCanvasDims}
-          latch={latch}
-          trackWidth={trackWidth}
-        />
-        <SimpleTabs
-          paths={paths}
-          trackWidth={trackWidth}
-          maxVel={maxVel}
-          maxAccel={maxAccel}
-          maxJerk={maxJerk}
-          canvasDims={canvasDims}
-        />
-      </main>
+          <SidebarContent
+            handleDrawerClose={handleDrawerClose}
+            mode={mode}
+            setMode={setMode}
+            field={field}
+            setField={setField}
+            trackWidth={trackWidth}
+            setTrackWidth={setTrackWidth}
+            maxVel={maxVel}
+            setMaxVel={setMaxVel}
+            maxAccel={maxAccel}
+            setMaxAccel={setMaxAccel}
+            maxJerk={maxJerk}
+            setMaxJerk={setMaxJerk}
+            latch={latch}
+            setLatch={setLatch}
+          />
+        </Drawer>
+        <main
+          className={clsx(classes.content, {
+            [classes.contentShift]: open,
+          })}
+        >
+          <div className={classes.drawerHeader} />
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              flexDirection: "column",
+            }}
+          >
+            <button style={{ width: 200, padding: 10 }} onClick={onClick}>
+              {"Take a photo"}
+            </button>
+          </div>
+          <DrawNewPath
+            drawerWidth={drawerWidth}
+            open={open}
+            mode={mode}
+            setMode={setMode}
+            field={field}
+            paths={paths}
+            setPaths={setPaths}
+            setCanvasDims={setCanvasDims}
+            latch={latch}
+            trackWidth={trackWidth}
+          />
+          <SimpleTabs
+            paths={paths}
+            trackWidth={trackWidth}
+            maxVel={maxVel}
+            maxAccel={maxAccel}
+            maxJerk={maxJerk}
+            canvasDims={canvasDims}
+          />
+        </main>
+      </NoSSR>
     </div>
   );
 }

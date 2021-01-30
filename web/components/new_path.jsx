@@ -3,9 +3,8 @@ import { useTheme } from "@material-ui/core";
 import Two from "two.js";
 
 import { FIELD_METERS } from "./units";
-import { keys } from "@material-ui/core/styles/createBreakpoints";
 
-export const DrawNewPath = (props) => {
+export default function DrawNewPath(props) {
   const mount = useRef(null);
   const two = useRef(null);
   const group = useRef(null);
@@ -74,6 +73,7 @@ export const DrawNewPath = (props) => {
         props.paths.forEach((p) => {
           p.vectors.forEach((v) => {
             if (v.r.id === shape.id) {
+              console.log("here");
               // This shape is a vector head, latch the vector angle using its point
               if (
                 Math.abs(shape.rotation) < 0.1 ||
@@ -86,6 +86,7 @@ export const DrawNewPath = (props) => {
               ) {
                 shape.translation.set(shape.translation.x, v.p.translation.y);
               }
+              // two.current.render();
             }
           });
         });
@@ -118,7 +119,6 @@ export const DrawNewPath = (props) => {
     let robotSquare;
     if (pathKey === "A" && anchor === newPath._collection[0]) {
       // put the robot on the first path's start
-      console.log(props.trackWidth);
       robotSquare = two.current.makeRectangle(
         anchor.x,
         anchor.y,
@@ -170,6 +170,7 @@ export const DrawNewPath = (props) => {
       );
     });
     r.translation.bind(Two.Events.change, function () {
+      console.log("r");
       anchor.controls.right.copy(this).subSelf(anchor);
       rl.vertices[1].copy(this);
 
@@ -208,10 +209,8 @@ export const DrawNewPath = (props) => {
       updatedVec.splice(idx, 0, newVec);
     } else {
       updatedVec = Array.from(props.paths.get(pathKey).vectors);
-      console.log(updatedVec);
       updatedVec.push(newVec);
     }
-    console.log(updatedVec);
     props.setPaths(
       new Map(
         props.paths.set(pathKey, {
@@ -1021,4 +1020,4 @@ export const DrawNewPath = (props) => {
   });
 
   return <div ref={mount}></div>;
-};
+}
