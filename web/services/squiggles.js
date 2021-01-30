@@ -46,13 +46,8 @@ class Squiggles {
    * call the postMessage with the msg and the image as payload.
    *
    * Thanks to what we have implemented in the _dispatch, this will
-   * return a promise with the processed image.
+   * return a promise with the squiggles result.
    */
-  imageProcessing(payload) {
-    console.log("service image proc");
-    return this._dispatch({ msg: "imageProcessing", payload });
-  }
-
   test() {
     console.log("service");
     return this._dispatch({ msg: "asdfghjkl" });
