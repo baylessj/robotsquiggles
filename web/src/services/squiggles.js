@@ -31,9 +31,7 @@ class Squiggles {
    */
   load() {
     this._status = {};
-    this.worker = new Worker(
-      `${process.env.ASSET_PREFIX}/js/squiggles.worker.js`
-    ); // load worker
+    this.worker = new Worker("robotsquiggles/js/squiggles.worker.js"); // load worker
 
     // Capture events and save [status, event] inside the _status object
     this.worker.onmessage = (e) => (this._status[e.data.msg] = ["done", e]);

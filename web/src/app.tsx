@@ -1,28 +1,23 @@
-import React, { useEffect, useState } from "react";
-import dynamic from "next/dynamic";
-import squiggles from "../services/squiggles";
-
+import React, { useState } from "react";
 import clsx from "clsx";
-import { makeStyles, createStyles } from "@material-ui/core/styles";
+import { makeStyles, Theme, createStyles } from "@material-ui/core/styles";
 import Drawer from "@material-ui/core/Drawer";
+import CssBaseline from "@material-ui/core/CssBaseline";
 import AppBar from "@material-ui/core/AppBar";
 import Toolbar from "@material-ui/core/Toolbar";
 import Typography from "@material-ui/core/Typography";
 import IconButton from "@material-ui/core/IconButton";
 import MenuIcon from "@material-ui/icons/Menu";
-import { Button } from "@material-ui/core";
-import NoSSR from "react-no-ssr";
-
-import DrawNewPath from "../components/new_path";
-// const DrawNewPath = dynamic(() => import("../components/new_path"), {
-//   ssr: false,
-// });
-import SimpleTabs from "../components/generated";
-import { SidebarContent } from "../components/sidebar";
+import { DrawNewPath } from "./components";
+import SimpleTabs from "./components/generated";
+import { ThemeProvider, Button } from "@material-ui/core";
+import theme from "./theme";
+import { SidebarContent } from "./components/sidebar";
+import squiggles from "./services/squiggles";
 
 const drawerWidth = 300;
 
-const useStyles = makeStyles((theme) =>
+const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     root: {
       display: "flex",
@@ -85,7 +80,7 @@ const useStyles = makeStyles((theme) =>
   })
 );
 
-export default function Page() {
+export const App = (props: any) => {
   const classes = useStyles();
   const [open, setOpen] = useState(false); // setting this to true breaks the alignment of two.js
   const [mode, setMode] = useState("ADD_PATH");
@@ -96,14 +91,9 @@ export default function Page() {
   const [maxAccel, setMaxAccel] = useState("2.0");
   const [maxJerk, setMaxJerk] = useState("10.0");
   const [canvasDims, setCanvasDims] = useState({
-    x: 0,
-    y: 0,
+    x: window.innerWidth,
+    y: window.innerHeight,
   });
-
-  useEffect(() => {
-    // we can't use the window properties outside of a react effect
-    setCanvasDims({ x: window.innerWidth, y: window.innerWidth });
-  }, []);
 
   /**
    * Map of the data associated with each Squiggles path.
@@ -129,8 +119,6 @@ export default function Page() {
   async function onClick() {
     // Load the model
     await squiggles.load();
-    // Processing image
-    // const processedImage = await cv.imageProcessing(image)
     const val = await squiggles.test();
     console.log(val);
     // Render the processed image to the canvas
@@ -138,8 +126,9 @@ export default function Page() {
   }
 
   return (
-    <div className={classes.root}>
-      <NoSSR onSSR={<div>Loading...</div>}>
+    <ThemeProvider theme={theme}>
+      <div className={classes.root}>
+        <CssBaseline />
         <AppBar
           position="fixed"
           className={clsx(classes.appBar, {
@@ -197,18 +186,7 @@ export default function Page() {
           })}
         >
           <div className={classes.drawerHeader} />
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              flexDirection: "column",
-            }}
-          >
-            <button style={{ width: 200, padding: 10 }} onClick={onClick}>
-              {"Take a photo"}
-            </button>
-          </div>
+          <button onClick={onClick}>Tap</button>
           <DrawNewPath
             drawerWidth={drawerWidth}
             open={open}
@@ -230,7 +208,7 @@ export default function Page() {
             canvasDims={canvasDims}
           />
         </main>
-      </NoSSR>
-    </div>
+      </div>
+    </ThemeProvider>
   );
-}
+};
