@@ -37,7 +37,6 @@ onmessage = function (e) {
       // Import Webassembly script
       self.importScripts("./squiggles.js");
       waitForWasm(function (success) {
-        console.log(e.data.msg);
         if (success) postMessage({ msg: e.data.msg });
         else throw new Error("Error on loading Squiggles lib");
       });
