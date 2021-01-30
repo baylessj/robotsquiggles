@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import cv from "../services/cv";
+import squiggles from "../services/squiggles";
 
 export default function Page() {
   /**
@@ -8,10 +8,10 @@ export default function Page() {
    */
   async function onClick() {
     // Load the model
-    await cv.load();
+    await squiggles.load();
     // Processing image
     // const processedImage = await cv.imageProcessing(image)
-    const val = await cv.test();
+    const val = await squiggles.test();
     console.log(val);
     // Render the processed image to the canvas
     // ctx.putImageData(processedImage.data.payload, 0, 0);
