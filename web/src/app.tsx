@@ -96,6 +96,7 @@ export const App = (props: any) => {
     x: window.innerWidth,
     y: window.innerHeight,
   });
+  const [badPaths, setBadPaths] = useState(new Map<string, number>());
 
   /**
    * Map of the data associated with each Squiggles path.
@@ -112,7 +113,7 @@ export const App = (props: any) => {
 
   useDebouncedEffect(
     () => {
-      paths.forEach((v: any) => {
+      paths.forEach((v: any, k: string) => {
         if (!v.waypoints[1] || !v.vectors[1] || v.vectors.length > 2) return;
         // TODO: allow for three+ point paths
         const poses = [];
@@ -152,11 +153,11 @@ export const App = (props: any) => {
           max_jerk: parseFloat(maxJerk),
           track_width: parseFloat(trackWidth),
         };
-        generatePath(payload);
+        generatePath(k, payload);
       });
     },
     200,
-    [paths]
+    [paths, maxVel, maxAccel, maxJerk, trackWidth]
   );
 
   const handleDrawerOpen = () => {
@@ -167,9 +168,9 @@ export const App = (props: any) => {
     setOpen(false);
   };
 
-  async function generatePath(payload: any) {
+  async function generatePath(path: string, payload: any) {
     const rtn = await squiggles.generate(payload);
-    console.log(rtn.data.payload);
+    setBadPaths(new Map(badPaths.set(path, rtn.data.payload)));
   }
 
   // Load the Squiggles WASM library only when the component is mounted
@@ -249,6 +250,7 @@ export const App = (props: any) => {
             setCanvasDims={setCanvasDims}
             latch={latch}
             trackWidth={trackWidth}
+            badPaths={badPaths}
           />
           <SimpleTabs
             paths={paths}

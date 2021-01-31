@@ -76,9 +76,9 @@ int generate(double sx,
   // to do that for us
   auto path = spline.generate({ControlVector(Pose(sx, sy, syaw), sv, 0),
                                 ControlVector(Pose(gx, gy, gyaw), gv, 0)});
-  for (auto p: path) {
-    printf("%s\n", p.to_string().c_str());
-  }
+  // for (auto p: path) {
+  //   printf("%s\n", p.to_string().c_str());
+  // }
   return 0;
 }
 

@@ -38,6 +38,7 @@ export const DrawNewPath = (props) => {
     setCanvasDims,
     latch,
     trackWidth,
+    badPaths,
   } = props;
 
   /**
@@ -922,7 +923,7 @@ export const DrawNewPath = (props) => {
 
         props.paths.forEach((p) => {
           if (!p.path) return;
-          p.path.stroke = neutralColor;
+          p.path.stroke = p.path.stroke === red ? red : neutralColor;
           p.vectors.forEach((v) => {
             addInteractivity(v.p);
             addInteractivity(v.r);
@@ -1031,6 +1032,19 @@ export const DrawNewPath = (props) => {
     }
     prevField.current = props.field;
   });
+
+  useEffect(() => {
+    paths.forEach((v, k) => {
+      console.log(v);
+      if (badPaths.get(k) === 1) {
+        // this path is bad!
+        v.path.stroke = red;
+      } else if (v.path) {
+        v.path.stroke = neutralColor;
+      }
+    });
+    two.current.update();
+  }, [paths, badPaths]);
 
   return <div ref={mount}></div>;
 };
