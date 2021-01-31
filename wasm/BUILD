@@ -5,7 +5,7 @@ genrule(
         "squiggles.js",
     ],
     cmd = [
-        "./tools/emsdk/upstream/emscripten/emcc $SRCS -s WASM=1 -s MODULARIZE=1 -s EXTRA_EXPORTED_RUNTIME_METHODS='[\"ccall\", \"cwrap\"]' -s EXPORT_NAME=\"'squiggles'\" -s SINGLE_FILE=1 -I main/include --std=gnu++17 -o squiggles.js",
+        "./tools/emsdk/upstream/emscripten/emcc $SRCS -s DISABLE_EXCEPTION_CATCHING=2 -s WASM=1 -s MODULARIZE=1 -s EXTRA_EXPORTED_RUNTIME_METHODS='[\"ccall\", \"cwrap\"]' -s EXPORT_NAME=\"'squiggles'\" -s SINGLE_FILE=1 -I main/include --std=gnu++17 -o squiggles.js",
         "cp squiggles.js ../../../../web/public/js/squiggles.js",
     ],
     deps = [

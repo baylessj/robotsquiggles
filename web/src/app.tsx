@@ -15,6 +15,7 @@ import theme from "./theme";
 import { SidebarContent } from "./components/sidebar";
 import squiggles from "./services/squiggles";
 import { useDebouncedEffect } from "./services/useDebouncedEffect";
+import { squigglesCoords } from "./services/coords";
 
 const drawerWidth = 300;
 
@@ -112,21 +113,44 @@ export const App = (props: any) => {
   useDebouncedEffect(
     () => {
       paths.forEach((v: any) => {
-        console.log(v);
-        if (!v.waypoints[1] || !v.vectors[1]) return;
+        if (!v.waypoints[1] || !v.vectors[1] || v.vectors.length > 2) return;
+        // TODO: allow for three+ point paths
+        const poses = [];
+        for (let i = v.vectors.length - 1; i >= 0; --i) {
+          const vec = v.vectors[i];
+          let yaw = vec.r.rotation;
+          let vel = Math.sqrt(
+            Math.pow(vec.r.translation.x - vec.p.translation.x, 2) +
+              Math.pow(vec.r.translation.y - vec.p.translation.y, 2)
+          );
+          const coords = squigglesCoords(
+            canvasDims.x,
+            canvasDims.y,
+            vec.p.translation.x,
+            vec.p.translation.y,
+            yaw,
+            vel
+          );
+          poses.push({
+            x: coords.x,
+            y: coords.y,
+            yaw: coords.yaw,
+            vel: coords.vel,
+          });
+        }
         const payload = {
-          sx: v.waypoints[0].x,
-          sy: v.waypoints[0].y,
-          syaw: v.vectors[0].angle,
-          sv: v.vectors[0].magnitude,
-          gx: v.waypoints[1].x,
-          gy: v.waypoints[1].y,
-          gyaw: v.vectors[1].angle,
-          gv: v.vectors[1].magnitude,
-          max_vel: maxVel,
-          max_accel: maxAccel,
-          max_jerk: maxJerk,
-          track_width: trackWidth,
+          sx: poses[0].x,
+          sy: poses[0].y,
+          syaw: poses[0].yaw,
+          sv: poses[0].vel,
+          gx: poses[1].x,
+          gy: poses[1].y,
+          gyaw: poses[1].yaw,
+          gv: poses[1].vel,
+          max_vel: parseFloat(maxVel),
+          max_accel: parseFloat(maxAccel),
+          max_jerk: parseFloat(maxJerk),
+          track_width: parseFloat(trackWidth),
         };
         generatePath(payload);
       });
@@ -144,7 +168,8 @@ export const App = (props: any) => {
   };
 
   async function generatePath(payload: any) {
-    const val = await squiggles.test();
+    const rtn = await squiggles.generate(payload);
+    console.log(rtn.data.payload);
     // const rtn = await squiggles.generate(payload);
     // console.log(rtn);
     // Render the processed image to the canvas

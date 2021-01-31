@@ -7,11 +7,41 @@ async function test({ msg, payload }) {
 }
 
 async function generate({ msg, payload }) {
-  console.log("testfn");
   const lib = await squiggles();
-  console.log(lib.ccall("linvels"));
-  console.log("testfn");
-  postMessage({ msg, payload: payload });
+  const code = lib.ccall(
+    "generate",
+    "number",
+    [
+      "number",
+      "number",
+      "number",
+      "number",
+      "number",
+      "number",
+      "number",
+      "number",
+      "number",
+      "number",
+      "number",
+      "number",
+      "number",
+    ],
+    [
+      payload.sx,
+      payload.sy,
+      payload.syaw,
+      payload.sv,
+      payload.gx,
+      payload.gy,
+      payload.gyaw,
+      payload.gv,
+      payload.max_vel,
+      payload.max_accel,
+      payload.max_jerk,
+      payload.track_width,
+    ]
+  );
+  postMessage({ msg, payload: code });
 }
 
 /**

@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from "react";
 import { useTheme } from "@material-ui/core";
 import Two from "two.js";
 
-import { FIELD_METERS } from "./units";
+import { FIELD_METERS } from "../services/units";
 
 export const DrawNewPath = (props) => {
   const mount = useRef(null);
@@ -117,7 +117,6 @@ export const DrawNewPath = (props) => {
     let robotSquare;
     if (pathKey === "A" && anchor === newPath._collection[0]) {
       // put the robot on the first path's start
-      console.log(props.trackWidth);
       robotSquare = two.current.makeRectangle(
         anchor.x,
         anchor.y,
@@ -154,7 +153,6 @@ export const DrawNewPath = (props) => {
       rl.vertices[0].copy(this);
       rl.vertices[1].copy(r.translation);
       if (robotSquare) robotSquare.translation.copy(this);
-      console.log("here");
       props.setPaths(
         new Map(
           props.paths.set(pathKey, {
@@ -208,10 +206,8 @@ export const DrawNewPath = (props) => {
       updatedVec.splice(idx, 0, newVec);
     } else {
       updatedVec = Array.from(props.paths.get(pathKey).vectors);
-      console.log(updatedVec);
       updatedVec.push(newVec);
     }
-    console.log(updatedVec);
     props.setPaths(
       new Map(
         props.paths.set(pathKey, {
@@ -309,7 +305,6 @@ export const DrawNewPath = (props) => {
       );
     }
     const pathKey = curPath();
-    console.log("new");
     props.setPaths(
       new Map(
         props.paths.set(pathKey, {
