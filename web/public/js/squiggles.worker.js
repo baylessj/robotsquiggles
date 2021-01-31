@@ -8,39 +8,44 @@ async function test({ msg, payload }) {
 
 async function generate({ msg, payload }) {
   const lib = await squiggles();
-  const code = lib.ccall(
-    "generate",
-    "number",
-    [
+  let code;
+  try {
+    code = lib.ccall(
+      "generate",
       "number",
-      "number",
-      "number",
-      "number",
-      "number",
-      "number",
-      "number",
-      "number",
-      "number",
-      "number",
-      "number",
-      "number",
-      "number",
-    ],
-    [
-      payload.sx,
-      payload.sy,
-      payload.syaw,
-      payload.sv,
-      payload.gx,
-      payload.gy,
-      payload.gyaw,
-      payload.gv,
-      payload.max_vel,
-      payload.max_accel,
-      payload.max_jerk,
-      payload.track_width,
-    ]
-  );
+      [
+        "number",
+        "number",
+        "number",
+        "number",
+        "number",
+        "number",
+        "number",
+        "number",
+        "number",
+        "number",
+        "number",
+        "number",
+        "number",
+      ],
+      [
+        payload.sx,
+        payload.sy,
+        payload.syaw,
+        payload.sv,
+        payload.gx,
+        payload.gy,
+        payload.gyaw,
+        payload.gv,
+        payload.max_vel,
+        payload.max_accel,
+        payload.max_jerk,
+        payload.track_width,
+      ]
+    );
+  } catch (e) {
+    code = 1;
+  }
   postMessage({ msg, payload: code });
 }
 

@@ -1,5 +1,6 @@
 #include "emscripten.h"
 #include "squiggles.hpp"
+#include <exception>
 
 using namespace squiggles;
 
@@ -67,20 +68,18 @@ int generate(double sx,
               double max_jerk,
               double track_width) {
   if (!sx)
-    return 2;
+    return 1;
   auto constraints = Constraints(max_vel, max_accel, max_jerk);
   auto model = std::make_shared<TankModel>(track_width, constraints);
   auto spline = SplineGenerator(constraints, model, 0.1);
-  try {
-    auto path = spline.generate({ControlVector(Pose(sx, sy, syaw), sv, 0),
-                                 ControlVector(Pose(gx, gy, gyaw), gv, 0)});
-    for (auto p: path) {
-      printf("%s\n", p.to_string().c_str());
-    }
-    return 0;
-  } catch (std::runtime_error e) {
-    return 1;
+  // we can't catch exceptions here for some reason, relying on the web client 
+  // to do that for us
+  auto path = spline.generate({ControlVector(Pose(sx, sy, syaw), sv, 0),
+                                ControlVector(Pose(gx, gy, gyaw), gv, 0)});
+  for (auto p: path) {
+    printf("%s\n", p.to_string().c_str());
   }
+  return 0;
 }
 
 }
