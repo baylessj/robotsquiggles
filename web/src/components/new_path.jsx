@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useCallback, useEffect, useRef } from "react";
 import { useTheme } from "@material-ui/core";
 import Two from "two.js";
 
@@ -26,6 +26,19 @@ export const DrawNewPath = (props) => {
   const red = "rgb(255, 40, 40)";
   const blueBalls = useRef(null);
   const redBalls = useRef(null);
+
+  const {
+    drawerWidth,
+    open,
+    mode,
+    setMode,
+    field,
+    paths,
+    setPaths,
+    setCanvasDims,
+    latch,
+    trackWidth,
+  } = props;
 
   /**
    * Modifies the mouse event to fit with the Two canvas coordinates.
@@ -653,6 +666,16 @@ export const DrawNewPath = (props) => {
     redBalls.current.fill = red;
   };
 
+  const resize = useCallback(
+    (width) => {
+      width = capSize(width);
+      two.current.scene.scale = width / startWidth.current;
+      two.current.renderer.setSize(width, width);
+      setCanvasDims({ x: startWidth.current, y: startWidth.current });
+    },
+    [two, setCanvasDims]
+  );
+
   /**
    * Sets up the field when the component is mounted.
    */
@@ -850,14 +873,7 @@ export const DrawNewPath = (props) => {
       const newWidth = savedBoundingRect.current.width;
       resize(newWidth);
     });
-  }, []);
-
-  const resize = (width) => {
-    width = capSize(width);
-    two.current.scene.scale = width / startWidth.current;
-    two.current.renderer.setSize(width, width);
-    props.setCanvasDims({ x: startWidth.current, y: startWidth.current });
-  };
+  }, [resize]);
 
   /**
    * Resizes the Two.js canvas each time the component updates.
@@ -870,14 +886,14 @@ export const DrawNewPath = (props) => {
       savedBoundingRect.current = mount.current.getBoundingClientRect();
     }
     const boxWidth = savedBoundingRect.current.width;
-    if (props.open) {
-      savedLeft.current = props.drawerWidth;
-      resize(boxWidth - props.drawerWidth);
+    if (open) {
+      savedLeft.current = drawerWidth;
+      resize(boxWidth - drawerWidth);
     } else {
       savedLeft.current = 0;
       resize(boxWidth);
     }
-  }, [props.open, props.drawerWidth]);
+  }, [open, drawerWidth, resize]);
 
   /**
    * Handles the State Machine for the edit modes.

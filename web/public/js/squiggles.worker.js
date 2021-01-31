@@ -1,11 +1,3 @@
-async function test({ msg, payload }) {
-  console.log("testfn");
-  const lib = await squiggles();
-  console.log(lib.ccall("linvels"));
-  console.log("testfn");
-  postMessage({ msg, payload: payload });
-}
-
 async function generate({ msg, payload }) {
   const lib = await squiggles();
   let code;
@@ -85,8 +77,6 @@ onmessage = function (e) {
       });
       break;
     }
-    case "asdfghjkl":
-      return test(e.data);
     case "generate":
       return generate(e.data);
     default:

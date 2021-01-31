@@ -170,10 +170,6 @@ export const App = (props: any) => {
   async function generatePath(payload: any) {
     const rtn = await squiggles.generate(payload);
     console.log(rtn.data.payload);
-    // const rtn = await squiggles.generate(payload);
-    // console.log(rtn);
-    // Render the processed image to the canvas
-    // ctx.putImageData(processedImage.data.payload, 0, 0);
   }
 
   // Load the Squiggles WASM library only when the component is mounted
