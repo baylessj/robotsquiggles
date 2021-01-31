@@ -3,7 +3,6 @@ import { useTheme } from "@material-ui/core";
 import Two from "two.js";
 
 import { FIELD_METERS } from "./units";
-import { keys } from "@material-ui/core/styles/createBreakpoints";
 
 export const DrawNewPath = (props) => {
   const mount = useRef(null);
