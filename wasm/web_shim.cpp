@@ -56,30 +56,29 @@ double linvels() {
 
 EMSCRIPTEN_KEEPALIVE
 int generate(double sx,
-              double sy,
-              double syaw,
-              double sv,
-              double gx,
-              double gy,
-              double gyaw,
-              double gv,
-              double max_vel,
-              double max_accel,
-              double max_jerk,
-              double track_width) {
+             double sy,
+             double syaw,
+             double sv,
+             double gx,
+             double gy,
+             double gyaw,
+             double gv,
+             double max_vel,
+             double max_accel,
+             double max_jerk,
+             double track_width) {
   if (!sx)
     return 1;
   auto constraints = Constraints(max_vel, max_accel, max_jerk);
   auto model = std::make_shared<TankModel>(track_width, constraints);
   auto spline = SplineGenerator(constraints, model, 0.1);
-  // we can't catch exceptions here for some reason, relying on the web client 
+  // we can't catch exceptions here for some reason, relying on the web client
   // to do that for us
   auto path = spline.generate({ControlVector(Pose(sx, sy, syaw), sv, 0),
-                                ControlVector(Pose(gx, gy, gyaw), gv, 0)});
+                               ControlVector(Pose(gx, gy, gyaw), gv, 0)});
   // for (auto p: path) {
   //   printf("%s\n", p.to_string().c_str());
   // }
   return 0;
 }
-
 }
