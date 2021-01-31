@@ -50,6 +50,10 @@ class Squiggles {
     console.log("service");
     return this._dispatch({ msg: "asdfghjkl" });
   }
+
+  generate(payload) {
+    return this._dispatch({ msg: "generate", payload });
+  }
 }
 
 // Export the same instant everywhere

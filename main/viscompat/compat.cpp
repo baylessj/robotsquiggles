@@ -1,5 +1,5 @@
-#include "squiggles.hpp"
 #include "compat.hpp"
+#include "squiggles.hpp"
 
 #define K_EPSILON (1e-5)
 
@@ -27,10 +27,10 @@ VisData compute_path(double sx,
   } else {
     model = std::make_shared<PassthroughModel>();
   }
-  auto spline = SplineGenerator(constraints,
-                       model,
-                       dt);
-  std::vector<ProfilePoint> path = spline.generate({ControlVector(Pose(sx, sy, syaw), sv, sa), ControlVector(Pose(gx, gy, gyaw), gv, ga)});
+  auto spline = SplineGenerator(constraints, model, dt);
+  std::vector<ProfilePoint> path =
+    spline.generate({ControlVector(Pose(sx, sy, syaw), sv, sa),
+                     ControlVector(Pose(gx, gy, gyaw), gv, ga)});
   VisData out;
   out.size = path.size();
   out.points = new VisDataPoint[path.size()];

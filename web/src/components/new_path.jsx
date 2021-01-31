@@ -154,6 +154,7 @@ export const DrawNewPath = (props) => {
       rl.vertices[0].copy(this);
       rl.vertices[1].copy(r.translation);
       if (robotSquare) robotSquare.translation.copy(this);
+      console.log("here");
       props.setPaths(
         new Map(
           props.paths.set(pathKey, {
@@ -308,6 +309,7 @@ export const DrawNewPath = (props) => {
       );
     }
     const pathKey = curPath();
+    console.log("new");
     props.setPaths(
       new Map(
         props.paths.set(pathKey, {

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import clsx from "clsx";
 import { makeStyles, Theme, createStyles } from "@material-ui/core/styles";
 import Drawer from "@material-ui/core/Drawer";
@@ -14,6 +14,7 @@ import { ThemeProvider, Button } from "@material-ui/core";
 import theme from "./theme";
 import { SidebarContent } from "./components/sidebar";
 import squiggles from "./services/squiggles";
+import { useDebouncedEffect } from "./services/useDebouncedEffect";
 
 const drawerWidth = 300;
 
@@ -108,6 +109,32 @@ export const App = (props: any) => {
    */
   const [paths, setPaths] = useState(new Map());
 
+  useDebouncedEffect(
+    () => {
+      paths.forEach((v: any) => {
+        console.log(v);
+        if (!v.waypoints[1] || !v.vectors[1]) return;
+        const payload = {
+          sx: v.waypoints[0].x,
+          sy: v.waypoints[0].y,
+          syaw: v.vectors[0].angle,
+          sv: v.vectors[0].magnitude,
+          gx: v.waypoints[1].x,
+          gy: v.waypoints[1].y,
+          gyaw: v.vectors[1].angle,
+          gv: v.vectors[1].magnitude,
+          max_vel: maxVel,
+          max_accel: maxAccel,
+          max_jerk: maxJerk,
+          track_width: trackWidth,
+        };
+        generatePath(payload);
+      });
+    },
+    200,
+    [paths]
+  );
+
   const handleDrawerOpen = () => {
     setOpen(true);
   };
@@ -116,14 +143,18 @@ export const App = (props: any) => {
     setOpen(false);
   };
 
-  async function onClick() {
-    // Load the model
-    await squiggles.load();
+  async function generatePath(payload: any) {
     const val = await squiggles.test();
-    console.log(val);
+    // const rtn = await squiggles.generate(payload);
+    // console.log(rtn);
     // Render the processed image to the canvas
     // ctx.putImageData(processedImage.data.payload, 0, 0);
   }
+
+  // Load the Squiggles WASM library only when the component is mounted
+  useEffect(() => {
+    squiggles.load();
+  }, []);
 
   return (
     <ThemeProvider theme={theme}>
@@ -186,7 +217,6 @@ export const App = (props: any) => {
           })}
         >
           <div className={classes.drawerHeader} />
-          <button onClick={onClick}>Tap</button>
           <DrawNewPath
             drawerWidth={drawerWidth}
             open={open}

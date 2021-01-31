@@ -6,6 +6,14 @@ async function test({ msg, payload }) {
   postMessage({ msg, payload: payload });
 }
 
+async function generate({ msg, payload }) {
+  console.log("testfn");
+  const lib = await squiggles();
+  console.log(lib.ccall("linvels"));
+  console.log("testfn");
+  postMessage({ msg, payload: payload });
+}
+
 /**
  *  Here we will check from time to time if we can access the Squiggles
  *  functions. We will return in a callback if it has been resolved
@@ -44,6 +52,8 @@ onmessage = function (e) {
     }
     case "asdfghjkl":
       return test(e.data);
+    case "generate":
+      return generate(e.data);
     default:
       break;
   }
