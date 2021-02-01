@@ -27,9 +27,7 @@ VisData compute_path(double sx,
   } else {
     model = std::make_shared<PassthroughModel>();
   }
-  auto spline = SplineGenerator(constraints,
-                       model,
-                       dt);
+  auto spline = SplineGenerator(constraints, model, dt);
   auto s = Pose(sx, sy, syaw);
   auto g = Pose(gx, gy, gyaw);
   auto scv = ControlVector(s, sv, sa);
@@ -47,8 +45,8 @@ VisData compute_path(double sx,
     // out.points[i].v = path[i].vel;
     // out.points[i].a = path[i].accel;
     // out.points[i].j = path[i].jerk;
-      out.points[i].lv = path[i].wheel_velocities[0];
-      out.points[i].rv = path[i].wheel_velocities[1];
+    out.points[i].lv = path[i].wheel_velocities[0];
+    out.points[i].rv = path[i].wheel_velocities[1];
   }
   return out;
 }
