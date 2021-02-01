@@ -1,13 +1,13 @@
 from ctypes import *
 import math
 import os
+import sys
 
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 
 
-# clib = CDLL("./build/libRobotSquiggles.so")
 clib = CDLL(os.path.join(os.getcwd(), "plz-out/bin/main/libsquigglesviscompat.so"))
 
 
@@ -20,12 +20,13 @@ class VisDataPoint(Structure):
         ("v", c_double),
         ("a", c_double),
         ("j", c_double),
+        ("k", c_double),
         ("lv", c_double),
         ("rv", c_double),
     ]
 
     def __repr__(self):
-        return f"VisDataPoint: {{time: {self.time}, x: {self.x}, y: {self.y}, yaw: {self.yaw}, v: {self.v}, a: {self.a}, j: {self.j}}}"
+        return f"VisDataPoint: {{time: {self.time}, x: {self.x}, y: {self.y}, yaw: {self.yaw}, v: {self.v}, a: {self.a}, j: {self.j}, k: {self.k}}}"
 
 
 class VisData(Structure):
@@ -58,21 +59,19 @@ def plot_arrow(x, y, yaw, length=0.50, width=0.2, fc="r", ec="k"):  # pragma: no
         plt.plot(x, y)
 
 
-def path(time, x, y, yaw, lx, ly, rx, ry, lv, rv):
-    # fig, ax = plt.subplots(1)
+def path(time, x, y, yaw, lx, ly, rx, ry, lv, rv, k):
+    plt.subplot(2, 1, 1)
+    plt.plot(time, lv)
+    plt.subplot(2, 1, 2)
     for i, _ in enumerate(time):
         plt.cla()
         # for stopping simulation with the esc key.
         plt.gcf().canvas.mpl_connect(
             "key_release_event",
-            lambda event: [exit(0) if event.key == "escape" else None],
+            lambda event: [sys.exit(0) if event.key == "escape" else None],
         )
         plt.grid(True)
         plt.axis("equal")
-
-        # plot_arrow(sx, sy, syaw)
-        # plot_arrow(gx, gy, gyaw)
-        # plot_arrow(x[i], y[i], yaw[i], (v[i] / 3.0))
 
         plot_arrow(lx[i], ly[i], yaw[i], (lv[i] / 3.0))
         plot_arrow(rx[i], ry[i], yaw[i], (rv[i] / 3.0))
@@ -80,37 +79,6 @@ def path(time, x, y, yaw, lx, ly, rx, ry, lv, rv):
         plt.plot(lx, ly, "--r", linewidth=1)
         plt.plot(rx, ry, "--r", linewidth=1)
 
-        # lwheel = patches.Rectangle(
-        #     (lx[i] + 0.05, ly[i]),
-        #     0.3,
-        #     0.1,
-        #     np.rad2deg(yaw[i]),
-        #     linewidth=1,
-        #     edgecolor="r",
-        #     facecolor="none",
-        # )
-        # rwheel = patches.Rectangle(
-        #     (rx[i] + 0.05, ry[i]),
-        #     0.3,
-        #     0.1,
-        #     np.rad2deg(yaw[i]),
-        #     linewidth=1,
-        #     edgecolor="r",
-        #     facecolor="none",
-        # )
-        # ax.add_patch(lwheel)
-        # ax.add_patch(rwheel)
-
-        # plt.title(
-        #     "Time[s]:"
-        #     + str(time[i])[0:4]
-        #     + " v[m/s]:"
-        #     + str(v[i])[0:4]
-        #     + " a[m/ss]:"
-        #     + str(a[i])[0:4]
-        #     + " jerk[m/sss]:"
-        #     + str(j[i])[0:4],
-        # )
         plt.pause(0.001)
     plt.show()
 
@@ -124,27 +92,23 @@ def kinematics(time, v, a):
     plt.plot(time, a, "-r")
     plt.show()
 
-
 def main():
     sx = 0.0  # start x position [m]
     sy = 0.0  # start y position [m]
-    syaw = np.deg2rad(0.0)  # start yaw angle [rad]
-    sv = 1.0  # start speed [m/s]
+    syaw = 0.0
+    sv = 0.0  # start speed [m/s]
     sa = 0.0  # start accel [m/ss]
 
-    # Head to {3, 1, 30} in Okapi
-
-    gx = 3.0  # goal x position [m]
-    gy = -1.0  # goal y position [m]
-    gyaw = np.deg2rad(-30.0)  # goal yaw angle [rad]
-    gv = 1.0  # goal speed [m/s]
+    gx = 0.5  # goal x position [m]
+    gy = 0.5  # goal y position [m]
+    gyaw = 0.0
+    gv = 0.0  # goal speed [m/s]
     ga = 0.0  # goal accel [m/ss]
-    max_vel = 2.5
-    max_accel = 1.0  # max accel [m/ss]
-    max_jerk = 0.5  # max jerk [m/sss]
+    max_vel = 1.5
+    max_accel = 0.5  # max accel [m/ss]
+    max_jerk = 6.0  # max jerk [m/sss]
     dt = 0.1  # time tick [s]
     track_width = 0.4
-    # track_width = 0.0
 
     clib.compute_path.argtypes = [
         c_double,
@@ -182,7 +146,8 @@ def main():
         dt,
     )
 
-    time, x, y, yaw, v, a, j, lx, ly, lv, rx, ry, rv = (
+    time, x, y, yaw, v, a, j, k, lx, ly, lv, rx, ry, rv = (
+        [],
         [],
         [],
         [],
@@ -206,6 +171,7 @@ def main():
         v.append(visdata.points[i].v)
         a.append(visdata.points[i].a)
         j.append(visdata.points[i].j)
+        k.append(visdata.points[i].k)
         lx.append(
             visdata.points[i].x
             + (track_width / 2) * -1 * math.sin(visdata.points[i].yaw)
@@ -223,7 +189,7 @@ def main():
         lv.append(visdata.points[i].lv)
         rv.append(visdata.points[i].rv)
 
-    path(time, x, y, yaw, lx, ly, rx, ry, lv, rv)
+    path(time, x, y, yaw, lx, ly, rx, ry, v, rv, k)
     # kinematics(time, v, a)
 
 if __name__ == "__main__":

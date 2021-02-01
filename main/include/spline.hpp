@@ -39,11 +39,16 @@ class SplineGenerator {
    *
    * @param iwaypoints The list of poses that the robot should reach along the
    *                   path.
+   * @param fast If true, the path optimization process will stop as soon as the
+   *             constraints are met. If false, the optimizer will find the
+   *             smoothest possible path between the points.
    *
    * @return A series of robot states defining a path between the poses.
    */
-  std::vector<ProfilePoint> generate(std::vector<Pose> iwaypoints);
-  std::vector<ProfilePoint> generate(std::initializer_list<Pose> iwaypoints);
+  std::vector<ProfilePoint> generate(std::vector<Pose> iwaypoints,
+                                     bool fast = false);
+  std::vector<ProfilePoint> generate(std::initializer_list<Pose> iwaypoints,
+                                     bool fast = false);
 
   /**
    * Creates a motion profiled path between the given waypoints.
@@ -80,6 +85,7 @@ class SplineGenerator {
    */
   const int T_MIN = 2;
   const int T_MAX = 15;
+  const int MAX_GRAD_DESCENT_ITERATIONS = 10;
 
   /**
    * This is factor is used to create a "dummy velocity" in the initial path
@@ -91,12 +97,14 @@ class SplineGenerator {
    * This was 1.2 in the WPILib example but that large of a value seems to
    * create wild paths, 0.12 worked better in testing with VEX-sized paths.
    */
-  const double K_DEFAULT_VEL = 0.12;
+  public:
+  const double K_DEFAULT_VEL = 1.0;
 
   /**
    * The output of the initial, "naive" generation step. We discard the
    * derivative values to replace them with values from a motion profile.
    */
+
   struct GeneratedPoint {
     GeneratedPoint(Pose ipose, double icurvature = 0.0)
       : pose(ipose), curvature(icurvature) {}
@@ -134,6 +142,21 @@ class SplineGenerator {
              ", jerk: " + std::to_string(jerk) + "}";
     }
   };
+
+  std::vector<GeneratedVector> gen_single_raw_path(ControlVector start,
+                                                   ControlVector end,
+                                                   int duration,
+                                                   double start_vel,
+                                                   double end_vel);
+  /**
+   * Runs a Gradient Descent algorithm to minimize the linear acceleration,
+   * linear jerk, and curvature for the generated path.
+   *
+   * This is used when there is not a start/end velocity specified for a given
+   * path.
+   */
+  std::vector<GeneratedPoint>
+  gradient_descent(ControlVector& start, ControlVector& end, bool fast);
 
   /**
    * An intermediate value used in the parameterization step. Adds the
@@ -184,8 +207,9 @@ class SplineGenerator {
    * @return The points from each path concatenated together
    */
   template <class Iter>
-  std::vector<ProfilePoint> _generate(Iter start, Iter end);
+  std::vector<ProfilePoint> _generate(Iter start, Iter end, bool fast);
 
+  public:
   /**
    * Performs the "naive" generation step.
    *
@@ -193,8 +217,8 @@ class SplineGenerator {
    * SplineGenerator's acceleration and jerk constraints and returns the points
    * that form the curve.
    */
-  std::vector<GeneratedPoint> gen_raw_path(ControlVector start,
-                                           ControlVector end);
+  std::vector<GeneratedPoint>
+  gen_raw_path(ControlVector& start, ControlVector& end, bool fast);
 
   /**
    * Imposes a linear motion profile on the raw path.
