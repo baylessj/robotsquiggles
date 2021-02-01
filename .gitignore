@@ -67,3 +67,6 @@ plz-out
 .plzconfig.local
 
 **.eslintcache
+coverage.info
+.next
+node_modules

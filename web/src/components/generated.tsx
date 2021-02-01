@@ -6,7 +6,7 @@ import Tab from "@material-ui/core/Tab";
 import Box from "@material-ui/core/Box";
 import { CopyBlock, atomOneDark } from "react-code-blocks";
 
-import { FIELD_METERS } from "./units";
+import { squigglesCoords, okapiCoords } from "../services/coords";
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -74,22 +74,6 @@ export default function SimpleTabs(props: SimpleTabsProps) {
     setValue(newValue);
   };
 
-  const squigglesCoords = (x: number, y: number, yaw: number) => ({
-    // TODO: check if the starting position is top left
-    // Make (0, 0) be the bottom left, then X is up and Y is right for Okapi
-    x: (x / props.canvasDims.x) * FIELD_METERS,
-    y: (1 - y / props.canvasDims.y) * FIELD_METERS,
-    yaw: -1 * (yaw + Math.PI / 2),
-  });
-
-  const okapiCoords = (x: number, y: number, yaw: number) => ({
-    // TODO: check if the starting position is top left
-    // Make (0, 0) be the bottom left, then X is up and Y is right for Okapi
-    x: (1 - y / props.canvasDims.y) * FIELD_METERS,
-    y: (x / props.canvasDims.x) * FIELD_METERS,
-    yaw: yaw,
-  });
-
   const squigglesCode = () => {
     let out = "#define PATH_DT             (0.01)\n";
     out += `#define PATH_MAX_VEL        (${props.maxVel})\n`;
@@ -109,6 +93,8 @@ export default function SimpleTabs(props: SimpleTabsProps) {
           const vec = v.vectors[i];
           let yaw = vec.r.rotation;
           const coords = squigglesCoords(
+            props.canvasDims.x,
+            props.canvasDims.y,
             vec.p.translation.x,
             vec.p.translation.y,
             yaw
@@ -116,11 +102,6 @@ export default function SimpleTabs(props: SimpleTabsProps) {
           const x = coords.x;
           const y = coords.y;
           yaw = coords.yaw;
-          // TODO: should this be added to affect the path shape?
-          // const vel = Math.sqrt(
-          //   Math.pow(vec.r.translation.y - y, 2) +
-          //     Math.pow(vec.r.translation.x - x, 2)
-          // );
           path += `\tsquiggles::ControlVector(squiggles::Pose(${x.toFixed(
             3
           )}, ${y.toFixed(3)}, ${yaw.toFixed(3)})})`;
@@ -179,6 +160,8 @@ export default function SimpleTabs(props: SimpleTabsProps) {
           const vec = v.vectors[i];
           let yaw = vec.r.rotation;
           const coords = okapiCoords(
+            props.canvasDims.x,
+            props.canvasDims.y,
             vec.p.translation.x,
             vec.p.translation.y,
             yaw

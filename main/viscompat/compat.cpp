@@ -1,5 +1,5 @@
-#include "squiggles.hpp"
 #include "compat.hpp"
+#include "squiggles.hpp"
 
 #define K_EPSILON (1e-5)
 

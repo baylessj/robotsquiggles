@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import clsx from "clsx";
 import { makeStyles, Theme, createStyles } from "@material-ui/core/styles";
 import Drawer from "@material-ui/core/Drawer";
@@ -13,6 +13,9 @@ import SimpleTabs from "./components/generated";
 import { ThemeProvider, Button } from "@material-ui/core";
 import theme from "./theme";
 import { SidebarContent } from "./components/sidebar";
+import squiggles from "./services/squiggles";
+import { useDebouncedEffect } from "./services/useDebouncedEffect";
+import { squigglesCoords } from "./services/coords";
 
 const drawerWidth = 300;
 
@@ -93,6 +96,7 @@ export const App = (props: any) => {
     x: window.innerWidth,
     y: window.innerHeight,
   });
+  const [badPaths, setBadPaths] = useState(new Map<string, number>());
 
   /**
    * Map of the data associated with each Squiggles path.
@@ -107,6 +111,55 @@ export const App = (props: any) => {
    */
   const [paths, setPaths] = useState(new Map());
 
+  useDebouncedEffect(
+    () => {
+      paths.forEach((v: any, k: string) => {
+        if (!v.waypoints[1] || !v.vectors[1] || v.vectors.length > 2) return;
+        // TODO: allow for three+ point paths
+        const poses = [];
+        for (let i = v.vectors.length - 1; i >= 0; --i) {
+          const vec = v.vectors[i];
+          let yaw = vec.r.rotation;
+          let vel = Math.sqrt(
+            Math.pow(vec.r.translation.x - vec.p.translation.x, 2) +
+              Math.pow(vec.r.translation.y - vec.p.translation.y, 2)
+          );
+          const coords = squigglesCoords(
+            canvasDims.x,
+            canvasDims.y,
+            vec.p.translation.x,
+            vec.p.translation.y,
+            yaw,
+            vel
+          );
+          poses.push({
+            x: coords.x,
+            y: coords.y,
+            yaw: coords.yaw,
+            vel: coords.vel,
+          });
+        }
+        const payload = {
+          sx: poses[0].x,
+          sy: poses[0].y,
+          syaw: poses[0].yaw,
+          sv: poses[0].vel,
+          gx: poses[1].x,
+          gy: poses[1].y,
+          gyaw: poses[1].yaw,
+          gv: poses[1].vel,
+          max_vel: parseFloat(maxVel),
+          max_accel: parseFloat(maxAccel),
+          max_jerk: parseFloat(maxJerk),
+          track_width: parseFloat(trackWidth),
+        };
+        generatePath(k, payload);
+      });
+    },
+    200,
+    [paths, maxVel, maxAccel, maxJerk, trackWidth]
+  );
+
   const handleDrawerOpen = () => {
     setOpen(true);
   };
@@ -114,6 +167,16 @@ export const App = (props: any) => {
   const handleDrawerClose = () => {
     setOpen(false);
   };
+
+  async function generatePath(path: string, payload: any) {
+    const rtn = await squiggles.generate(payload);
+    setBadPaths(new Map(badPaths.set(path, rtn.data.payload)));
+  }
+
+  // Load the Squiggles WASM library only when the component is mounted
+  useEffect(() => {
+    squiggles.load();
+  }, []);
 
   return (
     <ThemeProvider theme={theme}>
@@ -187,6 +250,7 @@ export const App = (props: any) => {
             setCanvasDims={setCanvasDims}
             latch={latch}
             trackWidth={trackWidth}
+            badPaths={badPaths}
           />
           <SimpleTabs
             paths={paths}
