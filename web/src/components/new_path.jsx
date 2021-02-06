@@ -26,6 +26,7 @@ export const DrawNewPath = (props) => {
   const red = "rgb(255, 40, 40)";
   const blueBalls = useRef(null);
   const redBalls = useRef(null);
+  const robotSquare = useRef(null);
 
   const {
     drawerWidth,
@@ -128,18 +129,17 @@ export const DrawNewPath = (props) => {
   };
 
   const createAnchorPoint = (anchor, newPath, pathKey, idx) => {
-    let robotSquare;
     if (pathKey === "A" && anchor === newPath._collection[0]) {
       // put the robot on the first path's start
-      robotSquare = two.current.makeRectangle(
+      robotSquare.current = two.current.makeRectangle(
         anchor.x,
         anchor.y,
-        (two.current.width / FIELD_METERS) * props.trackWidth,
-        (two.current.width / FIELD_METERS) * props.trackWidth
+        (two.current.width / FIELD_METERS) * trackWidth,
+        (two.current.width / FIELD_METERS) * trackWidth
       );
-      robotSquare.noFill().stroke = robotColor;
-      robotSquare.linewidth = 2;
-      group.current.add(robotSquare);
+      robotSquare.current.noFill().stroke = robotColor;
+      robotSquare.current.linewidth = 2;
+      group.current.add(robotSquare.current);
     }
     const p = two.current.makeCircle(0, 0, 10);
     const r = two.current.makePolygon(0, 0, 10);
@@ -166,7 +166,7 @@ export const DrawNewPath = (props) => {
       r.translation.copy(anchor.controls.right).addSelf(this);
       rl.vertices[0].copy(this);
       rl.vertices[1].copy(r.translation);
-      if (robotSquare) robotSquare.translation.copy(this);
+      if (robotSquare.current) robotSquare.current.translation.copy(this);
       props.setPaths(
         new Map(
           props.paths.set(pathKey, {
@@ -194,7 +194,7 @@ export const DrawNewPath = (props) => {
         Math.atan2(anchor.controls.right.y, anchor.controls.right.x) +
         Math.PI / 2;
       r.rotation = rot;
-      if (robotSquare) robotSquare.rotation = rot;
+      if (robotSquare.current) robotSquare.current.rotation = rot;
       props.setPaths(
         new Map(
           props.paths.set(pathKey, {
@@ -213,7 +213,7 @@ export const DrawNewPath = (props) => {
     // Update the renderer in order to generate the actual elements.
     two.current.update();
 
-    const newVec = { s: robotSquare, g: g, p: p, r: r };
+    const newVec = { s: robotSquare.current, g: g, p: p, r: r };
     let updatedVec;
     if (idx) {
       updatedVec = Array.from(props.paths.get(pathKey).vectors);
@@ -1046,5 +1046,12 @@ export const DrawNewPath = (props) => {
     two.current.update();
   }, [paths, badPaths]);
 
+  useEffect(() => {
+    if (!robotSquare.current) return;
+
+    robotSquare.current.width = (two.current.width / FIELD_METERS) * trackWidth;
+    robotSquare.current.height =
+      (two.current.width / FIELD_METERS) * trackWidth;
+  }, [trackWidth]);
   return <div ref={mount}></div>;
 };
