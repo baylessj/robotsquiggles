@@ -53,6 +53,7 @@ template <class Iter>
 std::vector<ProfilePoint>
 SplineGenerator::_generate(Iter start, Iter end, bool fast) {
   std::vector<ProfilePoint> path;
+  double start_time = 0.0;
   for (auto vec = std::next(start); vec != end; ++vec) {
     // create copies of the values
     auto spline_start = *std::prev(vec);
@@ -69,8 +70,11 @@ SplineGenerator::_generate(Iter start, Iter end, bool fast) {
                                       spline_end,
                                       raw_path,
                                       preferred_start_vel,
-                                      preferred_end_vel);
-    path.insert(path.end(), profiled_path.begin(), profiled_path.end());
+                                      preferred_end_vel,
+                                      start_time);
+    start_time = (profiled_path.end() - 1)->time;
+    //subtract one from the last point since the end of the prev segment is exactly the beginning of the next segment 
+    path.insert(path.end(), profiled_path.begin(), profiled_path.end() - 1);
   }
   return path;
 }
@@ -310,7 +314,8 @@ SplineGenerator::parameterize(const ControlVector start,
                               const ControlVector end,
                               const std::vector<GeneratedPoint>& raw_path,
                               const double preferred_start_vel,
-                              const double preferred_end_vel) {
+                              const double preferred_end_vel,
+                              const double start_time) {
   std::vector<ConstrainedState> constrainedStates(raw_path.size());
 
   // Forward Pass
@@ -350,7 +355,9 @@ SplineGenerator::parameterize(const ControlVector start,
   std::iota(std::begin(times), std::end(times), 0.0);
   std::vector<ProfilePoint> out;
   for (auto t : times) {
-    out.emplace_back(get_point_at_time(start, end, time_adjusted, t * dt));
+    auto point = get_point_at_time(start, end, time_adjusted, t * dt);
+    point.time = point.time + start_time;
+    out.emplace_back(point);
   }
   return out;
 }

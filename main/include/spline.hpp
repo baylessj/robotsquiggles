@@ -231,7 +231,8 @@ class SplineGenerator {
                const ControlVector end,
                const std::vector<GeneratedPoint>& raw_path,
                const double preferred_start_vel,
-               const double preferred_end_vel);
+               const double preferred_end_vel,
+               const double start_time);
 
   /**
    * Finds the new timestamps for each point along the curve based on the motion
