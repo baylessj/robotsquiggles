@@ -68,3 +68,5 @@ plz-out
 
 **.eslintcache
 coverage.info
+.next
+node_modules

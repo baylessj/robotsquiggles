@@ -11,6 +11,7 @@ typedef struct {
   double v;
   double a;
   double j;
+  double k;
   double lv;
   double rv;
 } VisDataPoint;

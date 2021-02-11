@@ -9,22 +9,22 @@ option(INSTALL_SQUIGGLES "Enables installation of the squiggles library" ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++${CMAKE_CXX_STANDARD} -Wall -Wextra -Wshadow -Wnull-dereference -Wno-psabi -Wno-unused-function -pthread -g -O0 -fprofile-arcs -ftest-coverage --coverage -D THREADS_STD")
 
-set(SQUIGGLES_SOURCES include/constraints.hpp
-  include/math/utils.hpp
-  include/math/quinticpolynomial.hpp 
-  include/spline.hpp 
-  include/squiggles.hpp
-  include/geometry/controlvector.hpp 
-  include/geometry/pose.hpp 
-  include/geometry/profilepoint.hpp
-  include/physicalmodel/passthroughmodel.hpp
-  include/physicalmodel/physicalmodel.hpp
-  include/physicalmodel/tankmodel.hpp
-  src/io.cpp
-  src/main.cpp
-  src/quinticpolynomial.cpp
-  src/spline.cpp
-  src/tankmodel.cpp)
+set(SQUIGGLES_SOURCES main/include/constraints.hpp
+  main/include/math/utils.hpp
+  main/include/math/quinticpolynomial.hpp 
+  main/include/spline.hpp 
+  main/include/squiggles.hpp
+  main/include/geometry/controlvector.hpp 
+  main/include/geometry/pose.hpp 
+  main/include/geometry/profilepoint.hpp
+  main/include/physicalmodel/passthroughmodel.hpp
+  main/include/physicalmodel/physicalmodel.hpp
+  main/include/physicalmodel/tankmodel.hpp
+  main/src/io.cpp
+  main/src/main.cpp
+  main/src/quinticpolynomial.cpp
+  main/src/spline.cpp
+  main/src/tankmodel.cpp)
 
 if (SQUIGGLES_TEST)
     # Download and unpack googletest at configure time
@@ -60,14 +60,12 @@ if (SQUIGGLES_TEST)
     endif()
 endif()
 
-include_directories(include)
-include_directories(vis)
+include_directories(main/include)
 
-add_subdirectory(src)
+add_subdirectory(main/src)
 if (SQUIGGLES_TEST)
-    add_subdirectory(tst)
+    add_subdirectory(main/test)
 endif()
-add_subdirectory(vis)
 
 #-------------------------------------------------------------------------------
 
@@ -115,10 +113,3 @@ target_include_directories(squiggles SYSTEM INTERFACE
     "$<INSTALL_INTERFACE:$<INSTALL_PREFIX>/${CMAKE_INSTALL_INCLUDEDIR}>")
 
 install_project(squiggles)
-
-set(VIS_SO
-  ${SQUIGGLES_SOURCES}
-  vis/compat.hpp
-  vis/compat.cpp)
-
-add_library(RobotSquiggles SHARED ${VIS_SO}) # creates a shared object for use with python

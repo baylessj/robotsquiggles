@@ -1,5 +1,5 @@
-#include "squiggles.hpp"
 #include "compat.hpp"
+#include "squiggles.hpp"
 
 #define K_EPSILON (1e-5)
 
@@ -27,28 +27,26 @@ VisData compute_path(double sx,
   } else {
     model = std::make_shared<PassthroughModel>();
   }
-  auto spline = SplineGenerator(constraints,
-                       model,
-                       dt);
-  std::vector<ProfilePoint> path = spline.generate({ControlVector(Pose(sx, sy, syaw), sv, sa), ControlVector(Pose(gx, gy, gyaw), gv, ga)});
+  auto spline = SplineGenerator(constraints, model, dt);
+  auto s = Pose(sx, sy, syaw);
+  auto g = Pose(gx, gy, gyaw);
+  auto scv = ControlVector(s, sv, sa);
+  auto gcv = ControlVector(g, gv, ga);
+  std::vector<squiggles::ProfilePoint> path = spline.generate({scv, gcv});
   VisData out;
   out.size = path.size();
   out.points = new VisDataPoint[path.size()];
   for (std::size_t i = 0; i < path.size(); ++i) {
-    out.points[i].time = path[i].time;
+    out.points[i].time = i;
     out.points[i].x = path[i].vector.pose.x;
     out.points[i].y = path[i].vector.pose.y;
     out.points[i].yaw = path[i].vector.pose.yaw;
-    out.points[i].v = path[i].vector.vel;
-    out.points[i].a = path[i].vector.accel;
-    out.points[i].j = path[i].vector.jerk;
-    if (track_width > K_EPSILON) {
-      out.points[i].lv = path[i].wheel_velocities[0];
-      out.points[i].rv = path[i].wheel_velocities[1];
-    } else {
-      out.points[i].lv = 0.0;
-      out.points[i].rv = 0.0;
-    }
+    out.points[i].k = path[i].curvature;
+    // out.points[i].v = path[i].vel;
+    // out.points[i].a = path[i].accel;
+    // out.points[i].j = path[i].jerk;
+    out.points[i].lv = path[i].wheel_velocities[0];
+    out.points[i].rv = path[i].wheel_velocities[1];
   }
   return out;
 }
