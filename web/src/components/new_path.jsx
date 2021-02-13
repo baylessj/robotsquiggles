@@ -50,11 +50,11 @@ export const DrawNewPath = (props) => {
    * @returns {x: number, y: number}
    */
   const getCursorPosition = (e) => {
-    let x = e.clientX;
-    let y = e.clientY;
+    const x = e.clientX + window.pageXOffset;
+    const y = e.clientY + window.pageYOffset;
     // relying on savedLeft to tell us if the drawer is open
-    let left = savedBoundingRect.current.left + savedLeft.current ?? 0;
-    let top = savedBoundingRect.current.top;
+    const left = savedBoundingRect.current.left + savedLeft.current ?? 0;
+    const top = savedBoundingRect.current.top;
     return {
       x: (x - left) / two.current.scene.scale,
       y: (y - top) / two.current.scene.scale,
