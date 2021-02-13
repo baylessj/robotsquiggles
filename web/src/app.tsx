@@ -41,6 +41,10 @@ const useStyles = makeStyles((theme: Theme) =>
     title: {
       flexGrow: 1,
     },
+    docs: {
+      fontWeight: 600,
+      letterSpacing: 1.5,
+    },
     menuButton: {
       marginRight: theme.spacing(2),
     },
@@ -201,8 +205,14 @@ export const App = (props: any) => {
             <Typography variant="h6" noWrap className={classes.title}>
               Squiggles Drawing Board
             </Typography>
-            <Button href="https://squiggles.readthedocs.io" color="inherit">
-              DOCS
+            <Button
+              href="https://squiggles.readthedocs.io"
+              color="inherit"
+              size="large"
+            >
+              <Typography variant="h6" className={classes.docs}>
+                DOCS
+              </Typography>
             </Button>
           </Toolbar>
         </AppBar>
