@@ -121,11 +121,11 @@ class ParameterizationTester : public SplineGenerator {
     : SplineGenerator(iconstraints) {}
 
   std::vector<ProfilePoint> plan_1d() {
-    return parameterize(Pose(0, 0, 0), Pose(0, 0, 0), test_path_1d, 0, 0);
+    return parameterize(Pose(0, 0, 0), Pose(0, 0, 0), test_path_1d, 0, 0, 0.0);
   }
 
   std::vector<ProfilePoint> plan_2d() {
-    return parameterize(Pose(0, 0, 0), Pose(0, 0, 0), test_path_1d, 0, 0);
+    return parameterize(Pose(0, 0, 0), Pose(0, 0, 0), test_path_1d, 0, 0, 0.0);
   }
 };
 // TEST(helper_scripts, pos) {

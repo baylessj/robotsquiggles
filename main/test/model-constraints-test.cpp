@@ -11,9 +11,9 @@
 using namespace squiggles;
 
 TEST(model_constraints_test, min_constraints) {
-  auto constraints = Constraints(1.0);
+  auto constraints = Constraints(1.0, 2.0);
   auto model = std::make_shared<TankModel>(0.4, constraints);
-  auto spline = SplineGenerator(constraints, model, 0.1);
+  auto spline = SplineGenerator(constraints, model, 0.01);
   auto path = spline.generate({
     ControlVector(Pose(0, 0, 0), 0.0, 0.0),
     ControlVector(Pose(0, 2, 0), 0.0, 0.0),
@@ -30,7 +30,7 @@ TEST(model_constraints_test, min_constraints) {
 TEST(model_constraints_test, sharp_turn) {
   auto constraints = Constraints(2.0, 2.0, 1.0);
   auto model = std::make_shared<TankModel>(0.4, constraints);
-  auto spline = SplineGenerator(constraints, model, 0.1);
+  auto spline = SplineGenerator(constraints, model, 0.01);
   auto path = spline.generate({
     ControlVector(Pose(0, 0, 0), 0.0, 0.0),
     ControlVector(Pose(0, 2, 0), 0.0, 0.0),
@@ -55,7 +55,7 @@ TEST(model_constraints_test, smooth_arc) {
   auto constraints = Constraints(2.0, 2.0, 1.0);
   auto model = std::make_shared<TankModel>(0.4, constraints);
 
-  auto spline = SplineGenerator(constraints, model, 0.1);
+  auto spline = SplineGenerator(constraints, model, 0.01);
   auto path = spline.generate({
     ControlVector(Pose(0, 0, 0), 0.0, 0.0),
     ControlVector(Pose(4, 4, 1), 0.0, 0.0),
