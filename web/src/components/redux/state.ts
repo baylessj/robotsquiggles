@@ -13,4 +13,5 @@ export interface Path {
 
 export interface PathsState {
   paths: Record<string, Path>;
+  actionNeeded?: string;
 }

@@ -8,11 +8,14 @@ import {
   updateVectorP,
   updateVectorR,
   createPath,
-  addPoint,
   initNextPath,
   deletePoint,
   deletePath,
   selectPaths,
+  selectPathsAction,
+  curPathKey,
+  nextChar,
+  createPoints,
 } from "./redux/slice";
 
 export const DrawNewPath = (props) => {
@@ -55,6 +58,7 @@ export const DrawNewPath = (props) => {
 
   const dispatch = useDispatch();
   const paths = useSelector(selectPaths);
+  const pathsAction = useSelector(selectPathsAction);
 
   /**
    * Modifies the mouse event to fit with the Two canvas coordinates.
@@ -158,96 +162,98 @@ export const DrawNewPath = (props) => {
     });
   };
 
-  const createAnchorPoint = (anchor, newPath, pathKey, idx) => {
-    if (pathKey === "A" && anchor === newPath._collection[0]) {
-      // put the robot on the first path's start
-      robotSquare.current = two.current.makeRectangle(
-        anchor.x,
-        anchor.y,
-        (two.current.width / FIELD_METERS) * trackWidth,
-        (two.current.width / FIELD_METERS) * trackWidth
-      );
-      robotSquare.current.noFill().stroke = robotColor;
-      robotSquare.current.linewidth = 2;
-      group.current.add(robotSquare.current);
-    }
-    const p = two.current.makeCircle(0, 0, 10);
-    const r = two.current.makePolygon(0, 0, 10);
-    r.rotation =
-      Math.atan2(anchor.controls.right.y, anchor.controls.right.x) +
-      Math.PI / 2;
+  const createAnchorPoint = useCallback(
+    (anchor, newPath, pathKey, idx) => {
+      if (pathKey === "A" && anchor === newPath._collection[0]) {
+        // put the robot on the first path's start
+        robotSquare.current = two.current.makeRectangle(
+          anchor.x,
+          anchor.y,
+          (two.current.width / FIELD_METERS) * trackWidth,
+          (two.current.width / FIELD_METERS) * trackWidth
+        );
+        robotSquare.current.noFill().stroke = robotColor;
+        robotSquare.current.linewidth = 2;
+        group.current.add(robotSquare.current);
+      }
 
-    p.translation.copy(anchor);
-    r.translation.copy(anchor.controls.right).addSelf(anchor);
-    p.noStroke().fill = r.noStroke().fill = editColor;
-
-    const rl = new Two.Path([
-      new Two.Anchor().copy(p.translation),
-      new Two.Anchor().copy(r.translation),
-    ]);
-    rl.noFill().stroke = editColor;
-
-    const g = two.current.makeGroup(rl, p, r);
-    g.translation.addSelf(newPath.translation);
-    group.current.add(g);
-
-    p.translation.bind(Two.Events.change, function () {
-      anchor.copy(this);
-      r.translation.copy(anchor.controls.right).addSelf(this);
-      rl.vertices[0].copy(this);
-      rl.vertices[1].copy(r.translation);
-      if (robotSquare.current) robotSquare.current.translation.copy(this);
-
-      dispatch(updateVectorP({ pathKey: pathKey, point: p }));
-    });
-    r.translation.bind(Two.Events.change, function () {
-      anchor.controls.right.copy(this).subSelf(anchor);
-      rl.vertices[1].copy(this);
-
-      const x = -1 * (anchor.controls.right.x - anchor.x);
-      const y = -1 * (anchor.controls.right.y - anchor.y);
-      const opp = new Two.Vector(x, y);
-      anchor.controls.left.copy(opp).subSelf(anchor);
-
-      const rot =
+      const p = two.current.makeCircle(0, 0, 10);
+      const r = two.current.makePolygon(0, 0, 10);
+      r.rotation =
         Math.atan2(anchor.controls.right.y, anchor.controls.right.x) +
         Math.PI / 2;
-      r.rotation = rot;
-      if (robotSquare.current) robotSquare.current.rotation = rot;
 
-      dispatch(updateVectorR({ pathKey: pathKey, point: r }));
+      p.translation.copy(anchor);
+      r.translation.copy(anchor.controls.right).addSelf(anchor);
+      p.noStroke().fill = r.noStroke().fill = editColor;
+
+      const rl = new Two.Path([
+        new Two.Anchor().copy(p.translation),
+        new Two.Anchor().copy(r.translation),
+      ]);
+      rl.noFill().stroke = editColor;
+
+      const g = two.current.makeGroup(rl, p, r);
+      g.translation.addSelf(newPath.translation);
+      group.current.add(g);
+
+      p.translation.bind(Two.Events.change, function () {
+        anchor.copy(this);
+        r.translation.copy(anchor.controls.right).addSelf(this);
+        rl.vertices[0].copy(this);
+        rl.vertices[1].copy(r.translation);
+        if (robotSquare.current) robotSquare.current.translation.copy(this);
+
+        dispatch(updateVectorP({ pathKey: pathKey, point: p }));
+      });
+      r.translation.bind(Two.Events.change, function () {
+        anchor.controls.right.copy(this).subSelf(anchor);
+        rl.vertices[1].copy(this);
+
+        const x = -1 * (anchor.controls.right.x - anchor.x);
+        const y = -1 * (anchor.controls.right.y - anchor.y);
+        const opp = new Two.Vector(x, y);
+        anchor.controls.left.copy(opp).subSelf(anchor);
+
+        const rot =
+          Math.atan2(anchor.controls.right.y, anchor.controls.right.x) +
+          Math.PI / 2;
+        r.rotation = rot;
+        if (robotSquare.current) robotSquare.current.rotation = rot;
+
+        dispatch(updateVectorR({ pathKey: pathKey, point: r }));
+        // setPaths(
+        //   new Map(
+        //     props.paths.set(pathKey, {
+        //       waypoints: props.paths.get(pathKey).waypoints,
+        //       vectors: props.paths
+        //         .get(pathKey)
+        //         .vectors.map((v) =>
+        //           v.r.id === r.id ? { s: v.s, g: v.g, p: v.p, r: r } : v
+        //         ),
+        //       path: props.paths.get(pathKey).path,
+        //     })
+        //   )
+        // );
+      });
+
+      // Update the renderer in order to generate the actual elements.
+      two.current.update();
+
+      return { s: robotSquare.current.id, g: g.id, p: p.id, r: r.id };
+
       // setPaths(
       //   new Map(
       //     props.paths.set(pathKey, {
       //       waypoints: props.paths.get(pathKey).waypoints,
-      //       vectors: props.paths
-      //         .get(pathKey)
-      //         .vectors.map((v) =>
-      //           v.r.id === r.id ? { s: v.s, g: v.g, p: v.p, r: r } : v
-      //         ),
-      //       path: props.paths.get(pathKey).path,
+      //       vectors: updatedVec,
+      //       path: newPath,
       //     })
       //   )
       // );
-    });
-
-    // Update the renderer in order to generate the actual elements.
-    two.current.update();
-
-    const newVec = { s: robotSquare.current, g: g, p: p, r: r };
-    dispatch(
-      createPath({ pathKey: pathKey, vector: newVec, path: newPath, idx: idx })
-    );
-    // setPaths(
-    //   new Map(
-    //     props.paths.set(pathKey, {
-    //       waypoints: props.paths.get(pathKey).waypoints,
-    //       vectors: updatedVec,
-    //       path: newPath,
-    //     })
-    //   )
-    // );
-  };
+    },
+    [dispatch, editColor, robotColor, trackWidth]
+  );
 
   const drawLine = (anchors) => {
     const newPath = new Two.Path(anchors, false, true, true);
@@ -258,65 +264,71 @@ export const DrawNewPath = (props) => {
     return newPath;
   };
 
-  const createNewPath = (pathKey) => {
-    const anchors = [];
-    const lastPoint = paths[pathKey].waypoints.length - 1;
-    for (let i = lastPoint; i >= 0; --i) {
-      // iterate backwards through points so we are driving the right direction
-      const p = two.scene.getById(paths[pathKey].waypoints[i]);
-      console.log(p);
-      let anchor;
-      if (i === lastPoint) {
-        anchor = new Two.Anchor(
-          p.translation.x,
-          p.translation.y,
-          0,
-          100,
-          0,
-          -100,
-          "M"
-        );
-        anchors.push(anchor);
-      } else {
-        anchor = new Two.Anchor(
-          p.translation.x,
-          p.translation.y,
-          0,
-          100,
-          0,
-          -100,
-          "C"
-        );
-        anchors.push(anchor);
+  // TODO: handle the case where a point is inserted
+
+  const createNewPath = useCallback(
+    (pathKey) => {
+      const anchors = [];
+      const lastPoint = paths[pathKey].waypoints.length - 1;
+      for (let i = lastPoint; i >= 0; --i) {
+        // iterate backwards through points so we are driving the right direction
+        const p = two.current.scene.getById(paths[pathKey].waypoints[i]);
+        console.log(p);
+        let anchor;
+        if (i === lastPoint) {
+          anchor = new Two.Anchor(
+            p.translation.x,
+            p.translation.y,
+            0,
+            100,
+            0,
+            -100,
+            "M"
+          );
+          anchors.push(anchor);
+        } else {
+          anchor = new Two.Anchor(
+            p.translation.x,
+            p.translation.y,
+            0,
+            100,
+            0,
+            -100,
+            "C"
+          );
+          anchors.push(anchor);
+        }
+        two.current.remove(p);
+        two.current.update(); // render the elements before adding interactivity
       }
-      two.current.remove(p);
-      two.current.update(); // render the elements before adding interactivity
+
+      group.current = two.current.makeGroup();
+      const newPath = drawLine(anchors);
+
+      const vectors = [];
+      newPath.vertices.forEach(function (anchor) {
+        vectors.push(createAnchorPoint(anchor, newPath, pathKey));
+      });
+      dispatch(
+        createPath({
+          pathKey: pathKey,
+          vectors: vectors,
+          path: newPath.id,
+        })
+      );
+    },
+    [two, paths, createAnchorPoint, dispatch]
+  );
+
+  useEffect(() => {
+    if (pathsAction === "CREATE_PATH") {
+      const pathKey = curPathKey({ paths: paths });
+      createNewPath(pathKey);
+      // create the next path's array
+      dispatch(initNextPath({ pathKey: nextChar(pathKey) }));
+      setMode("EDIT");
     }
-
-    group.current = two.current.makeGroup();
-    const newPath = drawLine(anchors);
-
-    newPath.vertices.forEach(function (anchor) {
-      createAnchorPoint(anchor, newPath, pathKey);
-    });
-  };
-
-  const nextChar = (str) => {
-    return (
-      str.substring(0, str.length - 1) +
-      String.fromCharCode(str.charCodeAt(str.length - 1) + 1)
-    );
-  };
-
-  const curPath = () => {
-    let curKey = "A";
-    for (const k of Object.keys(paths)) {
-      if (k.charCodeAt(0) > curKey.charCodeAt(0)) {
-        curKey = k;
-      }
-    }
-    return curKey;
-  };
+  }, [pathsAction, createNewPath, dispatch, setMode, paths]);
 
   // TODO: move all of this logic into redux slice
   const placePoints = (e) => {
@@ -325,45 +337,8 @@ export const DrawNewPath = (props) => {
     const cursor = getCursorPosition(e);
     const point = two.current.makeCircle(cursor.x, cursor.y, 10);
     point.fill = editColor;
-    if (Object.keys(paths).length === 0) {
-      dispatch(initNextPath({ pathKey: "A" }));
-      // setPaths(
-      //   new Map(
-      //     paths.set("A", {
-      //       waypoints: [],
-      //       vectors: [],
-      //       path: null,
-      //     })
-      //   )
-      // );
-    }
-    const pathKey = curPath();
-    dispatch(addPoint({ pathKey: pathKey, point: point }));
-    // setPaths(
-    //   new Map(
-    //     paths.set(pathKey, {
-    //       waypoints: [point, ...paths.get(pathKey).waypoints],
-    //       vectors: paths.get(pathKey).vectors,
-    //       path: paths.get(pathKey).path,
-    //     })
-    //   )
-    // );
 
-    if (paths[pathKey]?.waypoints?.length > 1) {
-      createNewPath(pathKey);
-      // create the next path's array
-      dispatch(initNextPath({ pathKey: nextChar(pathKey) }));
-      // setPaths(
-      //   new Map(
-      //     paths.set(nextChar(pathKey), {
-      //       waypoints: [],
-      //       vectors: [],
-      //       path: null,
-      //     })
-      //   )
-      // );
-      setMode("EDIT");
-    }
+    dispatch(createPoints({ point: point }));
   };
 
   const addMidpoint = (path) => {
@@ -955,17 +930,19 @@ export const DrawNewPath = (props) => {
         console.log("edit");
         removeAllEventListeners();
 
-        paths.forEach((p) => {
+        Object.entries(paths).forEach((p) => {
           if (!p.vectors) return;
           if (p.path) {
             p.path.stroke = p.path.stroke === red ? red : neutralColor;
           }
           p.vectors.forEach((v) => {
-            addInteractivity(v.p);
-            addInteractivity(v.r);
+            const p = two.current.scene.getById(v.p);
+            const r = two.current.scene.getById(v.r);
+            addInteractivity(p);
+            addInteractivity(r);
 
-            v.p.fill = editColor;
-            v.r.fill = editColor;
+            p.fill = editColor;
+            r.fill = editColor;
           });
         });
         break;

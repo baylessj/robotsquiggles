@@ -6,6 +6,38 @@ import { PathsState } from "./state";
 
 const initialState: PathsState = { paths: {} };
 
+export const nextChar = (str: string) => {
+  return (
+    str.substring(0, str.length - 1) +
+    String.fromCharCode(str.charCodeAt(str.length - 1) + 1)
+  );
+};
+
+export const curPathKey = (state: PathsState) => {
+  let curKey = "A";
+  for (const k of Object.keys(state.paths)) {
+    if (k.charCodeAt(0) > curKey.charCodeAt(0)) {
+      curKey = k;
+    }
+  }
+  return curKey;
+};
+
+const _initPath = (state: PathsState, nextPath: string) => {
+  state.paths[nextPath] = {
+    waypoints: [],
+    vectors: [],
+    path: null,
+  };
+};
+
+const addPoint = (state: PathsState, payload: any) => {
+  state.paths[payload.pathKey] = {
+    ...state.paths[payload.pathKey],
+    waypoints: [payload.point.id, ...state.paths[payload.pathKey].waypoints],
+  };
+};
+
 const pathsSlice = createSlice({
   name: "alerts",
   initialState,
@@ -33,33 +65,35 @@ const pathsSlice = createSlice({
       };
     },
     createPath(state: PathsState, action) {
-      let updatedVec;
-      if (action.payload.idx) {
-        updatedVec = Array.from(state.paths[action.payload.pathKey]?.vectors);
-        updatedVec.splice(action.payload.idx, 0, action.payload.newVec);
-      } else {
-        state.paths[action.payload.pathKey].vectors.push(action.payload.newVec);
-      }
       state.paths[action.payload.pathKey] = {
         ...state.paths[action.payload.pathKey],
-        vectors: action.payload.vector,
+        vectors: action.payload.vectors,
         path: action.payload.path,
       };
+      state.actionNeeded = undefined;
+      // let updatedVec;
+      // if (action.payload.idx) {
+      //   updatedVec = Array.from(state.paths[action.payload.pathKey]?.vectors);
+      //   updatedVec.splice(action.payload.idx, 0, action.payload.newVec);
+      // } else {
+      //   state.paths[action.payload.pathKey].vectors.push(action.payload.newVec);
+      // }
+      // state.paths[action.payload.pathKey] = {
+      //   ...state.paths[action.payload.pathKey],
+      //   vectors: action.payload.vectors,
+      //   path: action.payload.path,
+      // };
     },
-    addPoint(state: PathsState, action) {
-      // Causes recursion errors, likely as a result of the non-serializable Two
-      // Need to first identify the parts of the Two point that we
-      console.log(action.payload.point);
+    initPath(state: PathsState, action) {
       state.paths[action.payload.pathKey] = {
-        ...state.paths[action.payload.pathKey],
-        waypoints: [
-          action.payload.point.id,
-          ...state.paths[action.payload.pathKey].waypoints,
-        ],
+        waypoints: [],
+        vectors: [],
+        path: null,
       };
     },
     initNextPath(state: PathsState, action) {
-      state.paths[action.payload.pathKey] = {
+      const nextPath = nextChar(curPathKey(state));
+      state.paths[nextPath] = {
         waypoints: [],
         vectors: [],
         path: null,
@@ -72,6 +106,17 @@ const pathsSlice = createSlice({
     deletePath(state: PathsState, action) {
       delete state.paths[action.payload.pathKey];
     },
+    createPoints(state: PathsState, action) {
+      if (Object.keys(state.paths).length === 0) {
+        _initPath(state, "A");
+      }
+      const pathKey = curPathKey(state);
+      addPoint(state, { pathKey: pathKey, point: action.payload.point });
+
+      if (state.paths[pathKey]?.waypoints?.length > 1) {
+        state.actionNeeded = "CREATE_PATH";
+      }
+    },
   },
 });
 
@@ -80,9 +125,10 @@ export const {
   updateVectorP,
   updateVectorR,
   createPath,
-  addPoint,
   initNextPath,
   deletePoint,
   deletePath,
+  createPoints,
 } = pathsSlice.actions;
 export const selectPaths = (state: any) => state.paths.paths;
+export const selectPathsAction = (state: any) => state.paths.actionNeeded;
