@@ -102,36 +102,41 @@ export const DrawNewPath = (props) => {
       e.preventDefault();
 
       if (latch) {
-        paths.forEach((p) => {
+        Object.entries(paths).forEach((val) => {
+          const [, p] = val;
           p.vectors.forEach((v) => {
-            if (v.p.id === shape.id) {
+            const v_p = two.current.scene.getById(v.p);
+
+            if (v.p === shape.id) {
               // This shape is a point, latch it to nearby points
-              paths.forEach((p2) => {
-                if (p.path?.id === p2.path?.id) return;
+              Object.entries(paths).forEach((val2) => {
+                const [, p2] = val2;
+                if (p.path === p2.path && p.path) return;
                 p2.vectors.forEach((v2) => {
+                  const v2_p = two.current.scene.getById(v2.p);
                   const dist = Math.sqrt(
-                    Math.pow(v.p.translation.x - v2.p.translation.x, 2) +
-                      Math.pow(v.p.translation.y - v2.p.translation.y, 2)
+                    Math.pow(v_p.translation.x - v2_p.translation.x, 2) +
+                      Math.pow(v_p.translation.y - v2_p.translation.y, 2)
                   );
                   if (dist > 0.01 && dist < 40) {
-                    v.p.translation.set(v2.p.translation.x, v2.p.translation.y);
+                    v_p.translation.set(v2_p.translation.x, v2_p.translation.y);
                   }
                 });
               });
             }
 
-            if (v.r.id === shape.id) {
+            if (v.r === shape.id) {
               // This shape is a vector head, latch the vector angle using its point
               if (
                 Math.abs(shape.rotation) < 0.1 ||
                 Math.abs(shape.rotation - Math.PI) < 0.1
               ) {
-                shape.translation.set(v.p.translation.x, shape.translation.y);
+                shape.translation.set(v_p.translation.x, shape.translation.y);
               } else if (
                 Math.abs(Math.abs(shape.rotation) - Math.PI / 2) < 0.1 ||
                 Math.abs(shape.rotation - (3 * Math.PI) / 2) < 0.1
               ) {
-                shape.translation.set(shape.translation.x, v.p.translation.y);
+                shape.translation.set(shape.translation.x, v_p.translation.y);
               }
             }
           });
@@ -149,6 +154,7 @@ export const DrawNewPath = (props) => {
     };
 
     addNewEventListener(shape._renderer.elem, "mousedown", function (e) {
+      console.log(e);
       e.preventDefault();
       window.addEventListener("mousemove", drag);
       window.addEventListener("mouseup", dragEnd);
@@ -272,7 +278,6 @@ export const DrawNewPath = (props) => {
       for (let i = lastPoint; i >= 0; --i) {
         // iterate backwards through points so we are driving the right direction
         const p = two.current.scene.getById(paths[pathKey].waypoints[i]);
-        console.log(p);
         let anchor;
         if (i === lastPoint) {
           anchor = new Two.Anchor(
@@ -440,13 +445,15 @@ export const DrawNewPath = (props) => {
         addNewEventListener(mount.current, "click", placePoints);
         break;
       case "EDIT":
-        console.log("edit");
         removeAllEventListeners();
 
-        Object.entries(paths).forEach((p) => {
+        Object.entries(paths).forEach((val) => {
+          const [, p] = val;
+          const path = two.current.scene.getById(p.path);
+
           if (!p.vectors) return;
           if (p.path) {
-            p.path.stroke = p.path.stroke === red ? red : neutralColor;
+            path.stroke = path.stroke === red ? red : neutralColor;
           }
           p.vectors.forEach((v) => {
             const p = two.current.scene.getById(v.p);
