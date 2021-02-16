@@ -16,6 +16,7 @@ import {
   curPathKey,
   nextChar,
   createPoints,
+  splicePoint,
 } from "./redux/slice";
 import { Field } from "./field";
 
@@ -346,14 +347,14 @@ export const DrawNewPath = (props) => {
   };
 
   const addMidpoint = (path) => {
-    const midpoint = path.path.getPointAt(0.5);
+    const midpoint = path.getPointAt(0.5);
     const p = two.current.makeCircle(midpoint.x, midpoint.y, 10);
     const r2 = two.current.makePolygon(0, 0, 10);
     r2.rotation =
       Math.atan2(midpoint.controls.right.y, midpoint.controls.right.x) +
       Math.PI / 2;
     r2.translation.copy(midpoint.controls.right).addSelf(midpoint);
-    return { p: p, r: r2 };
+    return { p: p.id, r: r2.id };
   };
 
   const addNewEventListener = (node, event, handler) => {
@@ -434,12 +435,17 @@ export const DrawNewPath = (props) => {
     switch (mode) {
       case "ADD_PATH":
         removeAllEventListeners();
-        Object.entries(paths).forEach((p) => {
-          if (!p.path) return;
-          p.path.stroke = neutralColor;
+        Object.entries(paths).forEach((val) => {
+          const [, p] = val;
+          const path = two.current.scene.getById(p.path);
+
+          if (!path) return;
+          path.stroke = neutralColor;
           p.vectors.forEach((v) => {
-            v.p.fill = neutralColor;
-            v.r.fill = neutralColor;
+            const p = two.current.scene.getById(v.p);
+            const r = two.current.scene.getById(v.r);
+            p.fill = neutralColor;
+            r.fill = neutralColor;
           });
         });
         addNewEventListener(mount.current, "click", placePoints);
@@ -469,33 +475,42 @@ export const DrawNewPath = (props) => {
       case "ADD_POINTS":
         removeAllEventListeners();
 
-        Object.entries(paths).forEach((key, p) => {
-          if (!p.path) return;
+        Object.entries(paths).forEach((val) => {
+          const [key, p] = val;
+          const path = two.current.scene.getById(p.path);
+          if (!path) return;
 
           p.vectors.forEach((v) => {
-            v.p.fill = neutralColor;
-            v.r.fill = neutralColor;
+            const p = two.current.scene.getById(v.p);
+            const r = two.current.scene.getById(v.r);
+            p.fill = neutralColor;
+            r.fill = neutralColor;
           });
-          p.path.stroke = editColor;
+          path.stroke = editColor;
 
-          addNewEventListener(p.path._renderer.elem, "click", (e) => {
-            const newVec = addMidpoint(p);
+          addNewEventListener(path._renderer.elem, "click", (e) => {
+            // TODO: creating multiple points instead of one here
+            const newVec = addMidpoint(path);
+            const newP = two.current.scene.getById(newVec.p);
+            const newR = two.current.scene.getById(newVec.p);
             const anchor = new Two.Anchor(
-              newVec.p.translation.x,
-              newVec.p.translation.y,
-              100 * Math.cos(newVec.r.rotation + Math.PI / 2),
-              100 * Math.sin(newVec.r.rotation + Math.PI / 2),
-              -100 * Math.cos(newVec.r.rotation + Math.PI / 2),
-              -100 * Math.sin(newVec.r.rotation + Math.PI / 2),
+              newP.translation.x,
+              newP.translation.y,
+              100 * Math.cos(newR.rotation + Math.PI / 2),
+              100 * Math.sin(newR.rotation + Math.PI / 2),
+              -100 * Math.cos(newR.rotation + Math.PI / 2),
+              -100 * Math.sin(newR.rotation + Math.PI / 2),
               "C"
             );
-            const anchors = p.path.vertices;
+            const anchors = path.vertices;
             anchors.splice(1, 0, anchor); // insert anchor in the middle
             const newPath = drawLine(anchors);
-            p.path = newPath;
+            dispatch(
+              splicePoint({ pathKey: key, vector: newVec, path: newPath.id })
+            );
 
             two.current.remove(newVec.p, newVec.r);
-            createAnchorPoint(anchor, p.path, key, p.vectors.length - 1);
+            createAnchorPoint(anchor, path, key, p.vectors.length - 1);
             setMode("EDIT");
           });
         });

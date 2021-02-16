@@ -117,6 +117,17 @@ const pathsSlice = createSlice({
         state.actionNeeded = "CREATE_PATH";
       }
     },
+    splicePoint(state: PathsState, action) {
+      state.paths[action.payload.pathKey].vectors.splice(
+        1,
+        0,
+        action.payload.vector
+      );
+      state.paths[action.payload.pathKey] = {
+        ...state.paths[action.payload.pathKey],
+        path: action.payload.path,
+      };
+    },
   },
 });
 
@@ -129,6 +140,7 @@ export const {
   deletePoint,
   deletePath,
   createPoints,
+  splicePoint,
 } = pathsSlice.actions;
 export const selectPaths = (state: any) => state.paths.paths;
 export const selectPathsAction = (state: any) => state.paths.actionNeeded;
