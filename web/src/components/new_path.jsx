@@ -490,27 +490,38 @@ export const DrawNewPath = (props) => {
 
           addNewEventListener(path._renderer.elem, "click", (e) => {
             // TODO: creating multiple points instead of one here
-            const newVec = addMidpoint(path);
-            const newP = two.current.scene.getById(newVec.p);
-            const newR = two.current.scene.getById(newVec.p);
+            // const newVec = addMidpoint(path);
+            const midpoint = path.getPointAt(0.5);
+            // const p = two.current.makeCircle(midpoint.x, midpoint.y, 10);
+            // const r2 = two.current.makePolygon(0, 0, 10);
+            const rotation =
+              Math.atan2(midpoint.controls.right.y, midpoint.controls.right.x) +
+              Math.PI / 2;
+            // r2.translation.copy(midpoint.controls.right).addSelf(midpoint);
+
+            // const newP = two.current.scene.getById(newVec.p);
+            // const newR = two.current.scene.getById(newVec.p);
             const anchor = new Two.Anchor(
-              newP.translation.x,
-              newP.translation.y,
-              100 * Math.cos(newR.rotation + Math.PI / 2),
-              100 * Math.sin(newR.rotation + Math.PI / 2),
-              -100 * Math.cos(newR.rotation + Math.PI / 2),
-              -100 * Math.sin(newR.rotation + Math.PI / 2),
+              midpoint.x,
+              midpoint.y,
+              100 * Math.cos(rotation + Math.PI / 2),
+              100 * Math.sin(rotation + Math.PI / 2),
+              -100 * Math.cos(rotation + Math.PI / 2),
+              -100 * Math.sin(rotation + Math.PI / 2),
               "C"
             );
             const anchors = path.vertices;
             anchors.splice(1, 0, anchor); // insert anchor in the middle
             const newPath = drawLine(anchors);
+            const newVec = createAnchorPoint(
+              anchor,
+              newPath,
+              key,
+              anchors.length
+            );
             dispatch(
               splicePoint({ pathKey: key, vector: newVec, path: newPath.id })
             );
-
-            two.current.remove(newVec.p, newVec.r);
-            createAnchorPoint(anchor, path, key, p.vectors.length - 1);
             setMode("EDIT");
           });
         });
