@@ -100,8 +100,9 @@ const pathsSlice = createSlice({
       };
     },
     deletePoint(state: PathsState, action) {
+      console.log(action.payload.path);
       state.paths[action.payload.pathKey].vectors.pop();
-      state.paths[action.payload.pathKey].path = action.payload.path.id;
+      state.paths[action.payload.pathKey].path = action.payload.path;
     },
     deletePath(state: PathsState, action) {
       delete state.paths[action.payload.pathKey];

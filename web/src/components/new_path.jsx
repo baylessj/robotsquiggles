@@ -489,18 +489,11 @@ export const DrawNewPath = (props) => {
           path.stroke = editColor;
 
           addNewEventListener(path._renderer.elem, "click", (e) => {
-            // TODO: creating multiple points instead of one here
-            // const newVec = addMidpoint(path);
             const midpoint = path.getPointAt(0.5);
-            // const p = two.current.makeCircle(midpoint.x, midpoint.y, 10);
-            // const r2 = two.current.makePolygon(0, 0, 10);
             const rotation =
               Math.atan2(midpoint.controls.right.y, midpoint.controls.right.x) +
               Math.PI / 2;
-            // r2.translation.copy(midpoint.controls.right).addSelf(midpoint);
 
-            // const newP = two.current.scene.getById(newVec.p);
-            // const newR = two.current.scene.getById(newVec.p);
             const anchor = new Two.Anchor(
               midpoint.x,
               midpoint.y,
@@ -529,34 +522,42 @@ export const DrawNewPath = (props) => {
       case "REMOVE_POINTS":
         removeAllEventListeners();
 
-        Object.entries(paths).forEach((key, p) => {
+        Object.entries(paths).forEach((val) => {
+          const [key, p] = val;
           if (!p.path) return;
 
+          const path = two.current.scene.getById(p.path);
           p.vectors.forEach((v) => {
-            v.p.fill = neutralColor;
-            v.r.fill = neutralColor;
+            const p = two.current.scene.getById(v.p);
+            const r = two.current.scene.getById(v.r);
+            p.fill = neutralColor;
+            r.fill = neutralColor;
           });
-          p.path.stroke = editColor;
+          path.stroke = editColor;
 
-          addNewEventListener(p.path._renderer.elem, "click", (e) => {
-            const anchors = p.path.vertices;
+          addNewEventListener(path._renderer.elem, "click", (e) => {
+            const anchors = path.vertices;
             anchors.pop();
             if (anchors.length < 2) {
               p.vectors.forEach((v) => {
-                v.g.remove();
-                if (v.s) group.current.remove(v.s);
+                const g = two.current.scene.getById(v.g);
+                g.remove();
+                if (v.s) {
+                  const s = two.current.scene.getById(v.s);
+                  group.current.remove(s);
+                }
               });
               two.current.remove(p.path);
-              // paths.delete(key);
               dispatch(deletePath({ pathKey: key }));
-              // setPaths(new Map(paths));
             } else {
-              const vec = p.vectors.pop();
-              vec.g.remove();
+              // can't remove the path after removing midpoint
+              const vec = p.vectors[p.vectors.length - 1];
+              const g = two.current.scene.getById(vec.g);
+              g.remove();
+              path.remove();
               const newPath = drawLine(anchors);
-              p.path = newPath;
               two.current.update();
-              dispatch(deletePoint({ pathKey: key, path: newPath }));
+              dispatch(deletePoint({ pathKey: key, path: newPath.id }));
               // setPaths(new Map(map.set(key, p)));
             }
           });
