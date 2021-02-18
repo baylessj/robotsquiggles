@@ -48,8 +48,6 @@ export const DrawNewPath = (props) => {
     mode,
     setMode,
     field,
-    oldpaths,
-    setPaths,
     setCanvasDims,
     latch,
     trackWidth,
@@ -228,35 +226,12 @@ export const DrawNewPath = (props) => {
         if (robotSquare.current) robotSquare.current.rotation = rot;
 
         dispatch(updateVectorR({ pathKey: pathKey, point: r }));
-        // setPaths(
-        //   new Map(
-        //     props.paths.set(pathKey, {
-        //       waypoints: props.paths.get(pathKey).waypoints,
-        //       vectors: props.paths
-        //         .get(pathKey)
-        //         .vectors.map((v) =>
-        //           v.r.id === r.id ? { s: v.s, g: v.g, p: v.p, r: r } : v
-        //         ),
-        //       path: props.paths.get(pathKey).path,
-        //     })
-        //   )
-        // );
       });
 
       // Update the renderer in order to generate the actual elements.
       two.current.update();
 
       return { s: robotSquare.current.id, g: g.id, p: p.id, r: r.id };
-
-      // setPaths(
-      //   new Map(
-      //     props.paths.set(pathKey, {
-      //       waypoints: props.paths.get(pathKey).waypoints,
-      //       vectors: updatedVec,
-      //       path: newPath,
-      //     })
-      //   )
-      // );
     },
     [dispatch, editColor, robotColor, trackWidth]
   );
@@ -344,17 +319,6 @@ export const DrawNewPath = (props) => {
     point.fill = editColor;
 
     dispatch(createPoints({ point: point }));
-  };
-
-  const addMidpoint = (path) => {
-    const midpoint = path.getPointAt(0.5);
-    const p = two.current.makeCircle(midpoint.x, midpoint.y, 10);
-    const r2 = two.current.makePolygon(0, 0, 10);
-    r2.rotation =
-      Math.atan2(midpoint.controls.right.y, midpoint.controls.right.x) +
-      Math.PI / 2;
-    r2.translation.copy(midpoint.controls.right).addSelf(midpoint);
-    return { p: p.id, r: r2.id };
   };
 
   const addNewEventListener = (node, event, handler) => {
@@ -558,7 +522,6 @@ export const DrawNewPath = (props) => {
               const newPath = drawLine(anchors);
               two.current.update();
               dispatch(deletePoint({ pathKey: key, path: newPath.id }));
-              // setPaths(new Map(map.set(key, p)));
             }
           });
         });

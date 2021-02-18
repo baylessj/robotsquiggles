@@ -256,8 +256,6 @@ export const App = (props: any) => {
             mode={mode}
             setMode={setMode}
             field={field}
-            paths={paths}
-            setPaths={setPaths}
             setCanvasDims={setCanvasDims}
             latch={latch}
             trackWidth={trackWidth}
