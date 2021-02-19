@@ -17,6 +17,8 @@ import { SidebarContent } from "./components/sidebar";
 import squiggles from "./services/squiggles";
 import { useDebouncedEffect } from "./services/useDebouncedEffect";
 import { squigglesCoords } from "./services/coords";
+import { useSelector } from "react-redux";
+import { selectPaths } from "./components/redux";
 
 const drawerWidth = 300;
 
@@ -102,38 +104,25 @@ export const App = (props: any) => {
     y: window.innerHeight,
   });
   const [badPaths, setBadPaths] = useState(new Map<string, number>());
-
-  /**
-   * Map of the data associated with each Squiggles path.
-   *
-   * Of the form:
-   *
-   * "A": {
-   *   "waypoints": <Two.Circle>[],
-   *   "vectors": <Two.Vector>[],
-   *   "path": Two.Path
-   * }
-   */
-  const [paths, setPaths] = useState(new Map());
+  const paths = useSelector(selectPaths);
 
   useDebouncedEffect(
     () => {
-      paths.forEach((v: any, k: string) => {
+      Object.entries(paths).forEach(([k, v]: [string, any]) => {
         if (!v.waypoints[1] || !v.vectors[1] || v.vectors.length > 2) return;
         // TODO: allow for three+ point paths
         const poses = [];
         for (let i = v.vectors.length - 1; i >= 0; --i) {
           const vec = v.vectors[i];
-          let yaw = vec.r.rotation;
+          let yaw = vec.r.yaw;
           let vel = Math.sqrt(
-            Math.pow(vec.r.translation.x - vec.p.translation.x, 2) +
-              Math.pow(vec.r.translation.y - vec.p.translation.y, 2)
+            Math.pow(vec.r.x - vec.p.x, 2) + Math.pow(vec.r.y - vec.p.y, 2)
           );
           const coords = squigglesCoords(
             canvasDims.x,
             canvasDims.y,
-            vec.p.translation.x,
-            vec.p.translation.y,
+            vec.p.x,
+            vec.p.y,
             yaw,
             vel
           );

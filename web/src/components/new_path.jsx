@@ -102,11 +102,11 @@ export const DrawNewPath = (props) => {
 
       if (latch) {
         Object.entries(paths).forEach((val) => {
-          const [, p] = val;
+          const [k, p] = val;
           p.vectors.forEach((v) => {
-            const v_p = two.current.scene.getById(v.p);
+            const v_p = two.current.scene.getById(v.p.id);
 
-            if (v.p === shape.id) {
+            if (v.p.id === shape.id) {
               // This shape is a point, latch it to nearby points
               Object.entries(paths).forEach((val2) => {
                 const [, p2] = val2;
@@ -119,23 +119,43 @@ export const DrawNewPath = (props) => {
                   );
                   if (dist > 0.01 && dist < 40) {
                     v_p.translation.set(v2_p.translation.x, v2_p.translation.y);
+                    const point = {
+                      id: v_p.id,
+                      x: v_p.translation.x,
+                      y: v_p.translation.y,
+                    };
+                    dispatch(updateVectorP({ pathKey: k, point: point }));
                   }
                 });
               });
             }
 
-            if (v.r === shape.id) {
+            if (v.r.id === shape.id) {
               // This shape is a vector head, latch the vector angle using its point
               if (
                 Math.abs(shape.rotation) < 0.1 ||
                 Math.abs(shape.rotation - Math.PI) < 0.1
               ) {
                 shape.translation.set(v_p.translation.x, shape.translation.y);
+                const point = {
+                  id: shape.id,
+                  x: shape.translation.x,
+                  y: shape.translation.y,
+                  yaw: shape.rotation,
+                };
+                dispatch(updateVectorR({ pathKey: k, point: point }));
               } else if (
                 Math.abs(Math.abs(shape.rotation) - Math.PI / 2) < 0.1 ||
                 Math.abs(shape.rotation - (3 * Math.PI) / 2) < 0.1
               ) {
                 shape.translation.set(shape.translation.x, v_p.translation.y);
+                const point = {
+                  id: shape.id,
+                  x: shape.translation.x,
+                  y: shape.translation.y,
+                  yaw: shape.rotation,
+                };
+                dispatch(updateVectorR({ pathKey: k, point: point }));
               }
             }
           });
@@ -206,9 +226,15 @@ export const DrawNewPath = (props) => {
         r.translation.copy(anchor.controls.right).addSelf(this);
         rl.vertices[0].copy(this);
         rl.vertices[1].copy(r.translation);
+        // TODO: make this less annoying
         if (robotSquare.current) robotSquare.current.translation.copy(this);
 
-        dispatch(updateVectorP({ pathKey: pathKey, point: p }));
+        const point = {
+          id: p.id,
+          x: p.translation.x,
+          y: p.translation.y,
+        };
+        dispatch(updateVectorP({ pathKey: pathKey, point: point }));
       });
       r.translation.bind(Two.Events.change, function () {
         anchor.controls.right.copy(this).subSelf(anchor);
@@ -223,15 +249,38 @@ export const DrawNewPath = (props) => {
           Math.atan2(anchor.controls.right.y, anchor.controls.right.x) +
           Math.PI / 2;
         r.rotation = rot;
-        if (robotSquare.current) robotSquare.current.rotation = rot;
+        // if (robotSquare.current.translation.x === anchor.x)
+        //   robotSquare.current.rotation = rot;
 
-        dispatch(updateVectorR({ pathKey: pathKey, point: r }));
+        const point = {
+          id: r.id,
+          x: r.translation.x,
+          y: r.translation.y,
+          yaw: r.rotation,
+        };
+        dispatch(updateVectorR({ pathKey: pathKey, point: point }));
       });
 
       // Update the renderer in order to generate the actual elements.
       two.current.update();
 
-      return { s: robotSquare.current.id, g: g.id, p: p.id, r: r.id };
+      const gPoint = {
+        id: g.id,
+        x: g.translation.x,
+        y: g.translation.y,
+      };
+      const pPoint = {
+        id: p.id,
+        x: p.translation.x,
+        y: p.translation.y,
+      };
+      const rPoint = {
+        id: r.id,
+        x: r.translation.x,
+        y: r.translation.y,
+        yaw: r.rotation,
+      };
+      return { s: robotSquare.current.id, g: gPoint, p: pPoint, r: rPoint };
     },
     [dispatch, editColor, robotColor, trackWidth]
   );
@@ -253,7 +302,7 @@ export const DrawNewPath = (props) => {
       const lastPoint = paths[pathKey].waypoints.length - 1;
       for (let i = lastPoint; i >= 0; --i) {
         // iterate backwards through points so we are driving the right direction
-        const p = two.current.scene.getById(paths[pathKey].waypoints[i]);
+        const p = two.current.scene.getById(paths[pathKey].waypoints[i].id);
         let anchor;
         if (i === lastPoint) {
           anchor = new Two.Anchor(
@@ -318,7 +367,12 @@ export const DrawNewPath = (props) => {
     const point = two.current.makeCircle(cursor.x, cursor.y, 10);
     point.fill = editColor;
 
-    dispatch(createPoints({ point: point }));
+    const writePoint = {
+      id: point.id,
+      x: point.translation.x,
+      y: point.translation.y,
+    };
+    dispatch(createPoints({ point: writePoint }));
   };
 
   const addNewEventListener = (node, event, handler) => {
@@ -406,8 +460,8 @@ export const DrawNewPath = (props) => {
           if (!path) return;
           path.stroke = neutralColor;
           p.vectors.forEach((v) => {
-            const p = two.current.scene.getById(v.p);
-            const r = two.current.scene.getById(v.r);
+            const p = two.current.scene.getById(v.p.id);
+            const r = two.current.scene.getById(v.r.id);
             p.fill = neutralColor;
             r.fill = neutralColor;
           });
@@ -426,8 +480,8 @@ export const DrawNewPath = (props) => {
             path.stroke = path.stroke === red ? red : neutralColor;
           }
           p.vectors.forEach((v) => {
-            const p = two.current.scene.getById(v.p);
-            const r = two.current.scene.getById(v.r);
+            const p = two.current.scene.getById(v.p.id);
+            const r = two.current.scene.getById(v.r.id);
             addInteractivity(p);
             addInteractivity(r);
 
@@ -445,8 +499,8 @@ export const DrawNewPath = (props) => {
           if (!path) return;
 
           p.vectors.forEach((v) => {
-            const p = two.current.scene.getById(v.p);
-            const r = two.current.scene.getById(v.r);
+            const p = two.current.scene.getById(v.p.id);
+            const r = two.current.scene.getById(v.r.id);
             p.fill = neutralColor;
             r.fill = neutralColor;
           });
@@ -492,8 +546,8 @@ export const DrawNewPath = (props) => {
 
           const path = two.current.scene.getById(p.path);
           p.vectors.forEach((v) => {
-            const p = two.current.scene.getById(v.p);
-            const r = two.current.scene.getById(v.r);
+            const p = two.current.scene.getById(v.p.id);
+            const r = two.current.scene.getById(v.r.id);
             p.fill = neutralColor;
             r.fill = neutralColor;
           });
@@ -504,7 +558,7 @@ export const DrawNewPath = (props) => {
             anchors.pop();
             if (anchors.length < 2) {
               p.vectors.forEach((v) => {
-                const g = two.current.scene.getById(v.g);
+                const g = two.current.scene.getById(v.g.id);
                 g.remove();
                 if (v.s) {
                   const s = two.current.scene.getById(v.s);
@@ -516,7 +570,7 @@ export const DrawNewPath = (props) => {
             } else {
               // can't remove the path after removing midpoint
               const vec = p.vectors[p.vectors.length - 1];
-              const g = two.current.scene.getById(vec.g);
+              const g = two.current.scene.getById(vec.g.id);
               g.remove();
               path.remove();
               const newPath = drawLine(anchors);

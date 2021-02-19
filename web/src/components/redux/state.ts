@@ -1,15 +1,4 @@
-// export interface Vector {
-//   s: ,
-//   g: ,
-//   p: ,
-//   r: ,
-// }
-
-export interface Path {
-  waypoints: any[];
-  vectors: any[];
-  path: any;
-}
+import { Path } from "../models";
 
 export interface PathsState {
   paths: Record<string, Path>;

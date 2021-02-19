@@ -34,12 +34,12 @@ const _initPath = (state: PathsState, nextPath: string) => {
 const addPoint = (state: PathsState, payload: any) => {
   state.paths[payload.pathKey] = {
     ...state.paths[payload.pathKey],
-    waypoints: [payload.point.id, ...state.paths[payload.pathKey].waypoints],
+    waypoints: [payload.point, ...state.paths[payload.pathKey].waypoints],
   };
 };
 
 const pathsSlice = createSlice({
-  name: "alerts",
+  name: "paths",
   initialState,
   reducers: {
     updateVectorP(state: PathsState, action) {
@@ -48,7 +48,7 @@ const pathsSlice = createSlice({
         vectors:
           state.paths[action.payload.pathKey]?.vectors.map((v) =>
             v.p.id === action.payload.point.id
-              ? { s: v.s, g: v.g, p: action.payload.point.id, r: v.r }
+              ? { s: v.s, g: v.g, p: action.payload.point, r: v.r }
               : v
           ) ?? [],
       };
@@ -58,8 +58,8 @@ const pathsSlice = createSlice({
         ...state.paths[action.payload.pathKey],
         vectors:
           state.paths[action.payload.pathKey]?.vectors.map((v) =>
-            v.p.id === action.payload.point.id
-              ? { s: v.s, g: v.g, p: v.p, r: action.payload.point.id }
+            v.r.id === action.payload.point.id
+              ? { s: v.s, g: v.g, p: v.p, r: action.payload.point }
               : v
           ) ?? [],
       };
@@ -71,18 +71,6 @@ const pathsSlice = createSlice({
         path: action.payload.path,
       };
       state.actionNeeded = undefined;
-      // let updatedVec;
-      // if (action.payload.idx) {
-      //   updatedVec = Array.from(state.paths[action.payload.pathKey]?.vectors);
-      //   updatedVec.splice(action.payload.idx, 0, action.payload.newVec);
-      // } else {
-      //   state.paths[action.payload.pathKey].vectors.push(action.payload.newVec);
-      // }
-      // state.paths[action.payload.pathKey] = {
-      //   ...state.paths[action.payload.pathKey],
-      //   vectors: action.payload.vectors,
-      //   path: action.payload.path,
-      // };
     },
     initPath(state: PathsState, action) {
       state.paths[action.payload.pathKey] = {
