@@ -105,7 +105,7 @@ export const SidebarContent = (props: SidebarContentProps) => {
                 color="primary"
               />
             }
-            label={"Latch to Cardinal Directions"}
+            label={"Latch to Cardinal Directions and Other Points"}
           />
         </ListItem>
       </List>

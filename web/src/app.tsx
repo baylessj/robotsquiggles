@@ -8,14 +8,17 @@ import Toolbar from "@material-ui/core/Toolbar";
 import Typography from "@material-ui/core/Typography";
 import IconButton from "@material-ui/core/IconButton";
 import MenuIcon from "@material-ui/icons/Menu";
+import { ThemeProvider, Button } from "@material-ui/core";
+
 import { DrawNewPath } from "./components";
 import SimpleTabs from "./components/generated";
-import { ThemeProvider, Button } from "@material-ui/core";
 import theme from "./theme";
 import { SidebarContent } from "./components/sidebar";
 import squiggles from "./services/squiggles";
 import { useDebouncedEffect } from "./services/useDebouncedEffect";
 import { squigglesCoords } from "./services/coords";
+import { useSelector } from "react-redux";
+import { selectPaths } from "./components/redux";
 
 const drawerWidth = 300;
 
@@ -40,6 +43,10 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     title: {
       flexGrow: 1,
+    },
+    docs: {
+      fontWeight: 600,
+      letterSpacing: 1.5,
     },
     menuButton: {
       marginRight: theme.spacing(2),
@@ -97,38 +104,25 @@ export const App = (props: any) => {
     y: window.innerHeight,
   });
   const [badPaths, setBadPaths] = useState(new Map<string, number>());
-
-  /**
-   * Map of the data associated with each Squiggles path.
-   *
-   * Of the form:
-   *
-   * "A": {
-   *   "waypoints": <Two.Circle>[],
-   *   "vectors": <Two.Vector>[],
-   *   "path": Two.Path
-   * }
-   */
-  const [paths, setPaths] = useState(new Map());
+  const paths = useSelector(selectPaths);
 
   useDebouncedEffect(
     () => {
-      paths.forEach((v: any, k: string) => {
+      Object.entries(paths).forEach(([k, v]: [string, any]) => {
         if (!v.waypoints[1] || !v.vectors[1] || v.vectors.length > 2) return;
         // TODO: allow for three+ point paths
         const poses = [];
         for (let i = v.vectors.length - 1; i >= 0; --i) {
           const vec = v.vectors[i];
-          let yaw = vec.r.rotation;
+          let yaw = vec.r.yaw;
           let vel = Math.sqrt(
-            Math.pow(vec.r.translation.x - vec.p.translation.x, 2) +
-              Math.pow(vec.r.translation.y - vec.p.translation.y, 2)
+            Math.pow(vec.r.x - vec.p.x, 2) + Math.pow(vec.r.y - vec.p.y, 2)
           );
           const coords = squigglesCoords(
             canvasDims.x,
             canvasDims.y,
-            vec.p.translation.x,
-            vec.p.translation.y,
+            vec.p.x,
+            vec.p.y,
             yaw,
             vel
           );
@@ -201,8 +195,14 @@ export const App = (props: any) => {
             <Typography variant="h6" noWrap className={classes.title}>
               Squiggles Drawing Board
             </Typography>
-            <Button href="https://squiggles.readthedocs.io" color="inherit">
-              DOCS
+            <Button
+              href="https://squiggles.readthedocs.io"
+              color="inherit"
+              size="large"
+            >
+              <Typography variant="h6" className={classes.docs}>
+                DOCS
+              </Typography>
             </Button>
           </Toolbar>
         </AppBar>
@@ -245,8 +245,6 @@ export const App = (props: any) => {
             mode={mode}
             setMode={setMode}
             field={field}
-            paths={paths}
-            setPaths={setPaths}
             setCanvasDims={setCanvasDims}
             latch={latch}
             trackWidth={trackWidth}

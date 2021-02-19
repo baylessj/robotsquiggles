@@ -11,6 +11,7 @@ class Squiggles {
     return new Promise((res, rej) => {
       let interval = setInterval(() => {
         const status = this._status[msg];
+        if (!status) return;
         if (status[0] === "done") res(status[1]);
         if (status[0] === "error") rej(status[1]);
         if (status[0] !== "loading") {

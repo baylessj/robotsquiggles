@@ -70,33 +70,35 @@ export default function SimpleTabs(props: SimpleTabsProps) {
   const classes = useStyles();
   const [value, setValue] = React.useState(0);
 
+  const { paths, trackWidth, maxVel, maxAccel, maxJerk, canvasDims } = props;
+
   const handleChange = (event: React.ChangeEvent<{}>, newValue: number) => {
     setValue(newValue);
   };
 
   const squigglesCode = () => {
     let out = "#define PATH_DT             (0.01)\n";
-    out += `#define PATH_MAX_VEL        (${props.maxVel})\n`;
-    out += `#define PATH_MAX_ACCEL      (${props.maxAccel})\n`;
-    out += `#define PATH_MAX_JERK       (${props.maxJerk})\n`;
-    out += `#define CHASSIS_TRACK_WIDTH (${props.trackWidth})\n\n`;
+    out += `#define PATH_MAX_VEL        (${maxVel})\n`;
+    out += `#define PATH_MAX_ACCEL      (${maxAccel})\n`;
+    out += `#define PATH_MAX_JERK       (${maxJerk})\n`;
+    out += `#define CHASSIS_TRACK_WIDTH (${trackWidth})\n\n`;
     out +=
       "auto constraints = squiggles::Constraints(PATH_MAX_VEL, PATH_MAX_ACCEL, PATH_MAX_JERK);\n";
     out += `auto model = std::make_shared<squiggles::TankModel>(CHASSIS_TRACK_WIDTH, constraints);\n`;
     out +=
       "auto generator = squiggles::SplineGenerator(constraints, model, PATH_DT);\n\n";
-    out += Array.from(props.paths)
+    out += Array.from(Object.entries(paths))
       .slice(0, -1)
       .map(([k, v]) => {
         let path = `auto path${k} = generator.generate({\n`;
-        for (let i = v.vectors.length - 1; i >= 0; --i) {
+        for (let i = 0; i < v.vectors.length; ++i) {
           const vec = v.vectors[i];
-          let yaw = vec.r.rotation;
+          let yaw = vec.r.yaw;
           const coords = squigglesCoords(
-            props.canvasDims.x,
-            props.canvasDims.y,
-            vec.p.translation.x,
-            vec.p.translation.y,
+            canvasDims.x,
+            canvasDims.y,
+            vec.p.x,
+            vec.p.y,
             yaw
           );
           const x = coords.x;
@@ -127,10 +129,10 @@ export default function SimpleTabs(props: SimpleTabsProps) {
       "#define CHASSIS_MOTOR_CARTRIDGE (okapi::AbstractMotor::gearset::green)\n";
     out +=
       "#define CHASSIS_CARTRIDGE_TICKS (imev5GreenTPR) // Should match above\n\n";
-    out += `#define PATH_MAX_VEL        (${props.maxVel})\n`;
-    out += `#define PATH_MAX_ACCEL      (${props.maxAccel})\n`;
-    out += `#define PATH_MAX_JERK       (${props.maxJerk})\n`;
-    out += `#define CHASSIS_TRACK_WIDTH (${props.trackWidth}_m)\n\n`;
+    out += `#define PATH_MAX_VEL        (${maxVel})\n`;
+    out += `#define PATH_MAX_ACCEL      (${maxAccel})\n`;
+    out += `#define PATH_MAX_JERK       (${maxJerk})\n`;
+    out += `#define CHASSIS_TRACK_WIDTH (${trackWidth}_m)\n\n`;
     out += "auto chassis = okapi::ChassisControllerBuilder()\n";
     out +=
       "\t.withMotors(LEFT_CHASSIS_MOTOR_PORTS, RIGHT_CHASSIS_MOTOR_PORTS)\n";
@@ -152,18 +154,18 @@ export default function SimpleTabs(props: SimpleTabsProps) {
     out += " * |   y\n";
     out += " * ------>\n";
     out += " */\n";
-    out += Array.from(props.paths)
+    out += Array.from(Object.entries(paths))
       .slice(0, -1)
       .map(([k, v]) => {
         let path = "profileController->generatePath({\n";
-        for (let i = v.vectors.length - 1; i >= 0; --i) {
+        for (let i = 0; i < v.vectors.length; ++i) {
           const vec = v.vectors[i];
-          let yaw = vec.r.rotation;
+          let yaw = vec.r.yaw;
           const coords = okapiCoords(
-            props.canvasDims.x,
-            props.canvasDims.y,
-            vec.p.translation.x,
-            vec.p.translation.y,
+            canvasDims.x,
+            canvasDims.y,
+            vec.p.x,
+            vec.p.y,
             yaw
           );
           const x = coords.x;
