@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.10)
 project(squiggles)
 
-set(SQUIGGLES_VERSION 1.0.0)
+set(SQUIGGLES_VERSION 1.1.0)
 
 option(SQUIGGLES_TEST "determines if we're gonna pull googletest" OFF)
 option(INSTALL_SQUIGGLES "Enables installation of the squiggles library" ON)
