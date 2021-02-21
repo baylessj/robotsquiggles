@@ -245,7 +245,7 @@ SplineGenerator::gradient_descent(ControlVector& start,
     prev_curv_cost = curv_cost;
   }
 
-  if (counter == MAX_GRAD_DESCENT_ITERATIONS &&
+  if (counter >= MAX_GRAD_DESCENT_ITERATIONS &&
       (a_max > constraints.max_accel || j_max > constraints.max_jerk ||
        k_max > constraints.max_curvature)) {
     throw std::runtime_error(
