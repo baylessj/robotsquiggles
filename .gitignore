@@ -70,3 +70,5 @@ plz-out
 coverage.info
 .next
 node_modules
+
+.venv/

@@ -2,15 +2,15 @@
 name = "vis"
 version = "1.0.0"
 description = ""
-authors = ["Jonathan Bayless <baylessjonathan@gmail.com"]
+authors = ["Jonathan Bayless <baylessjonathan@gmail.com>"]
 license = "MIT"
 
 [tool.poetry.dependencies]
-python = "^3.8"
+python = "^3.9"
 numpy = "^1.19.2"
 matplotlib = "^3.3.2"
-exhale = "^0.2.3"
-sphinx-rtd-theme = "^0.5.0"
+sphinx-rtd-theme = "^1.0.0"
+exhale = "^0.3.1"
 
 [tool.poetry.dev-dependencies]
 

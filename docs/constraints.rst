@@ -5,7 +5,7 @@ Constraints
     :alt: Motion Profile
     :align: center
 
-The robot's :doc:`Constraints <api/structsquiggles_1_1Constraints>` provide the 
+The robot's :doc:`Constraints <api/structsquiggles_1_1_constraints>` provide the 
 maximum allowable dynamics for the generated paths. Careful measurement and 
 configuration of these parameters ensures that the path will not expect the 
 robot to move more quickly than it actually can. Resolving such discrepancies in
@@ -87,4 +87,4 @@ to be smoother or more aggressive than default.
 Resources
 ---------
 
-- :doc:`Class Reference <api/structsquiggles_1_1Constraints>`
+- :doc:`Class Reference <api/structsquiggles_1_1_constraints>`

@@ -11,7 +11,7 @@ control loop for following the path.
 Tank Drive Model
 ----------------
 
-The :doc:`TankModel <api/classsquiggles_1_1TankModel>` defines a Tank Drive model according
+The :doc:`TankModel <api/classsquiggles_1_1_tank_model>` defines a Tank Drive model according
 to the 
 `unicycle <http://faculty.salina.k-state.edu/tim/robotics_sg/Control/kinematics/unicycle.html>`_ 
 model. This model translates the linear velocity and curvature at the point into

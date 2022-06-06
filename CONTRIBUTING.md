@@ -14,6 +14,8 @@ The tests are built alongside the source binaries and depend on [GoogleTest](htt
 The path visualizations are created with Python and [Matplotlib](https://matplotlib.org/). The
 dependencies for the Python portion of the project are handled by [Poetry](https://python-poetry.org/).
 
+Get poetry: pip install poetry
+
 Once you have Poetry installed you can install Squiggles' dependencies by running
 `poetry install` in this directory. Then build the Squiggles source code and run
 the visualization in the Poetry shell with `poetry run cdll`.
@@ -21,6 +23,8 @@ the visualization in the Poetry shell with `poetry run cdll`.
 ### Docs
 
 https://www.sphinx-doc.org/en/master/usage/installation.html
+
+#### Mac
 
 ```
 brew install sphinx-build
@@ -33,3 +37,25 @@ export PATH="/usr/local/opt/sphinx-doc/bin:$PATH"
 ```
 
 to your `~/.zshrc` or `~/.bash_profile` file.
+
+#### Building Docs
+
+Install the Poetry dependencies:
+
+```
+poetry install
+```
+
+Install Doxygen:
+
+```
+brew install doxygen
+```
+
+Start a Poetry shell:
+
+```
+poetry shell
+```
+
+Then run `make html`.

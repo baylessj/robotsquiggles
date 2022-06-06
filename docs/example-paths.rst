@@ -23,7 +23,7 @@ maximum velocity, acceleration, and jerk when driving:
   squiggles::Constraints constraints = squiggles::Constraints(MAX_VEL, MAX_ACCEL, MAX_JERK);
 
 Then measure the width between the robot's wheels and create a 
-:doc:`SplineGenerator <api/classsquiggles_1_1SplineGenerator>`
+:doc:`SplineGenerator <api/classsquiggles_1_1_spline_generator>`
 with the constraints and the width measurement:
 
 .. code-block:: cpp
