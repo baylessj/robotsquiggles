@@ -16,14 +16,14 @@ Pure Pursuit Controller
 -----------------------
 
 The
-`Pure Pursuit Controller <https://www.mathworks.com/help/robotics/ug/pure-pursuit-controller.html>`_ 
+`Pure Pursuit Controller <https://wiki.purduesigbots.com/software/control-algorithms/basic-pure-pursuit>`_ 
 is the defacto standard for closed loop path following. Instead of trying to make
 the robot move to the nearest point along the path when it diverges the Pure
 Pursuit Controller anticipates moving to a point ahead on the path. The 
 target point is the nearest point plus a *look ahead distance*. The Pure Pursuit
 Controller closes the control loop by using the robot's measured position -- 
 calculated by something like 
-`odometry <http://thepilons.ca/wp-content/uploads/2018/10/Tracking.pdf>`_ -- 
+`odometry <https://wiki.purduesigbots.com/software/odometry>`_ -- 
 and finds the look ahead point from that measured position.
 
 The Pure Pursuit Controller has been used extensively in FRC. A couple examples
@@ -33,14 +33,14 @@ of its use for FRC are listed below:
 - `XiaoXie's Implementation <https://github.com/xiaoxiae/PurePursuitAlgorithm>`_
 
 The Pure Pursuit algorithm is best explained by 
-`Alonzo Kelly's white paper <https://www.ri.cmu.edu/pub_files/pub1/kelly_alonzo_1994_4/kelly_alonzo_1994_4.pdf>`_.
+`the Purdue SIGBots Wiki <https://wiki.purduesigbots.com/software/basic-pure-pursuit>`_.
 It is often helpful to reference this document in conjunction with an example 
 Pure Pursuit implementation when writing your own take on the controller.
 
 Ramsete Controller
 ------------------
 
-The `Ramsete Controller <https://docs.wpilib.org/en/stable/docs/software/advanced-control/trajectories/ramsete.html>`_
+The `Ramsete Controller <https://wiki.purduesigbots.com/software/control-algorithms/ramsete>`_
 is another controller that is used for following paths. It does not look ahead
 to follow the path like the `Pure Pursuit Controller`_ but is best suited for
 correcting small errors.
@@ -51,8 +51,9 @@ implementation for the Ramsete Controller:
 
 - `WPILib Implementation <https://github.com/wpilibsuite/allwpilib/blob/master/wpilibc/src/main/native/cpp/controller/RamseteController.cpp>`_
 
-The following white papers are excellent resources to use when constructing your
+The following resources are helpful to use when constructing your
 Ramsete Controller:
 
+- `Purdue SIGBots Wiki Article <https://wiki.purduesigbots.com/software/control-algorithms/ramsete>`_
 - `Tyler Veness' Controls Engineering in the FIRST Robotics Competition <https://file.tavsys.net/control/controls-engineering-in-frc.pdf>`_ 
 - `The original paper detailing the algorithm <https://core.ac.uk/download/pdf/205520525.pdf>`_ 
