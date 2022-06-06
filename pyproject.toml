@@ -7,7 +7,6 @@ license = "MIT"
 
 [tool.poetry.dependencies]
 python = "^3.9"
-numpy = "^1.19.2"
 matplotlib = "^3.3.2"
 sphinx-rtd-theme = "^1.0.0"
 exhale = "^0.3.1"
@@ -19,4 +18,4 @@ requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.scripts]
-cdll = "vis.plot:main"
+vis = "vis.plot:main"
