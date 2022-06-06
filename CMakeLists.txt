@@ -63,6 +63,7 @@ endif()
 include_directories(main/include)
 
 add_subdirectory(main/src)
+add_subdirectory(main/viscompat)
 if (SQUIGGLES_TEST)
     add_subdirectory(main/test)
 endif()
@@ -113,3 +114,11 @@ target_include_directories(squiggles SYSTEM INTERFACE
     "$<INSTALL_INTERFACE:$<INSTALL_PREFIX>/${CMAKE_INSTALL_INCLUDEDIR}>")
 
 install_project(squiggles)
+
+
+set(VIS_SO
+  ${SQUIGGLES_SOURCES}
+  main/viscompat/compat.hpp
+  main/viscompat/compat.cpp)
+
+add_library(${CMAKE_PROJECT_NAME}_compat SHARED ${VIS_SO}) # creates a shared object for use with python 

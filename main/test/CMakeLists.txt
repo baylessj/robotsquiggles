@@ -1,3 +1,5 @@
+cmake_minimum_required(VERSION 3.10)
+
 set(BINARY ${CMAKE_PROJECT_NAME}_tst)
 
 # file(GLOB_RECURSE TEST_SOURCES LIST_DIRECTORIES false *.hpp *.cpp)

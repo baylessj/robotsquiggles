@@ -2,15 +2,14 @@
 name = "vis"
 version = "1.0.0"
 description = ""
-authors = ["Jonathan Bayless <baylessjonathan@gmail.com"]
+authors = ["Jonathan Bayless <baylessjonathan@gmail.com>"]
 license = "MIT"
 
 [tool.poetry.dependencies]
-python = "^3.8"
-numpy = "^1.19.2"
+python = "^3.9"
 matplotlib = "^3.3.2"
-exhale = "^0.2.3"
-sphinx-rtd-theme = "^0.5.0"
+sphinx-rtd-theme = "^1.0.0"
+exhale = "^0.3.1"
 
 [tool.poetry.dev-dependencies]
 
@@ -19,4 +18,4 @@ requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.scripts]
-cdll = "vis.plot:main"
+vis = "vis.plot:main"

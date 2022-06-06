@@ -21,7 +21,7 @@ controller_.
 ## Installation
 
 The Squiggles source code contains no external dependencies. You can include
-Squiggles in any existing project that uses C++20 standard by adding the
+Squiggles in any existing project that uses C++17 standard by adding the
 contents of the `include` and `src` directories to your project.
 
 You can also add Squiggles to your project as a static library by downloading

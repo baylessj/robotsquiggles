@@ -17,23 +17,27 @@ jobs:
           cd lcov
           sudo make install
           sudo ln -sf /usr/bin/gcov-9 /usr/bin/gcov
+      - name: Init CMake
+        env:
+          CC: gcc-9
+          CXX: g++-9
+        run: ./run_cmake_unix.sh
       - name: Build
         env:
           CC: gcc-9
           CXX: g++-9
-        run: ./pleasew build
+        run: cd build && make && cd ..
       - name: Test
-        run: ./pleasew cover
-      # - name: Collect Coverage
-      #   run: |
-      #     lcov --directory ./build/src/CMakeFiles/squiggles_lib.dir/ --capture --output-file coverage.info
-      #     lcov --remove coverage.info '/usr/*' --output-file coverage.info
-      #     lcov --remove coverage.info '*/gtest/*' --output-file coverage.info
-      #     lcov --remove coverage.info '*/googletest/*' --output-file coverage.info
-      #     lcov --remove coverage.info '*-test*' --output-file coverage.info
-      #     lcov --list coverage.info
+        run: ./build/main/test/squiggles_tst
+      - name: Collect Coverage
+        run: |
+          lcov --directory ./build/main/src/CMakeFiles/squiggles_lib.dir/ --capture --output-file coverage.info
+          lcov --remove coverage.info '/usr/*' --output-file coverage.info
+          lcov --remove coverage.info '*/gtest/*' --output-file coverage.info
+          lcov --remove coverage.info '*/googletest/*' --output-file coverage.info
+          lcov --remove coverage.info '*-test*' --output-file coverage.info
+          lcov --list coverage.info
       - uses: codecov/codecov-action@v1.0.5
         with:
           token: ${{secrets.CODECOV_TOKEN}}
-          # file: ./coverage.info
-          file: ./plz-out/bin/main/.test_coverage_squiggles_test
+          file: ./coverage.info

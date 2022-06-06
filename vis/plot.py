@@ -3,13 +3,15 @@ import math
 import os
 import sys
 
-import numpy as np
 import matplotlib.pyplot as plt
-import matplotlib.patches as patches
 
-
-clib = CDLL(os.path.join(os.getcwd(), "plz-out/bin/main/libsquigglesviscompat.so"))
-
+if sys.platform == "linux" or sys.platform == "linux2":
+    # linux
+    clib = CDLL(os.path.join(os.getcwd(), "build/libsquiggles_compat.so"))
+elif sys.platform == "darwin":
+    clib = CDLL(os.path.join(os.getcwd(), "build/libsquiggles_compat.dylib"))
+else:
+    clib = CDLL(os.path.join(os.getcwd(), "build/libsquiggles_compat.dll"))
 
 class VisDataPoint(Structure):
     _fields_ = [
