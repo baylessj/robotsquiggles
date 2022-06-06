@@ -11,7 +11,7 @@ jobs:
       - name: Format
         uses: DoozyX/clang-format-lint-action@v0.11
         with:
-          source: "./src"
+          source: "./main"
           clangFormatVersion: 11
           inplace: True
       # commit the changes (if there are any)
