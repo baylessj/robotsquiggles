@@ -19,3 +19,17 @@ Once you have Poetry installed you can install Squiggles' dependencies by runnin
 the visualization in the Poetry shell with `poetry run cdll`.
 
 ### Docs
+
+https://www.sphinx-doc.org/en/master/usage/installation.html
+
+```
+brew install sphinx-build
+```
+
+Add
+
+```
+export PATH="/usr/local/opt/sphinx-doc/bin:$PATH"
+```
+
+to your `~/.zshrc` or `~/.bash_profile` file.
