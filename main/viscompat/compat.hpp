@@ -18,7 +18,7 @@ typedef struct {
 
 typedef struct {
   unsigned int size;
-  VisDataPoint *points = nullptr;
+  VisDataPoint* points = nullptr;
 } VisData;
 
 // EXPORT VisData compute_path(double sx,
