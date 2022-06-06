@@ -4,8 +4,8 @@
 
 - [CMake](https://cmake.org/) - C++ Build Tool
 - [Poetry](https://python-poetry.org/) - Python Package Manager
-- [Doxygen]() - Documentation Generator
-- [Sphinx]() - Documentation Generator
+- [Doxygen](https://doxygen.nl/) - Documentation Generator
+- [Sphinx](https://www.sphinx-doc.org/en/master/) - Documentation Generator
 
 ### Installation
 
@@ -69,7 +69,7 @@ Then run `poetry run vis` to run the visualization.
 
 ### Docs
 
-The documentation is built with [Sphinx]() and [Doxygen]() and is generated in the `docs` directory.
+The documentation is built with [Sphinx](https://www.sphinx-doc.org/en/master/) and [Doxygen](https://doxygen.nl/) and is generated in the `docs` directory.
 
 To install the Python dependencies, run `poetry install` from the root of the repo.
 
