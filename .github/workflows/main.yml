@@ -31,7 +31,7 @@ jobs:
         run: ./build/main/test/squiggles_tst
       - name: Collect Coverage
         run: |
-          lcov --directory ./build/src/CMakeFiles/squiggles_lib.dir/ --capture --output-file coverage.info
+          lcov --directory ./build/main/src/CMakeFiles/squiggles_lib.dir/ --capture --output-file coverage.info
           lcov --remove coverage.info '/usr/*' --output-file coverage.info
           lcov --remove coverage.info '*/gtest/*' --output-file coverage.info
           lcov --remove coverage.info '*/googletest/*' --output-file coverage.info

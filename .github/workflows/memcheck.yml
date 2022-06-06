@@ -9,7 +9,7 @@ jobs:
         with:
           submodules: true
       - name: Install Valgrind dependency
-        run: sudo snap install --classic valgrind
+        run: sudo apt-get install -y libc6-dbg valgrind
       - name: tree
         run: sudo apt install -y tree
       - name: Init CMake
