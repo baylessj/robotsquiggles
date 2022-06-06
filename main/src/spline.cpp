@@ -73,7 +73,8 @@ SplineGenerator::_generate(Iter start, Iter end, bool fast) {
                                       preferred_end_vel,
                                       start_time);
     start_time = (profiled_path.end() - 1)->time;
-    //subtract one from the last point since the end of the prev segment is exactly the beginning of the next segment 
+    // subtract one from the last point since the end of the prev segment is
+    // exactly the beginning of the next segment
     path.insert(path.end(), profiled_path.begin(), profiled_path.end() - 1);
   }
   return path;
