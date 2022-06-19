@@ -49,7 +49,7 @@ Like Pure Pursuit, the Ramsete Controller has become quite popular in FRC. The
 `WPILib <https://docs.wpilib.org/en/latest/index.html>`_ library includes an 
 implementation for the Ramsete Controller:
 
-- `WPILib Implementation <https://github.com/wpilibsuite/allwpilib/blob/master/wpilibc/src/main/native/cpp/controller/RamseteController.cpp>`_
+- `WPILib Implementation <https://github.com/wpilibsuite/allwpilib/blob/ee03a7ad3bcc156d3b9c07c590e32bca5df83537/wpimath/src/main/native/cpp/controller/RamseteController.cpp>`_
 
 The following resources are helpful to use when constructing your
 Ramsete Controller:
