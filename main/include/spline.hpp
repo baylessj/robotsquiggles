@@ -83,7 +83,7 @@ class SplineGenerator {
    * The minimum and maximum durations for a path to take. A larger range allows
    * for longer possible paths at the expense of a longer path generation time.
    */
-  const int T_MIN = 2;
+  const int T_MIN = 1;
   const int T_MAX = 15;
   const int MAX_GRAD_DESCENT_ITERATIONS = 10;
 

@@ -64,6 +64,9 @@ SplineGenerator::_generate(Iter start, Iter end, bool fast) {
     auto preferred_end_vel = std::isnan(spline_end.vel) ? 0 : spline_end.vel;
 
     auto raw_path = gen_raw_path(spline_start, spline_end, fast);
+    // for (auto i : raw_path) {
+    //   std::cout << i.pose.to_string() << std::endl;
+    // }
     // TODO: check if the vel or accel constraints are actually hit by the raw
     // path and return the raw path if not?
     auto profiled_path = parameterize(spline_start,
@@ -177,18 +180,25 @@ std::vector<SplineGenerator::GeneratedPoint>
 SplineGenerator::gradient_descent(ControlVector& start,
                                   ControlVector& end,
                                   bool fast) {
-  auto start_vel = 0.2;
-  auto end_vel = 0.2;
+  auto pathDist = start.pose.dist(end.pose);
+  auto start_vel = 0.2 * pathDist;
+  auto end_vel = 0.2 * pathDist;
 
   std::vector<GeneratedVector> vectors;
   double a_max, j_max, k_max;
 
-  auto d = T_MIN;
   auto prev_lin_cost = 0.0, prev_curv_cost = 0.0;
   int counter = 0;
   bool lin_hit_min = false;
+  auto duration = std::min(pathDist / start_vel, double(T_MIN));
   while (counter++ < MAX_GRAD_DESCENT_ITERATIONS) {
-    vectors = gen_single_raw_path(start, end, d, start_vel, end_vel);
+    std::cout << "duration " << duration << std::endl;
+    vectors = gen_single_raw_path(start, end, duration, start_vel, end_vel);
+    std::cout << "path start" << std::endl;
+    for (auto i : vectors) {
+      std::cout << i.to_string() << std::endl;
+    }
+    // TODO(#52): the first pass looks fine for the super short path, why is this running three times?
 
     a_max = find_max_accel(vectors);
     j_max = find_max_jerk(vectors);
@@ -208,7 +218,7 @@ SplineGenerator::gradient_descent(ControlVector& start,
       prev_curv_cost = curv_cost;
 
       // our initial guess is to increase path duration and dummy velocity
-      d++;
+      duration++;
       start_vel += 0.2;
       end_vel += 0.2;
       continue;
@@ -220,9 +230,9 @@ SplineGenerator::gradient_descent(ControlVector& start,
       // minimally change the linear constraints
       lin_hit_min = true;
     }
-    if (!lin_hit_min && d < T_MAX) {
+    if (!lin_hit_min && duration < T_MAX) {
       // we have not yet hit the minima
-      d++;
+      duration++;
     }
 
     auto curv_grad = curv_cost - prev_curv_cost;

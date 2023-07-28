@@ -1,0 +1,1 @@
+cd build && make && find . -type f -name '*.gcda' -delete && ./main/test/squiggles_tst && cd ..

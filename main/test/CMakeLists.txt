@@ -9,6 +9,7 @@ set(TEST_SOURCES
     main.cpp
     model-constraints-test.cpp
     plan-path-test.cpp
+    short-path-test.cpp
     shared.hpp)
 
 include_directories(.)
